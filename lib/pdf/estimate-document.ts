@@ -31,7 +31,7 @@ type Input = {
   issuedAt?: Date;
 };
 
-type DrawOptions = Parameters<PDFPage["drawText"]>[1];
+type DrawOptions = NonNullable<Parameters<PDFPage["drawText"]>[1]> & { x: number };
 
 /** The system typeface (Bricolage Grotesque), read from /public/fonts. */
 function loadSystemFont(): Uint8Array {
