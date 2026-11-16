@@ -1,0 +1,38 @@
+/* ESTIMO brand surfaces: wordmark, app icon tile and the route loading screen. */
+
+.loading-screen {
+  min-height: calc(100vh - 72px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: var(--surface);
+}
+
+.loading-mark {
+  animation: estimo-breathe 1.15s ease-in-out infinite;
+  filter: drop-shadow(0 14px 34px rgba(11, 31, 63, .14));
+}
+
+.loading-word {
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: -.03em;
+  line-height: 1;
+  color: var(--navy);
+}
+
+.loading-tagline {
+  font-size: 12.5px;
+  color: #6b7684;
+}
+
+@keyframes estimo-breathe {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(.955); opacity: .82; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .loading-mark { animation: none; }
+}
