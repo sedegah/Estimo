@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -12,7 +12,7 @@ export function SiteHeader() {
 
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
   const isAuthRoute = pathname === "/signin" || pathname === "/signup";
-  const isAppRoute = ["/dashboard", "/estimates", "/projects", "/settings", "/catalogue"].some(
+  const isAppRoute = ["/dashboard", "/estimates", "/projects", "/settings"].some(
     (route) => pathname === route || pathname.startsWith(`${route}/`),
   );
 
@@ -38,3 +38,4 @@ export function SiteHeader() {
     </header>
   );
 }
+

@@ -91,7 +91,7 @@ export default function ProjectsPage() {
             <span className="resume-eyebrow">Continue where you left off</span>
             <strong>{PROJECT_LABELS[draft.template] ?? "Estimate"}</strong>
             <p>
-              {totalSpaces(draft.counts)} spaces Â· {qualityLabel(draft.quality)} fittings Â· updated{" "}
+              {totalSpaces(draft.counts)} spaces · {qualityLabel(draft.quality)} fittings · updated{" "}
               {formatDate(draft.updatedAt)}
             </p>
           </div>

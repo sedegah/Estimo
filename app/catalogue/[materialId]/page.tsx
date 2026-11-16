@@ -1,8 +1,7 @@
-﻿import Link from "next/link";
+import Link from "next/link";
 import { notFound } from "next/navigation";
-import { materialById } from "@/lib/data/catalogue";
 import { AddToEstimateButton } from "@/components/estimate/add-to-estimate";
-
+import { materialById } from "@/lib/data/catalogue";
 
 export default async function MaterialPage({ params }: { params: Promise<{ materialId: string }> }) {
   const { materialId } = await params;
@@ -10,11 +9,10 @@ export default async function MaterialPage({ params }: { params: Promise<{ mater
   if (!material) notFound();
 
   return (
-    <>
-      <div className="product-intelligence-page">
+    <main className="container page-shell product-intelligence-page">
       <div className="breadcrumb">
         <Link href="/catalogue">Catalogue</Link>
-        <span>â€º</span>
+        <span>›</span>
         <span>{material.name}</span>
       </div>
 
@@ -33,7 +31,7 @@ export default async function MaterialPage({ params }: { params: Promise<{ mater
           <strong>Material facts, not guesses</strong>
           <p>
             This build ships the material library locally. Supplier prices stay visibly missing until a verified price
-            source is connected â€” ESTIMO never presents an unverified figure as a trusted price.
+            source is connected - ESTIMO never presents an unverified figure as a trusted price.
           </p>
         </div>
       </section>
@@ -45,7 +43,7 @@ export default async function MaterialPage({ params }: { params: Promise<{ mater
             <tbody>
               <tr>
                 <th>Standard specification</th>
-                <td>{material.spec || "â€”"}</td>
+                <td>{material.spec || "-"}</td>
               </tr>
               <tr>
                 <th>Category</th>
@@ -65,7 +63,7 @@ export default async function MaterialPage({ params }: { params: Promise<{ mater
               </tr>
               <tr>
                 <th>Search keywords</th>
-                <td>{material.keywords.length ? material.keywords.join(", ") : "â€”"}</td>
+                <td>{material.keywords.length ? material.keywords.join(", ") : "-"}</td>
               </tr>
             </tbody>
           </table>
@@ -94,9 +92,6 @@ export default async function MaterialPage({ params }: { params: Promise<{ mater
           <Link className="btn btn-secondary" href="/estimate-basket">Open my estimate</Link>
         </div>
       </section>
-      </div>
-    </>
+    </main>
   );
 }
-
-

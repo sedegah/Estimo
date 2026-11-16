@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -10,7 +10,7 @@ const NAV = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/estimates", label: "Estimates" },
   { href: "/projects", label: "Saved projects" },
-  { href: "/catalogue", label: "Catalogue" },
+  { href: "/dashboard/catalogue", label: "Catalogue" },
   { href: "/settings", label: "Settings" },
 ];
 
@@ -41,3 +41,4 @@ export function AppShell({ children }: { children: ReactNode }) {
     </div>
   );
 }
+

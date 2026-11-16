@@ -248,7 +248,7 @@ button.chip { cursor: pointer; }
 button.chip:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px; }
 .saved-name { font-weight: 700; color: var(--navy); }
 
-/* flat card surfaces â€” square corners inside the app shell */
+/* flat card surfaces — square corners inside the app shell */
 .resume-card { border-radius: 0; }
 .panel { border-radius: 0; }
 .project-tile { border-radius: 0; }

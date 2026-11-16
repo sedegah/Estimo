@@ -26,6 +26,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <body>
+        <link
+          rel="preload"
+          href="/fonts/bricolage-grotesque-latin.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
         {clerkEnabled ? <ClerkProvider publishableKey={env.clerkPublishableKey}>{shell}</ClerkProvider> : shell}
       </body>
     </html>

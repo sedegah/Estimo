@@ -3,8 +3,6 @@ import { AddToEstimateButton } from "@/components/estimate/add-to-estimate";
 import { CATALOGUE_MATERIALS } from "@/lib/data/catalogue";
 import type { CatalogueMaterial } from "@/lib/types";
 
-type SearchParams = Promise<{ q?: string; cat?: string }>;
-
 const FILTERS: { id: string; label: string; categories: string[] }[] = [
   { id: "all", label: "All", categories: [] },
   { id: "cables", label: "Cables", categories: ["CAT-CAB"] },
@@ -89,8 +87,16 @@ const unitLabel = (material: CatalogueMaterial) => {
   }
 };
 
-export default async function CataloguePage({ searchParams }: { searchParams: SearchParams }) {
-  const { q = "", cat = "all" } = await searchParams;
+const filterHref = (id: string, term: string) => {
+  const params = new URLSearchParams();
+  if (term) params.set("q", term);
+  if (id !== "all") params.set("cat", id);
+  const suffix = params.toString();
+  return suffix ? `/catalogue?${suffix}` : "/catalogue";
+};
+
+/** Material search + results table. Used by the public catalogue and the in-app catalogue. */
+export function CatalogueView({ q = "", cat = "all" }: { q?: string; cat?: string }) {
   const term = q.trim().slice(0, 100);
   const filter = FILTERS.find((entry) => entry.id === cat) ?? FILTERS[0];
 
@@ -107,23 +113,8 @@ export default async function CataloguePage({ searchParams }: { searchParams: Se
         .map((row) => row.material)
     : [...inFilter].sort((a, b) => popularity(a) - popularity(b) || a.name.localeCompare(b.name)).slice(0, 40);
 
-  const filterHref = (id: string) => {
-    const params = new URLSearchParams();
-    if (term) params.set("q", term);
-    if (id !== "all") params.set("cat", id);
-    const suffix = params.toString();
-    return suffix ? `/catalogue?${suffix}` : "/catalogue";
-  };
-
   return (
     <>
-      <header className="app-head">
-        <div>
-          <p className="app-eyebrow">Material prices</p>
-          <h1 className="app-title">Catalogue</h1>
-        </div>
-      </header>
-
       <form className="price-search" method="get" action="/catalogue">
         {filter.id !== "all" ? <input type="hidden" name="cat" value={filter.id} /> : null}
         <label className="price-search-label" htmlFor="material-search">Search materials</label>
@@ -138,7 +129,7 @@ export default async function CataloguePage({ searchParams }: { searchParams: Se
 
       <div className="chip-row" aria-label="Material categories">
         {FILTERS.map((entry) => (
-          <Link key={entry.id} className={entry.id === filter.id ? "chip is-active" : "chip"} href={filterHref(entry.id)}>
+          <Link key={entry.id} className={entry.id === filter.id ? "chip is-active" : "chip"} href={filterHref(entry.id, term)}>
             {entry.label}
           </Link>
         ))}
