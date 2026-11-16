@@ -34,18 +34,12 @@ type Input = {
 type DrawOptions = NonNullable<Parameters<PDFPage["drawText"]>[1]> & { x: number };
 
 /** The system typeface (Bricolage Grotesque), read from /public/fonts. */
-function loadSystemFont(): Uint8Array {
-  const file = path.join(process.cwd(), "public", "fonts", "bricolage-grotesque-latin.woff2");
-  return new Uint8Array(fs.readFileSync(file));
+function loadFontFile(fileName: string): Uint8Array {
+  return new Uint8Array(fs.readFileSync(path.join(process.cwd(), "public", "fonts", fileName)));
 }
 
-/**
- * The bundled font is variable; pdf-lib renders its default instance. Headings get a
- * slight double strike so the hierarchy still reads as bold.
- */
 function strongText(page: PDFPage, text: string, options: DrawOptions) {
   page.drawText(text, options);
-  page.drawText(text, { ...options, x: options.x + 0.32 });
 }
 
 function rightText(page: PDFPage, text: string, right: number, y: number, size: number, font: PDFFont, color = NAVY) {
@@ -53,9 +47,7 @@ function rightText(page: PDFPage, text: string, right: number, y: number, size: 
 }
 
 function rightStrong(page: PDFPage, text: string, right: number, y: number, size: number, font: PDFFont, color = NAVY) {
-  const x = right - font.widthOfTextAtSize(text, size);
-  page.drawText(text, { x, y, size, font, color });
-  page.drawText(text, { x: x + 0.32, y, size, font, color });
+  page.drawText(text, { x: right - font.widthOfTextAtSize(text, size), y, size, font, color });
 }
 
 /** The busbar "E" mark, drawn with primitives so the PDF needs no embedded images. */
@@ -90,7 +82,8 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
   pdf.setSubject("Electrical estimate");
   pdf.setCreator("ESTIMO");
 
-  const font = await pdf.embedFont(loadSystemFont(), { subset: true });
+  const font = await pdf.embedFont(loadFontFile("bricolage-regular.ttf"), { subset: false });
+  const bold = await pdf.embedFont(loadFontFile("bricolage-bold.ttf"), { subset: false });
 
   const page = pdf.addPage([595.28, 841.89]);
   const { width, height } = page.getSize();
@@ -102,10 +95,10 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
   page.drawRectangle({ x: 0, y: height - headerHeight, width, height: 4, color: AMBER });
 
   drawMark(page, margin, height - 62, 1.05);
-  strongText(page, "estimo", { x: margin + 42, y: height - 58, size: 24, font, color: WHITE });
+  strongText(page, "estimo", { x: margin + 42, y: height - 58, size: 24, font: bold, color: WHITE });
 
-  strongText(page, "ELECTRICAL ESTIMATE", { x: margin, y: height - 92, size: 8.5, font, color: AMBER });
-  strongText(page, name ?? type.label, { x: margin, y: height - 122, size: 22, font, color: WHITE });
+  strongText(page, "ELECTRICAL ESTIMATE", { x: margin, y: height - 92, size: 8.5, font: bold, color: AMBER });
+  strongText(page, name ?? type.label, { x: margin, y: height - 122, size: 22, font: bold, color: WHITE });
   page.drawText(`${type.label} · ${fittings} fittings · ${spaces} spaces`, {
     x: margin,
     y: height - 142,
@@ -121,8 +114,8 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
   let y = height - headerHeight - 36;
   page.drawRectangle({ x: margin, y: y - 74, width: width - margin * 2, height: 74, color: PLASTER });
   page.drawRectangle({ x: margin, y: y - 74, width: 4, height: 74, color: AMBER });
-  strongText(page, "ESTIMATED TOTAL", { x: margin + 20, y: y - 24, size: 8, font, color: MUTED });
-  strongText(page, money(total), { x: margin + 20, y: y - 58, size: 28, font, color: NAVY });
+  strongText(page, "ESTIMATED TOTAL", { x: margin + 20, y: y - 24, size: 8, font: bold, color: MUTED });
+  strongText(page, money(total), { x: margin + 20, y: y - 58, size: 28, font: bold, color: NAVY });
   page.drawText("Materials and labour. Illustrative planning figure, not a quotation.", {
     x: margin + 250,
     y: y - 34,
@@ -137,10 +130,10 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
   const columns = { item: margin + 14, qty: 330, unit: 430, amount: tableRight - 14 };
 
   page.drawRectangle({ x: margin, y: y - 26, width: tableRight - margin, height: 26, color: NAVY });
-  strongText(page, "Item", { x: columns.item, y: y - 17, size: 9, font, color: WHITE });
-  strongText(page, "Qty", { x: columns.qty, y: y - 17, size: 9, font, color: WHITE });
-  rightStrong(page, "Unit price", columns.unit, y - 17, 9, font, WHITE);
-  rightStrong(page, "Amount", columns.amount, y - 17, 9, font, WHITE);
+  strongText(page, "Item", { x: columns.item, y: y - 17, size: 9, font: bold, color: WHITE });
+  strongText(page, "Qty", { x: columns.qty, y: y - 17, size: 9, font: bold, color: WHITE });
+  rightStrong(page, "Unit price", columns.unit, y - 17, 9, bold, WHITE);
+  rightStrong(page, "Amount", columns.amount, y - 17, 9, bold, WHITE);
 
   y -= 26;
   const rowHeight = 26;
@@ -151,19 +144,19 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
     page.drawText(line.label, { x: columns.item, y: y - 17, size: 9.5, font, color: NAVY });
     page.drawText(line.quantity, { x: columns.qty, y: y - 17, size: 9.5, font, color: MUTED });
     rightText(page, money(line.unitPrice), columns.unit, y - 17, 9.5, font, MUTED);
-    rightStrong(page, money(line.amount), columns.amount, y - 17, 9.5, font, NAVY);
+    rightStrong(page, money(line.amount), columns.amount, y - 17, 9.5, bold, NAVY);
     page.drawLine({ start: { x: margin, y: y - rowHeight }, end: { x: tableRight, y: y - rowHeight }, thickness: 0.6, color: LINE });
     y -= rowHeight;
   });
 
   // total row
   page.drawLine({ start: { x: margin, y }, end: { x: tableRight, y }, thickness: 2, color: NAVY });
-  strongText(page, "Total", { x: columns.item, y: y - 20, size: 10.5, font, color: NAVY });
-  rightStrong(page, money(total), columns.amount, y - 20, 11, font, NAVY);
+  strongText(page, "Total", { x: columns.item, y: y - 20, size: 10.5, font: bold, color: NAVY });
+  rightStrong(page, money(total), columns.amount, y - 20, 11, bold, NAVY);
   y -= 46;
 
   // ── breakdown note ────────────────────────────────────────────────────────
-  strongText(page, "How this is built up", { x: margin, y, size: 10, font, color: NAVY });
+  strongText(page, "How this is built up", { x: margin, y, size: 10, font: bold, color: NAVY });
   y -= 16;
   const notes = [
     "Cables and conduit, sockets and switches, light fittings, distribution board and breakers,",
@@ -179,7 +172,7 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
   const footerY = 54;
   page.drawLine({ start: { x: margin, y: footerY + 16 }, end: { x: tableRight, y: footerY + 16 }, thickness: 0.7, color: LINE });
   drawMark(page, margin, footerY - 2, 0.55);
-  strongText(page, "ESTIMO · Ghana electrical estimates", { x: margin + 30, y: footerY, size: 8, font, color: NAVY });
+  strongText(page, "ESTIMO · Ghana electrical estimates", { x: margin + 30, y: footerY, size: 8, font: bold, color: NAVY });
   rightText(page, "estimo.app", tableRight, footerY, 8, font, MUTED);
   page.drawText(`Issued ${dateLabel} · Reference ${type.code}-${quality.slice(0, 3).toUpperCase()}`, {
     x: margin + 30,
