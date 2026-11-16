@@ -33,6 +33,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           type="font/woff2"
           crossOrigin="anonymous"
         />
+        <link
+          rel="preload"
+          href="/fonts/bricolage-grotesque-latin-ext.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
         {clerkEnabled ? <ClerkProvider publishableKey={env.clerkPublishableKey}>{shell}</ClerkProvider> : shell}
       </body>
     </html>
