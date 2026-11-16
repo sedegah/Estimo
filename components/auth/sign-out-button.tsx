@@ -3,6 +3,7 @@
 import { useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { clearLocalData } from "@/lib/storage/reset";
 
 /** Clerk is the only session: signing out clears it and returns home. */
 export function SignOutButton({ className = "app-rail-signout" }: { className?: string }) {
@@ -20,6 +21,7 @@ export function SignOutButton({ className = "app-rail-signout" }: { className?: 
         try {
           await clerk.signOut();
         } finally {
+          clearLocalData();
           router.push("/");
           router.refresh();
         }

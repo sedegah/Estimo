@@ -47,6 +47,9 @@ function EstimateContent() {
       kind: "quick",
       detail: `${type.label} · ${fittingsLabel} fittings`,
       totalGhs: total,
+      template: type.code,
+      counts,
+      quality,
       items: lines.map((line) => ({
         name: line.label,
         quantity: Number.parseInt(line.quantity, 10) || 1,

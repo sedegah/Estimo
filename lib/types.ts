@@ -42,4 +42,8 @@ export type SavedEstimate = {
   detail: string;
   totalGhs: number | null;
   items?: SavedEstimateItem[];
+  /** Editable selection, so a saved estimate can be reopened and adjusted. */
+  template?: string;
+  counts?: Record<string, number>;
+  quality?: string;
 };

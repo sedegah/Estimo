@@ -9,6 +9,7 @@ import "../styles/auth.css";
 import "../styles/shell.css";
 import "../styles/brand.css";
 import { SiteHeader } from "@/components/layout/site-header";
+import { SessionGuard } from "@/components/auth/session-guard";
 
 export const metadata: Metadata = {
   title: "ESTIMO - Estimate Smarter. Build Better.",
@@ -40,7 +41,14 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           type="font/woff2"
           crossOrigin="anonymous"
         />
-        {clerkEnabled ? <ClerkProvider publishableKey={env.clerkPublishableKey}>{shell}</ClerkProvider> : shell}
+        {clerkEnabled ? (
+          <ClerkProvider publishableKey={env.clerkPublishableKey}>
+            <SessionGuard />
+            {shell}
+          </ClerkProvider>
+        ) : (
+          shell
+        )}
       </body>
     </html>
   );

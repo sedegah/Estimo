@@ -13,44 +13,60 @@
   <tr>
     <td align="center" style="padding:32px 16px;">
 
-      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;background:#ffffff;border:1px solid #e2e4dc;border-radius:14px;font-family:'Bricolage Grotesque',-apple-system,'Segoe UI',Arial,sans-serif;">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" style="width:100%;max-width:600px;border-radius:16px;overflow:hidden;font-family:'Bricolage Grotesque',-apple-system,'Segoe UI',Arial,sans-serif;">
 
         <tr>
-          <td style="padding:28px 32px 22px;">
-            <a href="{{APP_URL}}" style="text-decoration:none;">
-              <img src="{{APP_URL}}/brand/estimo-logo-horizontal-light.png" width="150" height="34" alt="ESTIMO" style="display:block;border:0;outline:none;width:150px;height:auto;">
-            </a>
+          <td style="background:#0b1f3f;padding:22px 32px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td align="left" style="vertical-align:middle;">
+                  <a href="{{APP_URL}}" style="text-decoration:none;">
+                    <img src="{{APP_URL}}/brand/estimo-logo-horizontal-dark.png" width="132" height="30" alt="ESTIMO" style="display:block;border:0;width:132px;height:auto;">
+                  </a>
+                </td>
+                <td align="right" style="vertical-align:middle;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8fa3bd;">
+                  Monthly check-in
+                </td>
+              </tr>
+            </table>
           </td>
         </tr>
 
-        <tr><td style="padding:0 32px;"><div style="height:1px;background:#eceee6;line-height:1px;font-size:0;">&nbsp;</div></td></tr>
+        <tr>
+          <td style="background:#0b1f3f;padding:0;">
+            <img src="{{APP_URL}}/brand/estimo-plan-banner.png" width="600" height="240" alt="A floor plan with lights, sockets and a distribution board" style="display:block;border:0;width:100%;max-width:600px;height:auto;">
+          </td>
+        </tr>
 
         <tr>
-          <td style="padding:28px 32px 4px;">
-            <p style="margin:0 0 10px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8a94a3;font-weight:700;">Monthly check-in</p>
+          <td style="background:#ffffff;padding:30px 32px 6px;">
+            <p style="margin:0 0 10px;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#8a6d1f;font-weight:700;">Still on the cards?</p>
             <h1 style="margin:0 0 14px;font-size:30px;line-height:1.1;letter-spacing:-.02em;color:#0b1f3f;font-weight:800;">Still planning that job?</h1>
-            <p style="margin:0 0 18px;font-size:15px;line-height:1.6;color:#5f6b7a;">
+            <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#5f6b7a;">
               Hello {{FIRST_NAME}}, it is the 17th — a good moment to look at what you are working on. Your saved
-              estimates are exactly where you left them, and material prices are one search away.
+              estimates are exactly where you left them.
             </p>
           </td>
         </tr>
 
         <tr>
-          <td style="padding:0 32px;">
-            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#faf9f5;border:1px solid #eceee6;border-radius:10px;">
+          <td style="background:#ffffff;padding:0 32px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#faf9f5;border:1px solid #eceee6;border-radius:12px;">
               <tr>
                 <td style="padding:18px 20px;">
-                  <p style="margin:0 0 12px;font-size:14px;line-height:1.5;color:#0b1f3f;">
-                    <strong>Pick up an estimate.</strong>&nbsp;
+                  <p style="margin:0 0 14px;font-size:14px;line-height:1.5;color:#0b1f3f;">
+                    <span style="display:inline-block;background:#f5b301;color:#0b1f3f;font-weight:700;font-size:11px;border-radius:999px;padding:3px 9px;margin-right:8px;">1</span>
+                    <strong>Pick up an estimate.</strong>
                     <a href="{{APP_URL}}/projects" style="color:#0b1f3f;text-decoration:underline;">Open your saved projects</a>
                   </p>
-                  <p style="margin:0 0 12px;font-size:14px;line-height:1.5;color:#0b1f3f;">
-                    <strong>Check a price.</strong>&nbsp;
+                  <p style="margin:0 0 14px;font-size:14px;line-height:1.5;color:#0b1f3f;">
+                    <span style="display:inline-block;background:#f5b301;color:#0b1f3f;font-weight:700;font-size:11px;border-radius:999px;padding:3px 9px;margin-right:8px;">2</span>
+                    <strong>Check a price.</strong>
                     <a href="{{APP_URL}}/catalogue" style="color:#0b1f3f;text-decoration:underline;">Search the catalogue</a>
                   </p>
                   <p style="margin:0;font-size:14px;line-height:1.5;color:#0b1f3f;">
-                    <strong>Start something new.</strong>&nbsp;
+                    <span style="display:inline-block;background:#f5b301;color:#0b1f3f;font-weight:700;font-size:11px;border-radius:999px;padding:3px 9px;margin-right:8px;">3</span>
+                    <strong>Start something new.</strong>
                     <a href="{{APP_URL}}/quick-estimate?template=HOME-2B" style="color:#0b1f3f;text-decoration:underline;">Begin an estimate</a>
                   </p>
                 </td>
@@ -60,10 +76,10 @@
         </tr>
 
         <tr>
-          <td style="padding:24px 32px 6px;">
+          <td style="background:#ffffff;padding:24px 32px 8px;">
             <p style="margin:0 0 20px;font-size:15px;line-height:1.6;color:#5f6b7a;">
-              No action needed if everything is on track. If something changed on site, a fresh estimate takes a couple
-              of minutes.
+              No action needed if everything is on track. If something changed on site, a fresh estimate takes a
+              couple of minutes.
             </p>
             <a href="{{APP_URL}}/dashboard" style="display:inline-block;background:#f5b301;color:#0b1f3f;font-size:15px;font-weight:700;text-decoration:none;padding:14px 24px;border-radius:8px;">
               Open your dashboard
@@ -72,19 +88,28 @@
         </tr>
 
         <tr>
-          <td style="padding:22px 32px 10px;">
+          <td style="background:#ffffff;padding:22px 32px 28px;">
             <p style="margin:0;font-size:14px;line-height:1.6;color:#5f6b7a;">— The ESTIMO team</p>
           </td>
         </tr>
 
         <tr>
-          <td style="padding:20px 32px;background:#faf9f5;border-top:1px solid #eceee6;border-radius:0 0 14px 14px;">
-            <p style="margin:0;font-size:12px;line-height:1.6;color:#8a94a3;">
-              ESTIMO &middot; Ghana electrical estimates<br>
-              <a href="{{APP_URL}}" style="color:#5f6b7a;text-decoration:none;">{{APP_URL}}</a><br>
-              You receive this once a month because you have an ESTIMO account.
-              <a href="{{APP_URL}}/settings" style="color:#5f6b7a;">Manage emails</a>
-            </p>
+          <td style="background:#faf9f5;border-top:1px solid #eceee6;padding:22px 32px;">
+            <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+              <tr>
+                <td align="left" style="vertical-align:middle;">
+                  <p style="margin:0;font-size:12px;line-height:1.6;color:#8a94a3;">
+                    ESTIMO &middot; Ghana electrical estimates<br>
+                    <a href="{{APP_URL}}" style="color:#5f6b7a;text-decoration:none;">{{APP_URL}}</a><br>
+                    You receive this once a month because you have an ESTIMO account.
+                    <a href="{{APP_URL}}/settings" style="color:#5f6b7a;">Manage emails</a>
+                  </p>
+                </td>
+                <td align="right" style="vertical-align:middle;">
+                  <img src="{{APP_URL}}/brand/estimo-mark-light.png" width="28" height="28" alt="" style="display:block;border:0;width:28px;height:28px;">
+                </td>
+              </tr>
+            </table>
           </td>
         </tr>
 

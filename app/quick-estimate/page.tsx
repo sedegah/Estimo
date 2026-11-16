@@ -98,6 +98,9 @@ function SetupContent() {
       kind: "quick",
       detail: `${type.label} · ${fittingsLabel} fittings · ${spaces} spaces`,
       totalGhs: total,
+      template: type.code,
+      counts,
+      quality,
     });
     setSaved(true);
   };

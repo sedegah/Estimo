@@ -56,7 +56,7 @@ export default function DashboardPage() {
       {recent.length ? (
         <div className="app-grid">
           {recent.map((project) => (
-            <Link className="project-tile" href="/projects" key={project.id}>
+            <Link className="project-tile" href={`/projects/${project.id}`} key={project.id}>
               <PlanThumb variant={project.name.length} />
               <span className="project-tile-body">
                 <strong>{project.name}</strong>

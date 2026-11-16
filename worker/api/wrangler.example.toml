@@ -1,0 +1,13 @@
+# Copy to worker/api/wrangler.toml and fill in your database id.
+name = "estimo-api"
+main = "index.ts"
+compatibility_date = "2026-11-16"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "estimo"
+database_id = "YOUR_D1_DATABASE_ID"
+
+# Secrets (set with `wrangler secret put`, never in this file):
+#   CLERK_PUBLISHABLE_KEY  — used to discover the Clerk JWKS host
+#   DB_PEPPER              — random string mixed into the owner hash

@@ -11,3 +11,5 @@ wrangler.toml
 tsconfig.tsbuildinfo
 worker/wrangler.toml
 worker/.dev.vars
+worker/api/wrangler.toml
+worker/api/.dev.vars

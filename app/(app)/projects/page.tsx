@@ -125,22 +125,24 @@ export default function ProjectsPage() {
         <div className="app-grid">
           {visible.map((project) => (
             <article className="project-tile" key={project.id}>
-              <PlanThumb variant={project.name.length} />
-              <div className="project-tile-body">
-                <strong>{project.name}</strong>
-                <span className="project-tile-type">{estimateType(project)}</span>
-                <span className="project-tile-meta">
-                  <span className={isEstimated(project) ? "status-pill is-estimated" : "status-pill is-draft"}>
-                    {statusLabel(project)}
+              <Link className="project-tile-link" href={`/projects/${project.id}`}>
+                <PlanThumb variant={project.name.length} />
+                <div className="project-tile-body">
+                  <strong>{project.name}</strong>
+                  <span className="project-tile-type">{estimateType(project)}</span>
+                  <span className="project-tile-meta">
+                    <span className={isEstimated(project) ? "status-pill is-estimated" : "status-pill is-draft"}>
+                      {statusLabel(project)}
+                    </span>
+                    <span>{formatGhsOrNull(project.totalGhs) ?? "Pending"}</span>
                   </span>
-                  <span>{formatGhsOrNull(project.totalGhs) ?? "Pending"}</span>
-                </span>
-                <span className="project-tile-meta">
-                  <span className="project-tile-type">{formatDate(project.createdAt)}</span>
-                  <button className="link-button" type="button" onClick={() => deleteSavedEstimate(project.id)}>
-                    Delete
-                  </button>
-                </span>
+                </div>
+              </Link>
+              <div className="project-tile-actions">
+                <span className="project-tile-type">{formatDate(project.createdAt)}</span>
+                <button className="link-button" type="button" onClick={() => deleteSavedEstimate(project.id)}>
+                  Delete
+                </button>
               </div>
             </article>
           ))}

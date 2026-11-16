@@ -1,9 +1,10 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { EstimateBasketLink } from "@/components/estimate/estimate-basket-link";
 import { ClerkHeaderAuth } from "./clerk-header-auth";
+import { ClerkEstimateCount } from "@/components/estimate/clerk-estimate-count";
+import { EstimateBasketLink } from "@/components/estimate/estimate-basket-link";
 import { clerkEnabled } from "@/lib/env";
 import { EstimoLogo } from "./estimo-logo";
 
@@ -27,7 +28,7 @@ export function SiteHeader() {
         <nav className="nav">
           <Link className={isActive("/") ? "is-active" : ""} href="/">Home</Link>
           <Link className={isActive("/catalogue") ? "is-active" : ""} href="/catalogue">Catalogue</Link>
-          <EstimateBasketLink />
+          {clerkEnabled ? <ClerkEstimateCount /> : <EstimateBasketLink />}
           {clerkEnabled ? (
             <ClerkHeaderAuth />
           ) : (
