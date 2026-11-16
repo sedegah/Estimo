@@ -9,8 +9,8 @@
 .app-rail {
   position: sticky;
   top: 0;
-  flex: 0 0 232px;
-  width: 232px;
+  flex: 0 0 clamp(200px, 18vw, 240px);
+  width: clamp(200px, 18vw, 240px);
   height: 100vh;
   display: flex;
   flex-direction: column;
@@ -40,7 +40,7 @@
 .app-main {
   flex: 1;
   min-width: 0;
-  padding: 36px 44px 64px;
+  padding: clamp(16px, 3vw, 44px) clamp(16px, 3.4vw, 44px) clamp(40px, 6vw, 64px);
 }
 
 .app-head {
@@ -63,7 +63,7 @@
 
 .app-title {
   margin: 0 0 8px;
-  font-size: clamp(30px, 3.4vw, 40px);
+  font-size: clamp(1.6rem, 3.6vw, 2.5rem);
   line-height: 1.05;
   letter-spacing: -.03em;
   font-weight: 800;
@@ -74,8 +74,8 @@
 
 .app-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 18px;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: clamp(12px, 1.6vw, 18px);
 }
 
 .project-tile {
@@ -273,4 +273,34 @@ button.chip:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px;
   padding: 0 16px 14px;
   font-size: 12.5px;
   color: #6b7684;
+}
+
+/* ── responsive: tablet and mobile ───────────────────────────────────────── */
+@media (max-width: 900px) {
+  .app-shell { flex-direction: column; }
+  .app-rail {
+    position: static;
+    width: 100%;
+    height: auto;
+    flex: 0 0 auto;
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+    padding: 12px 16px;
+    overflow-x: auto;
+  }
+  .app-rail-nav { display: flex; gap: 4px; overflow-x: auto; }
+  .app-rail-link { padding: 8px 10px; font-size: 13px; }
+  .app-rail-footer { margin: 0 0 0 auto; padding: 0; border: 0; }
+  .app-rail-signout { width: auto; padding: 8px 12px; text-align: center; }
+  .app-head .btn-amber { width: 100%; }
+  .app-cols { grid-template-columns: minmax(0, 1fr); }
+}
+
+@media (max-width: 640px) {
+  .app-rail { gap: 10px; }
+  .app-rail-brand img { height: 20px; }
+  .app-rail-link { padding: 7px 8px; font-size: 12.5px; }
+  .app-sub { font-size: 13.5px; }
+  .project-tile-actions { padding: 0 14px 12px; }
 }

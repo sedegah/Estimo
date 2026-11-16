@@ -1,6 +1,6 @@
-﻿/* Flow pages: material prices, project setup, estimate. */
+/* Flow pages: material prices, project setup, estimate. */
 
-.page-shell { padding: 46px 0 64px; }
+.page-shell { padding: clamp(24px, 4vw, 46px) 0 clamp(40px, 6vw, 64px); }
 
 .page-title {
   margin: 0 0 12px;
@@ -121,7 +121,8 @@
   background: #fff;
   border: 1px solid #e2e4dc;
   border-radius: 10px;
-  overflow: hidden;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .data-table { width: 100%; min-width: 0; border-collapse: collapse; }
@@ -155,7 +156,7 @@
 /* step 2 -¢-¬- setup */
 .setup-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 380px;
+  grid-template-columns: minmax(0, 1fr) minmax(16rem, 22rem);
   gap: 64px;
   align-items: start;
 }
@@ -300,7 +301,7 @@
   color: var(--navy);
 }
 
-.option-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 14px; }
+.option-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9.5rem), 1fr)); gap: 12px; margin-top: 14px; }
 
 .option-card {
   display: flex;
@@ -361,7 +362,7 @@
   gap: 32px;
   align-items: center;
   margin: 24px 0 22px;
-  padding: 26px 30px;
+  padding: clamp(18px, 2.6vw, 26px) clamp(18px, 3vw, 30px);
   border-radius: 12px;
   background: var(--navy);
   color: #fff;
@@ -504,4 +505,13 @@
 @media (max-width: 640px) {
   .resume-card { align-items: flex-start; }
   .resume-card .btn-amber { width: 100%; }
+}
+
+@media (max-width: 700px) {
+  .data-table { min-width: 34rem; }
+  .data-table th, .data-table td { padding: 12px 14px; font-size: 13.5px; }
+  .saved-head .btn-amber { width: 100%; }
+  .estimate-head .btn-amber, .estimate-head .btn-outline { width: 100%; }
+  .estimate-actions { width: 100%; }
+  .estimate-summary-total { font-size: clamp(2rem, 9vw, 2.75rem); }
 }

@@ -104,6 +104,12 @@ export default function ProjectPage() {
     }
   };
 
+  const pdfHref = () => {
+    const params = new URLSearchParams({ template: type.code, quality, name });
+    for (const field of type.fields) params.set(field.key, String(counts[field.key] ?? 0));
+    return `/api/estimates/pdf?${params.toString()}`;
+  };
+
   const viewEstimateHref = () => {
     const search = new URLSearchParams({ template: type.code, quality });
     for (const field of type.fields) search.set(field.key, String(counts[field.key] ?? 0));
@@ -146,6 +152,7 @@ export default function ProjectPage() {
         </div>
         <div className="settings-actions">
           <Link className="btn-outline" href="/projects">Back</Link>
+          <a className="btn-outline" href={pdfHref()}>Download PDF</a>
           <button className="btn-amber" type="button" onClick={save}>
             {savedMessage ? "Saved" : "Save changes"}
           </button>

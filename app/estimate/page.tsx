@@ -61,6 +61,12 @@ function EstimateContent() {
     setSaved(true);
   };
 
+  const pdfHref = () => {
+    const params = new URLSearchParams({ template: type.code, quality, name: `${type.label} estimate` });
+    for (const field of type.fields) params.set(field.key, String(counts[field.key] ?? 0));
+    return `/api/estimates/pdf?${params.toString()}`;
+  };
+
   const adjustHref = () => {
     const params = new URLSearchParams({ template: type.code, quality });
     for (const field of type.fields) params.set(field.key, String(counts[field.key] ?? 0));
@@ -78,7 +84,7 @@ function EstimateContent() {
           <button className="btn-amber" type="button" onClick={saveProject}>
             {saved ? "Saved" : "Save project"}
           </button>
-          <button className="btn-outline" type="button" onClick={() => window.print()}>Download PDF</button>
+          <a className="btn-outline" href={pdfHref()}>Download PDF</a>
           <Link className="link-button" href={adjustHref()}>Adjust details</Link>
         </div>
       </header>

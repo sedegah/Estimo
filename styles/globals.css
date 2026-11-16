@@ -1,4 +1,4 @@
-﻿:root {
+:root {
   --navy: #0b1f3f;
   --navy-bar: #0b1f3f;
   --charcoal: #17202c;
@@ -26,7 +26,7 @@ button, input { font: inherit; }
 
 .topbar { background: var(--navy-bar); color: #fff; }
 
-.topbar-inner { width: min(1180px, calc(100% - 40px)); margin: 0 auto; min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: 24px; }
+.topbar-inner { width: min(1180px, calc(100% - clamp(20px, 4vw, 40px))); margin: 0 auto; min-height: 72px; display: flex; align-items: center; justify-content: space-between; gap: clamp(12px, 2vw, 24px); }
 
 .brand { display: inline-flex; align-items: center; gap: 9px; color: #fff; }
 
@@ -48,7 +48,7 @@ button, input { font: inherit; }
 .nav .nav-signout { border: 0; background: none; padding: 0; font: inherit; font-weight: 600; color: #cfd9e4; cursor: pointer; }
 .nav .nav-signout:hover { color: #fff; }
 
-.container { width: min(1180px, calc(100% - 40px)); margin: 0 auto; }
+.container { width: min(1180px, calc(100% - clamp(24px, 5vw, 80px))); margin: 0 auto; }
 
 .hero { padding: 74px 0 54px; display: grid; grid-template-columns: 1.2fr .8fr; gap: 44px; align-items: center; }
 
@@ -243,3 +243,5 @@ html { scrollbar-width: none; -ms-overflow-style: none; }
 html::-webkit-scrollbar, body::-webkit-scrollbar { width: 0; height: 0; }
 
 
+
+@media (max-width: 700px) { .topbar-inner { flex-wrap: wrap; padding: 10px 0; } .nav { gap: 14px; font-size: 12.5px; flex-wrap: wrap; } .brand img { height: 22px; } }
