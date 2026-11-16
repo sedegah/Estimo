@@ -10,6 +10,10 @@ const securityHeaders = [
 const nextConfig: NextConfig = {
   poweredByHeader: false,
   devIndicators: false,
+  // The PDF route reads the system typeface from /public at runtime.
+  outputFileTracingIncludes: {
+    "/api/estimates/pdf": ["./public/fonts/**"],
+  },
   async redirects() {
     return [
       { source: "/sign-in", destination: "/signin", permanent: true },
