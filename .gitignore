@@ -9,3 +9,5 @@ wrangler.toml
 *.log
 .DS_Store
 tsconfig.tsbuildinfo
+worker/wrangler.toml
+worker/.dev.vars
