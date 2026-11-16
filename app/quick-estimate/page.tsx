@@ -17,6 +17,7 @@ import {
 import { formatGhs } from "@/lib/format";
 import { saveEstimate } from "@/lib/storage/saved-estimates";
 import { saveDraft } from "@/lib/storage/draft";
+import { pushCreate } from "@/lib/api/estimates";
 
 const clampRoom = (value: number) => Math.max(0, Math.min(20, Math.round(value)));
 
@@ -93,7 +94,7 @@ function SetupContent() {
   };
 
   const saveForLater = () => {
-    saveEstimate({
+    const saved = saveEstimate({
       name: `${type.label} estimate`,
       kind: "quick",
       detail: `${type.label} · ${fittingsLabel} fittings · ${spaces} spaces`,
@@ -102,6 +103,7 @@ function SetupContent() {
       counts,
       quality,
     });
+    void pushCreate(saved);
     setSaved(true);
   };
 

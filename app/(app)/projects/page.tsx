@@ -13,6 +13,7 @@ import {
   listSavedEstimates,
   saveEstimate,
 } from "@/lib/storage/saved-estimates";
+import { pushDelete } from "@/lib/api/estimates";
 import type { SavedEstimate } from "@/lib/types";
 import { PROJECT_LABELS, totalSpaces, FITTINGS } from "@/lib/estimate-model";
 
@@ -140,7 +141,7 @@ export default function ProjectsPage() {
               </Link>
               <div className="project-tile-actions">
                 <span className="project-tile-type">{formatDate(project.createdAt)}</span>
-                <button className="link-button" type="button" onClick={() => deleteSavedEstimate(project.id)}>
+                <button className="link-button" type="button" onClick={() => { void pushDelete(project.id); deleteSavedEstimate(project.id); }}>
                   Delete
                 </button>
               </div>

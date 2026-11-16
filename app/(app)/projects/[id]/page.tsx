@@ -21,6 +21,7 @@ import {
   getSavedEstimate,
   updateSavedEstimate,
 } from "@/lib/storage/saved-estimates";
+import { pushDelete, pushUpdate } from "@/lib/api/estimates";
 import type { SavedEstimate } from "@/lib/types";
 
 const clamp = (value: number) => Math.max(0, Math.min(20, Math.round(value)));
@@ -96,6 +97,7 @@ export default function ProjectPage() {
       detail: `${type.label} · ${fittingsLabel} fittings · ${spaces} spaces`,
     });
     if (updated) {
+      void pushUpdate(updated);
       setProject(updated);
       setLegacy(false);
       setSavedMessage("Changes saved.");
@@ -274,6 +276,7 @@ export default function ProjectPage() {
             className="link-button side-link"
             type="button"
             onClick={() => {
+              void pushDelete(project.id);
               deleteSavedEstimate(project.id);
               router.push("/projects");
             }}

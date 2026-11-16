@@ -9,6 +9,7 @@ import {
   deleteSavedEstimate,
   listSavedEstimates,
 } from "@/lib/storage/saved-estimates";
+import { pushDelete } from "@/lib/api/estimates";
 import type { SavedEstimate } from "@/lib/types";
 
 type Filter = "all" | "estimated" | "draft";
@@ -76,7 +77,7 @@ export default function EstimatesPage() {
                   <td className="muted-cell">{formatDate(entry.createdAt)}</td>
                   <td className="align-right">{formatGhsOrNull(entry.totalGhs) ?? "Pending"}</td>
                   <td className="table-action">
-                    <button className="link-button" type="button" onClick={() => deleteSavedEstimate(entry.id)}>
+                    <button className="link-button" type="button" onClick={() => { void pushDelete(entry.id); deleteSavedEstimate(entry.id); }}>
                       Delete
                     </button>
                   </td>

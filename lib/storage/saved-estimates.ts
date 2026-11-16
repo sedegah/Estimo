@@ -53,3 +53,8 @@ export function updateSavedEstimate(id: string, patch: Partial<Omit<SavedEstimat
   persist(current.map((entry) => (entry.id === id ? next : entry)));
   return next;
 }
+
+/** Replace the local cache with the server list (signed-in sync). */
+export function replaceSavedEstimates(entries: SavedEstimate[]): void {
+  persist([...entries].sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
+}

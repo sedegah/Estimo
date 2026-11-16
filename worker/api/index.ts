@@ -105,6 +105,7 @@ type EstimateRow = {
   spaces: number;
   total_ghs: number | null;
   status: string;
+  counts_json: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -112,7 +113,7 @@ type EstimateRow = {
 async function listEstimates(env: Env, owner: string): Promise<Response> {
   const { results } = await env.DB
     .prepare(
-      `SELECT id, name, template, quality, spaces, total_ghs, status, created_at, updated_at
+      `SELECT id, name, template, quality, spaces, total_ghs, status, counts_json, created_at, updated_at
        FROM estimates WHERE owner_key = ? ORDER BY updated_at DESC LIMIT 200`,
     )
     .bind(owner)
@@ -125,18 +126,27 @@ async function createEstimate(env: Env, owner: string, body: Record<string, unkn
   const template = String(body.template ?? "").trim();
   if (!name || !template) return json({ ok: false, error: "name and template are required" }, 400);
 
-  const id = crypto.randomUUID();
+  // The client generates the id so local and server rows stay in sync.
+  const clientId = typeof body.id === "string" && body.id.length <= 64 ? body.id : "";
+  const id = clientId || crypto.randomUUID();
   const quality = String(body.quality ?? "standard");
   const spaces = Number(body.spaces ?? 0) || 0;
   const total = body.totalGhs === null || body.totalGhs === undefined ? null : Number(body.totalGhs);
   const status = String(body.status ?? (total ? "estimated" : "draft"));
+  const counts = body.counts && typeof body.counts === "object" ? JSON.stringify(body.counts) : null;
+
+  // users.id mirrors the owner hash so the foreign key stays valid.
+  await env.DB
+    .prepare("INSERT INTO users (id, role) VALUES (?, 'homeowner') ON CONFLICT(id) DO NOTHING")
+    .bind(owner)
+    .run();
 
   await env.DB
     .prepare(
-      `INSERT INTO estimates (id, user_id, owner_key, name, template, quality, spaces, total_ghs, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO estimates (id, user_id, owner_key, name, template, quality, spaces, total_ghs, status, counts_json)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
-    .bind(id, owner, owner, name, template, quality, spaces, total, status)
+    .bind(id, owner, owner, name, template, quality, spaces, total, status, counts)
     .run();
 
   return json({ ok: true, id }, 201);
@@ -151,6 +161,10 @@ async function updateEstimate(env: Env, owner: string, id: string, body: Record<
   if (typeof body.spaces === "number") { fields.push("spaces = ?"); values.push(body.spaces); }
   if (body.totalGhs === null || typeof body.totalGhs === "number") { fields.push("total_ghs = ?"); values.push(body.totalGhs); }
   if (typeof body.status === "string") { fields.push("status = ?"); values.push(body.status); }
+  if (body.counts && typeof body.counts === "object") {
+    fields.push("counts_json = ?");
+    values.push(JSON.stringify(body.counts));
+  }
 
   if (!fields.length) return json({ ok: false, error: "nothing to update" }, 400);
 

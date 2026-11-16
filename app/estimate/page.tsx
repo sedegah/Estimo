@@ -14,6 +14,7 @@ import {
 } from "@/lib/estimate-model";
 import { formatGhs } from "@/lib/format";
 import { saveEstimate } from "@/lib/storage/saved-estimates";
+import { pushCreate } from "@/lib/api/estimates";
 
 const number = (value: string | null, fallback: number) => {
   const parsed = Number(value);
@@ -42,7 +43,7 @@ function EstimateContent() {
   const [saved, setSaved] = useState(false);
 
   const saveProject = () => {
-    saveEstimate({
+    const saved = saveEstimate({
       name: `${type.label} estimate`,
       kind: "quick",
       detail: `${type.label} · ${fittingsLabel} fittings`,
@@ -56,6 +57,7 @@ function EstimateContent() {
         unit: line.quantity.replace(/^\d+\s*/, "") || "lot",
       })),
     });
+    void pushCreate(saved);
     setSaved(true);
   };
 
