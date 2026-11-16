@@ -67,7 +67,7 @@ export default function ProjectsPage() {
     saveEstimate({
       name: "Material estimate",
       kind: "materials",
-      detail: `${items.length} materials Â· ${units} units`,
+      detail: `${items.length} materials · ${units} units`,
       totalGhs: null,
       items: items.map((item) => ({ name: item.name, quantity: item.quantity, unit: item.unit })),
     });
