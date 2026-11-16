@@ -14,6 +14,7 @@ estimates live in the browser.
 5. **Basket** (`/estimate-basket`) — quantities in localStorage, save as a project.
 6. **Saved projects** (`/projects`) — quick estimates and material lists from localStorage.
 
+
 ## Layout
 
 ```

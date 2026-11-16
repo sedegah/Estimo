@@ -4,7 +4,7 @@ The app currently runs against the **Clerk development instance** (`pk_test_…`
 "Development mode" badge disappears only after a **production instance** exists, and that
 requires a domain you control. A hosting-provider URL such as `*.vercel.app` is rejected
 by Clerk for production.
-
+   
 ## 1. What is already done
 
 - Clerk app linked to this repository and claimed by the owner account.

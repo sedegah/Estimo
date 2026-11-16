@@ -13,3 +13,5 @@ worker/wrangler.toml
 worker/.dev.vars
 worker/api/wrangler.toml
 worker/api/.dev.vars
+docs/ARCHITECTURE.md
+docs/PRODUCTION.md
