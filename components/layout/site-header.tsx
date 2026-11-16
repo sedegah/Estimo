@@ -13,7 +13,7 @@ export function SiteHeader() {
 
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
   const isAuthRoute = pathname === "/signin" || pathname === "/signup";
-  const isAppRoute = ["/dashboard", "/estimates", "/projects", "/settings"].some(
+  const isAppRoute = ["/dashboard", "/estimates", "/projects", "/settings", "/admin"].some(
     (route) => pathname === route || pathname.startsWith(`${route}/`),
   );
 

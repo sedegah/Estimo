@@ -1,0 +1,14 @@
+{
+  "name": "estimo-admin-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ESTIMO admin desktop app — catalogue and price management",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "ESTIMO_ADMIN_URL=http://localhost:3000/admin/prices electron ."
+  },
+  "devDependencies": {
+    "electron": "^33.2.0"
+  }
+}
