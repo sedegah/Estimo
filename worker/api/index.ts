@@ -16,6 +16,7 @@ type Env = {
   DB: D1Database;
   CLERK_PUBLISHABLE_KEY: string;
   DB_PEPPER: string;
+  ADMIN_USER_IDS?: string;
 };
 
 type SessionClaims = { sub: string; exp?: number; nbf?: number; iss?: string };
@@ -184,11 +185,135 @@ async function deleteEstimate(env: Env, owner: string, id: string): Promise<Resp
   return json({ ok: true });
 }
 
+type CatalogueRow = {
+  id: string;
+  code: string;
+  name: string;
+  category: string;
+  unit: string;
+  spec: string;
+  tier: string;
+  relevance: string;
+  keywords: string | null;
+  price_ghs: number | null;
+  price_updated_at: string | null;
+};
+
+async function listCatalogue(env: Env): Promise<Response> {
+  const { results } = await env.DB
+    .prepare(
+      `SELECT i.id, i.code, i.name, i.category, i.unit, i.spec, i.tier, i.relevance, i.keywords,
+              (SELECT p.price_ghs FROM catalogue_prices p WHERE p.item_id = i.id ORDER BY p.effective_from DESC LIMIT 1) AS price_ghs,
+              (SELECT p.effective_from FROM catalogue_prices p WHERE p.item_id = i.id ORDER BY p.effective_from DESC LIMIT 1) AS price_updated_at
+       FROM catalogue_items i WHERE i.active = 1 ORDER BY i.name LIMIT 500`,
+    )
+    .all<CatalogueRow>();
+  return json({ ok: true, items: results ?? [] });
+}
+
+async function isAdmin(env: Env, userId: string): Promise<boolean> {
+  const allowed = (env.ADMIN_USER_IDS ?? "").split(",").map((value) => value.trim()).filter(Boolean);
+  return allowed.includes(userId);
+}
+
+async function audit(env: Env, actor: string, action: string, entity: string, entityId: string | null, detail: string) {
+  await env.DB
+    .prepare("INSERT INTO admin_audit (id, actor_key, action, entity, entity_id, detail) VALUES (?, ?, ?, ?, ?, ?)")
+    .bind(crypto.randomUUID(), actor, action, entity, entityId, detail)
+    .run();
+}
+
+async function createCatalogueItem(env: Env, actor: string, body: Record<string, unknown>): Promise<Response> {
+  const name = String(body.name ?? "").trim();
+  if (!name) return json({ ok: false, error: "name is required" }, 400);
+  const id = String(body.id ?? "") || `mat-${crypto.randomUUID()}`;
+  const code = String(body.code ?? id).trim();
+  const keywords = Array.isArray(body.keywords) ? JSON.stringify(body.keywords) : "[]";
+
+  await env.DB
+    .prepare(
+      `INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    )
+    .bind(id, code, name, String(body.category ?? ""), String(body.unit ?? ""), String(body.spec ?? ""),
+      String(body.tier ?? ""), String(body.relevance ?? ""), keywords)
+    .run();
+
+  await audit(env, actor, "catalogue.create", "catalogue_item", id, name);
+  return json({ ok: true, id }, 201);
+}
+
+async function updateCatalogueItem(env: Env, actor: string, id: string, body: Record<string, unknown>): Promise<Response> {
+  const fields: string[] = [];
+  const values: unknown[] = [];
+  for (const [key, column] of [
+    ["name", "name"], ["category", "category"], ["unit", "unit"], ["spec", "spec"],
+    ["tier", "tier"], ["relevance", "relevance"], ["code", "code"],
+  ] as const) {
+    if (typeof body[key] === "string") { fields.push(`${column} = ?`); values.push(body[key]); }
+  }
+  if (Array.isArray(body.keywords)) { fields.push("keywords = ?"); values.push(JSON.stringify(body.keywords)); }
+  if (typeof body.active === "boolean") { fields.push("active = ?"); values.push(body.active ? 1 : 0); }
+  if (!fields.length) return json({ ok: false, error: "nothing to update" }, 400);
+
+  fields.push("updated_at = datetime('now')");
+  const result = await env.DB
+    .prepare(`UPDATE catalogue_items SET ${fields.join(", ")} WHERE id = ?`)
+    .bind(...values, id)
+    .run();
+  if (!result.meta.changes) return json({ ok: false, error: "not_found" }, 404);
+
+  await audit(env, actor, "catalogue.update", "catalogue_item", id, JSON.stringify(body).slice(0, 400));
+  return json({ ok: true });
+}
+
+async function addCataloguePrice(env: Env, actor: string, body: Record<string, unknown>): Promise<Response> {
+  const itemId = String(body.itemId ?? "");
+  const price = Number(body.priceGhs);
+  if (!itemId || !Number.isFinite(price) || price < 0) {
+    return json({ ok: false, error: "itemId and a non-negative priceGhs are required" }, 400);
+  }
+
+  const id = crypto.randomUUID();
+  await env.DB
+    .prepare(
+      `INSERT INTO catalogue_prices (id, item_id, price_ghs, source, note, updated_by)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+    )
+    .bind(id, itemId, price, String(body.source ?? "admin"), String(body.note ?? ""), actor)
+    .run();
+
+  await audit(env, actor, "price.create", "catalogue_price", itemId, `${price}`);
+  return json({ ok: true, id }, 201);
+}
+
+async function addServicePrice(env: Env, actor: string, body: Record<string, unknown>): Promise<Response> {
+  const code = String(body.serviceCode ?? "").trim();
+  const name = String(body.name ?? "").trim();
+  const price = Number(body.priceGhs);
+  if (!code || !name || !Number.isFinite(price) || price < 0) {
+    return json({ ok: false, error: "serviceCode, name and a non-negative priceGhs are required" }, 400);
+  }
+
+  const id = crypto.randomUUID();
+  await env.DB
+    .prepare(
+      `INSERT INTO service_prices (id, service_code, name, unit, price_ghs, note, updated_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    )
+    .bind(id, code, name, String(body.unit ?? "each"), price, String(body.note ?? ""), actor)
+    .run();
+
+  await audit(env, actor, "service_price.create", "service", code, `${price}`);
+  return json({ ok: true, id }, 201);
+}
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     if (request.method === "OPTIONS") return json({ ok: true });
 
     const url = new URL(request.url);
+    if (url.pathname === "/catalogue" && request.method === "GET") return listCatalogue(env);
+
     if (url.pathname === "/health" || url.pathname === "/") {
       return json({ ok: true, service: "estimo-data-api", storage: "d1", isolation: "owner_key" });
     }
@@ -202,6 +327,27 @@ export default {
 
     const owner = await ownerKey(claims.sub, env.DB_PEPPER);
 
+    if (url.pathname === "/whoami") {
+      return json({ ok: true, userId: claims.sub, admin: await isAdmin(env, claims.sub) });
+    }
+
+    if (url.pathname.startsWith("/admin/")) {
+      if (!(await isAdmin(env, claims.sub))) return json({ ok: false, error: "forbidden" }, 403);
+
+      if (url.pathname === "/admin/catalogue/items" && request.method === "POST") {
+        return createCatalogueItem(env, owner, (await request.json().catch(() => ({}))) as Record<string, unknown>);
+      }
+      const itemMatch = url.pathname.match(/^\/admin\/catalogue\/items\/([^/]+)$/);
+      if (itemMatch && request.method === "PATCH") {
+        return updateCatalogueItem(env, owner, itemMatch[1], (await request.json().catch(() => ({}))) as Record<string, unknown>);
+      }
+      if (url.pathname === "/admin/catalogue/prices" && request.method === "POST") {
+        return addCataloguePrice(env, owner, (await request.json().catch(() => ({}))) as Record<string, unknown>);
+      }
+      if (url.pathname === "/admin/services/prices" && request.method === "POST") {
+        return addServicePrice(env, owner, (await request.json().catch(() => ({}))) as Record<string, unknown>);
+      }
+    }
     if (url.pathname === "/estimates" && request.method === "GET") return listEstimates(env, owner);
     if (url.pathname === "/estimates" && request.method === "POST") {
       return createEstimate(env, owner, (await request.json().catch(() => ({}))) as Record<string, unknown>);
