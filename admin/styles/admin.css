@@ -370,3 +370,8 @@
 .eb-total { margin: 4px 0 16px; font-weight: 800; font-size: 34px; }
 .eb-download { text-align: center; border: 1px solid #6d82a8; font: inherit; font-weight: 600; padding: 15px; border-radius: 10px; background: transparent; color: #fff; cursor: pointer; }
 @media (max-width: 900px) { .eb-tools, .eb-summary { flex: 1 1 100%; } }
+
+.eb-tool.is-active { border-color: #0B2142; box-shadow: inset 0 0 0 1px #0B2142; }
+.eb-hint { margin: 10px 0 0; font-size: 12px; line-height: 1.5; color: #6B7684; }
+.eb-plan { cursor: crosshair; touch-action: none; }
+
