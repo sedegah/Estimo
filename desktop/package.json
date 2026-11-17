@@ -41,6 +41,7 @@
       "installerSidebar": "build/installerSidebar.bmp",
       "uninstallerSidebar": "build/installerSidebar.bmp",
       "license": "build/LICENSE.txt",
+      "include": "build/installer.nsh",
       "deleteAppDataOnUninstall": false,
       "runAfterFinish": true
     }
