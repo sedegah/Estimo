@@ -1,65 +1,82 @@
 # ESTIMO
 
-ESTIMO is an electrical estimating app for Ghana. It turns a description of a building into a clear
-first estimate: lights, sockets, distribution board, earthing and labour and lets you price the
-materials that go into it.
+ESTIMO helps people in Ghana work out what an electrical job will cost before the work starts.
+You describe the building, ESTIMO shows what it needs — lights, sockets, a distribution board,
+cabling and labour — and gives you a first estimate you can adjust.
 
-## What it does
+There are two parts:
 
-- **Pick the building.** Single room, 1–4 bedroom home, container kiosk, shop, office or workshop.
-- **Describe the rooms.** Each space shows what it needs: light points, sockets, switches,
-  air-conditioning and heater points. Adjust the numbers until they match the real place.
-- **Choose a fitting quality.** Basic, standard or premium.
-- **Get a first estimate.** A total, split into cables and conduit, sockets and switches, light
-  fittings, distribution board and breakers, earthing, and labour.
-- **Search materials.** Look up the catalogue the way you would ask for it at the shop — “2.5mm
-  cable”, “double socket”, “32A MCB” — and add what you need to your estimate.
-- **Keep your work.** Sign in and your estimates and material lists are saved to your account, so
-  they are there next time and on your other devices.
+- **The estimating app** — used by anyone planning a job.
+- **The admin console** — used by the ESTIMO team to keep material prices up to date.
 
-## Running it locally
+## The estimating app
 
-You need Node.js 22 or newer.
+1. Choose the closest type of building: a single room, a home with one to four bedrooms, a
+   container kiosk, a shop, a small office or a workshop.
+2. Say how many of each space there are. ESTIMO shows what each one needs.
+3. Choose the quality of fittings — basic, standard or premium.
+4. Read your estimate: the total, and how it breaks down.
 
-```bash
-npm install
-npm run dev
-```
+You can also search the material list the way you would ask for something in a shop — “2.5mm
+cable”, “double socket”, “32A breaker” — and add what you need to your estimate.
 
-Then open http://localhost:3000.
+When you are happy, save the project or download it as a PDF you can print or send.
 
-For a production build:
+### Accounts
 
-```bash
-npm run build
-npm start
-```
+Signing in is optional. You can look around and build an estimate without an account. Sign in if
+you want your projects kept with your account so they are there next time and on your other
+devices.
 
-## Accounts and data
+## The admin console
 
-Sign-in is handled by **Clerk** — accounts, passwords and Google sign-in. Saved estimates, estimate
-lines and projects are stored in **Cloudflare D1**, a managed database that belongs to this project.
+The console is a desktop program for the ESTIMO team. It is the only place prices can be changed,
+which keeps one person’s edit from being overwritten by another.
 
-Settings for both services live in a private `.env` file that is not committed. The variables are
-documented in [docs/PRODUCTION.md](docs/PRODUCTION.md).
+What you can do in it:
 
-Guests can still explore the estimator and the catalogue before signing in.
+- **Prices** — search the material list, type a new price, check the change, then publish. A
+  published price appears on the estimating app within a minute.
+- **Materials** — add something new to the list, or correct its unit (each, roll, metre).
+- **Estimate builder** — pick a type of building, place lights, sockets, boards and cable runs on
+  a floor plan, and watch the first estimate add up. Drag things around the plan, or erase them.
+
+Only staff accounts can use the console. Everyone else sees “not authorised”.
+
+### Installing the console
+
+1. Run **ESTIMO-Admin-Setup** and follow the wizard.
+2. It asks you to accept the terms, shows where it will be installed (you can change that), then
+   installs and offers to open the console.
+3. A shortcut is added to your desktop and to the Start menu.
+
+You do not need to be an administrator on the computer to install it.
+
+### Keeping it up to date
+
+The console checks for a newer version shortly after it opens, and again whenever you choose
+**Admin → Check for updates**. If there is one, it offers to install it.
+
+The update installs itself in place — there is no wizard and nothing to set up again. Your
+shortcuts stay where they are and your work is untouched. If you would rather not be interrupted,
+choose “Later”; it will ask again next time.
+
+### Removing it
+
+Use Windows **Settings → Apps → ESTIMO Admin → Uninstall**, or the uninstall link in the Start
+menu folder. Your data is not part of the installation, so removing the program does not remove
+anything you saved.
 
 ## Good to know
 
-- **Prices are pending.** ESTIMO only shows a price once it comes from a verified supplier source,
-  so the catalogue shows “pending” rather than a guessed figure.
-- **The total is a planning figure**, not a quotation. Final quantities depend on site conditions
-  and a qualified electrician.
-- **Documents are next.** Quotation, bill of quantities and PDF packs are the following step.
+- **Prices are planning figures.** They come from the ESTIMO price list, not from a live supplier
+  feed, and they change.
+- **An estimate is not a quotation.** Final quantities depend on the building and on a qualified
+  electrician’s judgement.
+- **A material with no price says “Pending”.** Nothing is guessed to fill the gap.
 
-## Project layout
+## Where to get help
 
-- `app/` — pages and routes
-- `components/` — interface pieces
-- `lib/` — domain logic, data and storage
-- `styles/` — stylesheets
-- `docs/` — architecture and production notes
-- `tools/` — maintenance scripts
-
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how the pieces fit together.
+If something looks wrong — a price that will not save, a console that will not open, an update
+that does not arrive — contact the ESTIMO team with the screen you were on and what you expected
+to happen.
