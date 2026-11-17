@@ -57,6 +57,7 @@ async function startServer() {
       PORT: String(serverPort),
       HOSTNAME: "127.0.0.1",
       NEXT_TELEMETRY_DISABLED: "1",
+      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "pk_test_YmVsb3ZlZC1nb3BoZXItNjYzMS5jbGVyay5hY2NvdW50cy5kZXYk",
     },
     stdio: "ignore",
     windowsHide: true,

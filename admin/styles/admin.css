@@ -400,3 +400,7 @@
 .eb-plan g, .eb-plan rect, .eb-plan path { cursor: grab; }
 .eb-plan:active g, .eb-plan:active rect, .eb-plan:active path { cursor: grabbing; }
 
+
+.auth-clerk { width: 100%; max-width: 400px; }
+.auth-clerk h2 { margin: 0; font-weight: 800; font-size: clamp(26px, 2.6vw, 34px); letter-spacing: -.02em; }
+

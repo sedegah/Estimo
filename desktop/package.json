@@ -1,6 +1,6 @@
 {
   "name": "estimo-admin-desktop",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "private": true,
   "description": "ESTIMO Admin - catalogue and price console",
   "author": "ESTIMO",
@@ -8,7 +8,7 @@
   "scripts": {
     "vendor:admin": "node scripts/vendor-admin.mjs",
     "start": "electron .",
-    "dist": "npm run vendor:admin && electron-builder --win nsis",
+    "dist": "npm run vendor:admin && electron-builder --win --dir && node scripts/build-installer.mjs",
     "dist:dir": "npm run vendor:admin && electron-builder --win --dir"
   },
   "devDependencies": {

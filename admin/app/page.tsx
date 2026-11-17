@@ -1,6 +1,6 @@
 "use client";
 
-import { useClerk, useSignIn, useUser } from "@clerk/nextjs";
+import { SignIn, useClerk, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { addItem, listCatalogue, setPrice, setUnit, type CatalogueItem } from "@/lib/api";
@@ -16,39 +16,6 @@ type Tab = "prices" | "materials" | "builder" | "settings";
 const PAGE_SIZE = 20;
 
 function AuthScreen() {
-  const { signIn } = useSignIn();
-  const { setActive } = useClerk();
-  const router = useRouter();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [busy, setBusy] = useState(false);
-
-  const submit = async (event: React.FormEvent) => {
-    event.preventDefault();
-    if (!signIn) return;
-    setBusy(true);
-    setError("");
-    try {
-      const attempt = await (signIn as unknown as { create(input: { identifier: string; password: string }): Promise<{ error?: { message?: string } | null }> }).create({
-        identifier: email.trim(),
-        password,
-      });
-      if (attempt?.error) {
-        setError(attempt.error.message ?? "That email and password do not match.");
-        return;
-      }
-      const sessionId = (signIn as unknown as { createdSessionId?: string | null }).createdSessionId;
-      if (sessionId) await setActive({ session: sessionId });
-      router.refresh();
-    } catch (cause) {
-      const message = cause instanceof Error ? cause.message : "Could not sign in.";
-      setError(message);
-    } finally {
-      setBusy(false);
-    }
-  };
-
   return (
     <div className="auth-split">
       <section className="auth-visual">
@@ -71,9 +38,7 @@ function AuthScreen() {
           </g>
           <path d="M60 130V200H120M110 130V80M210 90H300V70" fill="none" stroke="#F5B800" strokeWidth="2.5" strokeDasharray="3 7" strokeLinecap="round" />
           <g fill="#0B2142" stroke="#F5B800" strokeWidth="2">
-            {[
-              [110, 80], [300, 70], [120, 200], [300, 200],
-            ].map(([cx, cy]) => (
+            {[[110, 80], [300, 70], [120, 200], [300, 200]].map(([cx, cy]) => (
               <g key={`${cx}-${cy}`}>
                 <circle cx={cx} cy={cy} r="9" />
                 <path d={`M${cx - 6} ${cy - 6}L${cx + 6} ${cy + 6}M${cx + 6} ${cy - 6}L${cx - 6} ${cy + 6}`} strokeLinecap="round" />
@@ -92,42 +57,28 @@ function AuthScreen() {
       </section>
 
       <section className="auth-form-side">
-        <form className="auth-form" onSubmit={submit}>
-          <div>
-            <h2>Sign in</h2>
-            <p className="auth-form-sub">Use your Estimo admin account.</p>
-          </div>
-
-          <label className="auth-field">
-            Work email
-            <input type="email" autoComplete="email" placeholder="you@company.com" value={email} onChange={(event) => setEmail(event.target.value)} required />
-          </label>
-
-          <label className="auth-field">
-            <span className="auth-field-row">
-              <span>Password</span>
-              <span className="auth-forgot">Forgot password?</span>
-            </span>
-            <input type="password" autoComplete="current-password" placeholder="Enter your password" value={password} onChange={(event) => setPassword(event.target.value)} required />
-          </label>
-
-          <label className="auth-keep">
-            <input type="checkbox" defaultChecked /> Keep me signed in on this computer
-          </label>
-
-          {error ? <p className="admin-error">{error}</p> : null}
-
-          <button className="auth-submit" type="submit" disabled={busy}>
-            {busy ? "Signing in…" : "Sign in"}
-          </button>
-
-          <p className="auth-help">Trouble signing in? Contact your administrator.</p>
-        </form>
+        <div className="auth-clerk">
+          <h2>Sign in</h2>
+          <p className="auth-form-sub">Use your Estimo admin account.</p>
+          <SignIn
+            routing="hash"
+            appearance={{
+              variables: {
+                colorPrimary: "#F5B800",
+                borderRadius: "10px",
+                fontFamily: "Bricolage Grotesque, -apple-system, Segoe UI, Arial, sans-serif",
+              },
+              elements: {
+                card: { boxShadow: "none", border: "1px solid #e2e4dc", background: "#fff" },
+                formButtonPrimary: { background: "#F5B800", color: "#0B2142", fontWeight: "700" },
+              },
+            }}
+          />
+        </div>
       </section>
     </div>
   );
 }
-
 function useDebounced<T>(value: T, delay = 250): T {
   const [settled, setSettled] = useState(value);
   useEffect(() => {
