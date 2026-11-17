@@ -380,3 +380,6 @@
 
 .admin-pager { display: flex; align-items: center; justify-content: flex-end; gap: 14px; margin-top: 16px; }
 
+
+.eb-preset { background: #17305c; color: #fff; border: 1px solid #3b5384; border-radius: 8px; padding: 10px 12px; font: inherit; font-size: 13px; }
+

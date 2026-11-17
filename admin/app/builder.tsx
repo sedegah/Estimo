@@ -17,10 +17,45 @@ const LABELS: Record<Tool, string> = {
   erase: "Erase",
 };
 
+const PRESETS = [
+  { code: "HOME-1R", label: "Single room", lights: 2, sockets: 2, boards: 1 },
+  { code: "HOME-1B", label: "1-bedroom home", lights: 3, sockets: 3, boards: 1 },
+  { code: "HOME-2B", label: "2-bedroom home", lights: 5, sockets: 5, boards: 1 },
+  { code: "HOME-3B", label: "3-bedroom home", lights: 7, sockets: 7, boards: 1 },
+  { code: "HOME-4B", label: "4-bedroom home", lights: 9, sockets: 9, boards: 2 },
+  { code: "SHOP-KIOSK", label: "Container kiosk", lights: 2, sockets: 3, boards: 1 },
+  { code: "SHOP-RETAIL", label: "Retail shop", lights: 6, sockets: 6, boards: 1 },
+  { code: "COMM-OFF-S", label: "Small office", lights: 6, sockets: 8, boards: 1 },
+  { code: "IND-WORK", label: "Workshop", lights: 4, sockets: 4, boards: 2 },
+] as const;
+
+const buildPreset = (code: string): Placed[] => {
+  const preset = PRESETS.find((entry) => entry.code === code) ?? PRESETS[2];
+  const lights = Array.from({ length: preset.lights }, (_, index) => ({
+    id: `l-${index}`,
+    type: "light" as const,
+    x: 100 + (index % 4) * 125,
+    y: 120 + Math.floor(index / 4) * 120,
+  }));
+  const sockets = Array.from({ length: preset.sockets }, (_, index) => ({
+    id: `s-${index}`,
+    type: "socket" as const,
+    x: 60 + (index % 5) * 110,
+    y: index % 2 === 0 ? 42 : 400,
+  }));
+  const boards = Array.from({ length: preset.boards }, (_, index) => ({
+    id: `b-${index}`,
+    type: "board" as const,
+    x: 62,
+    y: 230 + index * 70,
+  }));
+  return [...lights, ...sockets, ...boards];
+};
 export function BuilderView() {
   const [tool, setTool] = useState<Tool>("light");
-  const [placed, setPlaced] = useState<Placed[]>([]);
+  const [placed, setPlaced] = useState<Placed[]>(() => buildPreset("HOME-2B"));
   const [project, setProject] = useState("Family house");
+  const [preset, setPreset] = useState<string>("HOME-2B");
   const [saved, setSaved] = useState(false);
   const svgRef = useRef<SVGSVGElement | null>(null);
 
@@ -60,6 +95,9 @@ export function BuilderView() {
     <div className="eb">
       <nav className="eb-nav">
         <Link className="eb-logo" href="/" aria-label="Back to dashboard">estimo<span>.</span></Link>
+        <select className="eb-preset" value={preset} onChange={(event) => { setPreset(event.target.value); setPlaced(buildPreset(event.target.value)); setSaved(false); }} aria-label="Project template">
+          {PRESETS.map((entry) => (<option key={entry.code} value={entry.code}>{entry.label}</option>))}
+        </select>
         <input className="eb-title" value={project} onChange={(event) => setProject(event.target.value)} aria-label="Project name" />
         <button className="eb-save" type="button" onClick={() => setSaved(true)}>{saved ? "Saved" : "Save project"}</button>
       </nav>
