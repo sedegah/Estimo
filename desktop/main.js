@@ -4,15 +4,15 @@
 // implementation of the catalogue screens. Electron supplies the window, the
 // native menu and the "open in browser" behaviour.
 //
-// Run:  ESTIMO_ADMIN_URL=http://localhost:3000/admin/prices npm start
-// Prod: ESTIMO_ADMIN_URL=https://<your-domain>/admin/prices npm start
+// Run:  ESTIMO_ADMIN_URL=http://localhost:3001 npm start
+// Prod: ESTIMO_ADMIN_URL=https://admin.<your-domain> npm start
 
 const { app, BrowserWindow, Menu, shell } = require("electron");
 
-const ADMIN_URL = process.env.ESTIMO_ADMIN_URL || "http://localhost:3000/admin/prices";
+const ADMIN_URL = process.env.ESTIMO_ADMIN_URL || "http://localhost:3001";
 
 function isInternal(url) {
-  return url.startsWith(ADMIN_URL.replace(/\/[^/]*$/, "")) || url.startsWith("http://localhost:3000");
+  return url.startsWith(ADMIN_URL.replace(/\/[^/]*$/, "")) || url.startsWith("http://localhost:3001") || url.startsWith("http://localhost:3000");
 }
 
 function createWindow() {
@@ -65,15 +65,15 @@ const template = [
     submenu: [
       {
         label: "Prices",
-        click: () => BrowserWindow.getAllWindows()[0]?.loadURL(`${ADMIN_URL.replace(/\/[^/]*$/, "")}/prices`),
+        click: () => BrowserWindow.getAllWindows()[0]?.loadURL(`${ADMIN_URL}/prices`),
       },
       {
         label: "Materials",
-        click: () => BrowserWindow.getAllWindows()[0]?.loadURL(`${ADMIN_URL.replace(/\/[^/]*$/, "")}/materials`),
+        click: () => BrowserWindow.getAllWindows()[0]?.loadURL(`${ADMIN_URL}/materials`),
       },
       {
         label: "Settings",
-        click: () => BrowserWindow.getAllWindows()[0]?.loadURL(`${ADMIN_URL.replace(/\/[^/]*$/, "")}/settings`),
+        click: () => BrowserWindow.getAllWindows()[0]?.loadURL(`${ADMIN_URL}/settings`),
       },
       { type: "separator" },
       {

@@ -8,7 +8,7 @@ import "../styles/pages.css";
 import "../styles/auth.css";
 import "../styles/shell.css";
 import "../styles/brand.css";
-import "../styles/admin.css";
+
 import { SiteHeader } from "@/components/layout/site-header";
 import { SessionGuard } from "@/components/auth/session-guard";
 
