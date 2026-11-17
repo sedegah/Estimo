@@ -185,8 +185,8 @@ export async function CatalogueView({ q = "", cat = "all" }: { q?: string; cat?:
       </section>
 
       <p className="page-note">
-        {results.length} material{results.length === 1 ? "" : "s"} shown. Verified supplier prices are not connected in
-        this build, so price stays visibly pending.
+        {results.length} material{results.length === 1 ? "" : "s"} shown. Prices are published from the ESTIMO catalogue and
+        appear here as soon as they are set; anything unpriced stays pending.
       </p>
     </>
   );

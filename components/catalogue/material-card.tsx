@@ -14,7 +14,7 @@ export function MaterialCard({ material }: { material: CatalogueMaterial }) {
 
       <div className="material-price-pending">
         <strong>Price pending verification</strong>
-        <span>This offline catalogue keeps verified supplier prices separate from the material library.</span>
+        <span>Prices are published from the ESTIMO catalogue as they are confirmed.</span>
       </div>
 
       <div className="material-result-meta">
