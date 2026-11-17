@@ -149,7 +149,7 @@ export default function AdminPage() {
   const visible = useMemo(() => {
     const search = query.trim().toLowerCase();
     return (items ?? []).filter((item) => (chip === "All" || item.category === chip) && (!search || `${item.name} ${item.category} ${item.spec}`.toLowerCase().includes(search)));
-  }, [items, query]);
+  }, [items, query, chip]);
 
   const draftCount = Object.values(drafts).filter((value) => value.trim() !== "").length;
 
