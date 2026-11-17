@@ -107,9 +107,25 @@ export function BuilderView() {
   };
 
   const place = (event: React.PointerEvent<SVGSVGElement>) => {
-    if (tool === "erase") return;
     const at = point(event);
     if (!at) return;
+
+    if (tool === "erase") {
+      setPlaced((current) => {
+        let nearestId: string | null = null;
+        let nearest = 30;
+        for (const item of current) {
+          const distance = Math.hypot(item.x - at.x, item.y - at.y);
+          if (distance < nearest) {
+            nearest = distance;
+            nearestId = item.id;
+          }
+        }
+        return nearestId ? current.filter((item) => item.id !== nearestId) : current;
+      });
+      setSaved(false);
+      return;
+    }
     setPlaced((current) => [...current, { id: `${Date.now()}-${Math.random().toString(16).slice(2)}`, type: tool, ...at }]);
     setSaved(false);
   };

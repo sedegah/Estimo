@@ -393,3 +393,6 @@
 .loading-bar i { display: block; width: 40%; height: 100%; border-radius: 999px; background: #F5B800; animation: loading-slide 1.2s ease-in-out infinite; }
 @keyframes loading-slide { 0% { transform: translateX(-110%); } 100% { transform: translateX(360%); } }
 @keyframes loading-pulse { 0%, 100% { opacity: .72; } 50% { opacity: 1; } }
+
+.route-loading { position: fixed; inset: 0; z-index: 60; }
+
