@@ -4,6 +4,7 @@ import { useClerk, useSignIn, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { addItem, listCatalogue, setPrice, setUnit, type CatalogueItem } from "@/lib/api";
+import { LoadingScreen } from "./loading-screen";
 
 /** Prices accept digits and one decimal separator only; commas become periods. */
 function cleanPrice(value: string): string {
@@ -194,7 +195,7 @@ export default function AdminPage() {
     await load();
   };
 
-  if (!isLoaded) return <div className="admin-auth"><p className="admin-sub">Loading…</p></div>;
+  if (!isLoaded) return <LoadingScreen />;
   if (!isSignedIn) return <AuthScreen />;
 
   return (
