@@ -30,6 +30,7 @@
 .admin-body { flex: 1; display: flex; min-height: 0; }
 
 .admin-rail {
+  overflow: hidden;
   flex: 0 0 clamp(190px, 17vw, 220px);
   background: #0b2142;
   padding: 20px 14px;
@@ -49,6 +50,7 @@
   background: transparent;
   border: 0;
   width: 100%;
+  box-sizing: border-box;
   text-align: left;
   font: inherit;
   cursor: pointer;
@@ -288,3 +290,9 @@
 .admin-status.is-changed { background: #fdf3d0; color: #7a5a10; }
 .admin-draft-last { margin: 18px 0 12px; font-size: 12.5px; color: #8fa2c4; }
 .admin-btn-ghost { background: transparent; color: #e6ecf7; border-color: #3b5384; }
+
+.admin-rail-link.is-muted { cursor: default; opacity: .55; }
+
+.admin-brand-logo { height: 26px; width: auto; display: block; }
+.admin-brand-admin { font-weight: 500; font-size: 14px; color: #c3cee2; letter-spacing: .04em; }
+

@@ -173,8 +173,8 @@ export default function AdminPage() {
     <div className="admin-shell">
       <header className="admin-topbar">
         <div className="admin-brand">
-          estimo<span>.</span>&nbsp;admin
-          <span className="admin-badge">Live app</span>
+          <img src="/brand/estimo-logo-horizontal-dark.png" alt="ESTIMO" className="admin-brand-logo" />
+          <span className="admin-brand-admin">admin</span>
         </div>
         <div className="admin-user">
           <span className="admin-user-pill">{user?.primaryEmailAddress?.emailAddress}</span>
