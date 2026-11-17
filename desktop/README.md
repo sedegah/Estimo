@@ -15,21 +15,21 @@ on the computer to install it.
 ## Signing in
 
 Open the program and sign in with the ESTIMO staff account you were given. If you have not been
-given one, ask before trying to create an account — access is limited to staff.
+given one, ask before trying to create an account, because access is limited to staff.
 
 Only staff accounts can change prices or add materials. Anyone else who opens the program is told
 they are not authorised and cannot make changes.
 
 ## What you can do
 
-**Prices** — search for a material, type the new price, review what you have changed, then publish.
+**Prices.** Search for a material, type the new price, review what you have changed, then publish.
 A published price is visible on the estimating website within a minute. Anything you leave blank
 stays as it was.
 
-**Materials** — add a material that is missing, or correct the unit it is sold in (each, roll,
+**Materials.** Add a material that is missing, or correct the unit it is sold in (each, roll,
 metre).
 
-**Estimate builder** — choose the type of building, place lights, sockets, boards and cable runs on
+**Estimate builder.** Choose the type of building, place lights, sockets, boards and cable runs on
 the plan, and watch the first estimate add up. You can drag things around, and erase them if you
 change your mind.
 
@@ -37,15 +37,16 @@ change your mind.
 
 The program checks for a newer version when it opens. If there is one, it asks before installing.
 
-Choose **Admin → Check for updates** any time to look manually.
+Choose **Admin**, then **Check for updates**, to look manually at any time.
 
 An update installs itself in place: there is no setup wizard, your shortcuts stay as they are, and
-nothing you have entered is affected. If you are busy, choose Later; it will offer again next time.
+nothing you have entered is affected. If you are busy, choose Later and it will offer again next
+time.
 
 ## Removing it
 
-Open Windows **Settings → Apps**, find **ESTIMO Admin** and choose Uninstall. Removing the program
-does not remove anything you saved.
+Open Windows **Settings**, then **Apps**, find **ESTIMO Admin** and choose Uninstall. Removing the
+program does not remove anything you saved.
 
 ## Prices are planning figures
 
