@@ -58,8 +58,6 @@ function AuthScreen() {
 
       <section className="auth-form-side">
         <div className="auth-clerk">
-          <h2>Sign in</h2>
-          <p className="auth-form-sub">Use your Estimo admin account.</p>
           <SignIn
             routing="hash"
             appearance={{

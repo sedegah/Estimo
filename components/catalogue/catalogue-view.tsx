@@ -97,7 +97,7 @@ const filterHref = (id: string, term: string) => {
 };
 
 /** Material search + results table. Used by the public catalogue and the in-app catalogue. */
-export async function CatalogueView({ q = "", cat = "all" }: { q?: string; cat?: string }) {
+export async function CatalogueView({ q = "", cat = "all", page = 1 }: { q?: string; cat?: string; page?: number }) {
   const livePrices = await getLivePrices();
   const term = q.trim().slice(0, 100);
   const filter = FILTERS.find((entry) => entry.id === cat) ?? FILTERS[0];
@@ -106,14 +106,27 @@ export async function CatalogueView({ q = "", cat = "all" }: { q?: string; cat?:
     (material) => !filter.categories.length || filter.categories.includes(material.categoryCode),
   );
 
-  const results = term
+  const matched = term
     ? inFilter
         .map((material) => ({ material, score: scoreMaterial(material, term) }))
         .filter((row) => row.score > 0)
         .sort((a, b) => b.score - a.score || a.material.name.localeCompare(b.material.name))
-        .slice(0, 40)
-        .map((row) => row.material)
-    : [...inFilter].sort((a, b) => popularity(a) - popularity(b) || a.name.localeCompare(b.name)).slice(0, 40);
+            .map((row) => row.material)
+    : [...inFilter].sort((a, b) => popularity(a) - popularity(b) || a.name.localeCompare(b.name));
+
+  const pageSize = 40;
+  const pageCount = Math.max(1, Math.ceil(matched.length / pageSize));
+  const currentPage = Math.min(Math.max(1, page), pageCount);
+  const results = matched.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  const pageHref = (target: number) => {
+    const params = new URLSearchParams();
+    if (term) params.set("q", term);
+    if (cat !== "all") params.set("cat", cat);
+    if (target > 1) params.set("page", String(target));
+    const query = params.toString();
+    return query ? `/catalogue?${query}` : "/catalogue";
+  };
 
   return (
     <>
@@ -184,8 +197,14 @@ export async function CatalogueView({ q = "", cat = "all" }: { q?: string; cat?:
         </table>
       </section>
 
+      <nav className="pager" aria-label="Catalogue pages">
+        {currentPage > 1 ? <Link className="pager-btn" href={pageHref(currentPage - 1)}>Previous</Link> : <span className="pager-btn is-disabled">Previous</span>}
+        <span className="pager-info">Page {currentPage} of {pageCount}</span>
+        {currentPage < pageCount ? <Link className="pager-btn" href={pageHref(currentPage + 1)}>Next</Link> : <span className="pager-btn is-disabled">Next</span>}
+      </nav>
+
       <p className="page-note">
-        {results.length} material{results.length === 1 ? "" : "s"} shown. Prices are published from the ESTIMO catalogue and
+        {matched.length ? `Showing ${(currentPage - 1) * pageSize + 1}–${(currentPage - 1) * pageSize + results.length} of ${matched.length}` : "No"} material{matched.length === 1 ? "" : "s"}. Prices are published from the ESTIMO catalogue and
         appear here as soon as they are set; anything unpriced stays pending.
       </p>
     </>
