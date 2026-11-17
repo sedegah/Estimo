@@ -82,6 +82,7 @@ export function BuilderView() {
   const [tool, setTool] = useState<Tool>("light");
   const [placed, setPlaced] = useState<Placed[]>(() => buildPreset("HOME-2B"));
   const [preset, setPreset] = useState<string>("HOME-2B");
+  const [dragId, setDragId] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
   const svgRef = useRef<SVGSVGElement | null>(null);
 
@@ -109,6 +110,7 @@ export function BuilderView() {
     const at = point(event);
     if (!at) return;
 
+    if (dragId) return;
     if (tool === "erase") {
       setPlaced((current) => {
         let nearestId: string | null = null;
@@ -186,6 +188,15 @@ export function BuilderView() {
             aria-label="Editable floor plan"
             className="eb-plan"
             onPointerDown={place}
+            onPointerMove={(event) => {
+              if (!dragId) return;
+              const at = point(event);
+              if (!at) return;
+              setPlaced((current) => current.map((item) => (item.id === dragId ? { ...item, x: at.x, y: at.y } : item)));
+              setSaved(false);
+            }}
+            onPointerUp={() => setDragId(null)}
+            onPointerLeave={() => setDragId(null)}
           >
             {rooms.map((room) => (
               <g key={room.label}>
@@ -197,7 +208,7 @@ export function BuilderView() {
             {placed.map((item) => {
               if (item.type === "light") {
                 return (
-                  <g key={item.id} onPointerDown={(event) => { event.stopPropagation(); if (tool === "erase") remove(item.id); }}>
+                  <g key={item.id} onPointerDown={(event) => { event.stopPropagation(); if (tool === "erase") { remove(item.id); return; } setDragId(item.id); (event.currentTarget as Element).setPointerCapture?.(event.pointerId); }}>
                     <circle cx={item.x} cy={item.y} r="11" fill="#0B2142" stroke="#F5B800" strokeWidth="2.5" />
                     <path d={`M${item.x - 6} ${item.y - 6}L${item.x + 6} ${item.y + 6}M${item.x + 6} ${item.y - 6}L${item.x - 6} ${item.y + 6}`} stroke="#F5B800" strokeWidth="2.2" />
                   </g>
@@ -214,13 +225,13 @@ export function BuilderView() {
                     fill="#F5B800"
                     stroke="#0B2142"
                     strokeWidth="2"
-                    onPointerDown={(event) => { event.stopPropagation(); if (tool === "erase") remove(item.id); }}
+                    onPointerDown={(event) => { event.stopPropagation(); if (tool === "erase") { remove(item.id); return; } setDragId(item.id); (event.currentTarget as Element).setPointerCapture?.(event.pointerId); }}
                   />
                 );
               }
               if (item.type === "board") {
                 return (
-                  <g key={item.id} onPointerDown={(event) => { event.stopPropagation(); if (tool === "erase") remove(item.id); }}>
+                  <g key={item.id} onPointerDown={(event) => { event.stopPropagation(); if (tool === "erase") { remove(item.id); return; } setDragId(item.id); (event.currentTarget as Element).setPointerCapture?.(event.pointerId); }}>
                     <rect x={item.x - 20} y={item.y - 14} width="40" height="28" rx="4" fill="#F5B800" stroke="#0B2142" strokeWidth="2" />
                     <text x={item.x} y={item.y + 4} textAnchor="middle" fontSize="11" fontFamily="Arial" fontWeight="700" fill="#0B2142">DB</text>
                   </g>
@@ -234,7 +245,7 @@ export function BuilderView() {
                   strokeWidth="3"
                   strokeDasharray="3 8"
                   strokeLinecap="round"
-                  onPointerDown={(event) => { event.stopPropagation(); if (tool === "erase") remove(item.id); }}
+                  onPointerDown={(event) => { event.stopPropagation(); if (tool === "erase") { remove(item.id); return; } setDragId(item.id); (event.currentTarget as Element).setPointerCapture?.(event.pointerId); }}
                 />
               );
             })}

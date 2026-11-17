@@ -396,3 +396,7 @@
 
 .route-loading { position: fixed; inset: 0; z-index: 60; }
 
+
+.eb-plan g, .eb-plan rect, .eb-plan path { cursor: grab; }
+.eb-plan:active g, .eb-plan:active rect, .eb-plan:active path { cursor: grabbing; }
+
