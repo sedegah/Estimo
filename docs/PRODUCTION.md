@@ -293,3 +293,136 @@ worker binding. Test a restore before you need one.
 - Website starting an estimate from a saved console template.
 - Import CSV supporting supplier-specific layouts.
 - Emails: provider key and verified sender for the monthly check-in.
+
+## 14. Database recovery
+
+The database holds prices, customer estimates, project templates and the admin audit trail. Losing it
+without a recovery path would be the most serious failure in the system, so this section is deliberately
+concrete and records what has actually been exercised.
+
+### What protects the data
+
+| Layer | What it gives | Where it lives |
+| --- | --- | --- |
+| D1 Time Travel | Point-in-time restore of the live database, 30 day window | Cloudflare, per database |
+| Daily automated export | A SQL dump as a GitHub Actions artifact, kept 90 days | `.github/workflows/db-backup.yml` |
+| Manual export | Ad hoc dump before risky work | Operator machine |
+| Append-only prices | Price history cannot be lost by an edit | `catalogue_prices` rows |
+
+Recovery objectives assumed here: a restore point no older than 24 hours in the worst case (nightly
+export), or to the minute when Time Travel is used. Time to restore is minutes, not hours, because D1
+restores in place or into a fresh database without a server to rebuild.
+
+### Backup schedule
+
+- **Nightly, 02:00 UTC**: the GitHub Actions workflow runs `wrangler d1 export estimo --remote` and
+  uploads the dump as an artifact named `d1-backup-<run id>`, retained 90 days.
+- **Before a migration or a bulk import**: run the export manually and keep the file outside the
+  repository.
+- **Monthly**: download one artifact and confirm it restores (procedure below), because an untested
+  backup is an assumption, not a backup.
+
+Required repository secrets for the workflow: `CLOUDFLARE_API_TOKEN` (D1 read) and
+`CLOUDFLARE_ACCOUNT_ID`. Without them the workflow fails loudly rather than producing an empty dump.
+
+### Restore procedure A: point in time (preferred)
+
+Use when bad data was written and the moment is known.
+
+```
+wrangler d1 time-travel info estimo --remote          # current bookmark and timestamp
+wrangler d1 time-travel restore estimo --timestamp "2026-11-16T14:00:00Z" --remote
+```
+
+A bookmark is captured automatically before a restore, so the restore itself can be undone with
+`--bookmark <value>` if the wrong moment was chosen.
+
+### Restore procedure B: from a dump into a new database
+
+Use when the live database is damaged beyond a point restore, or when rehearsing.
+
+```
+wrangler d1 create estimo-restored
+wrangler d1 execute estimo-restored --file backup.sql --remote
+wrangler d1 execute estimo-restored --command "SELECT COUNT(*) FROM catalogue_items; SELECT COUNT(*) FROM catalogue_prices;" --remote
+```
+
+Then point `database_id` in `worker/api/wrangler.toml` at the new database, redeploy the worker, and
+confirm `GET /catalogue` and a price read from the console before deleting the old database.
+
+### Restore procedure C: same database
+
+`wrangler d1 execute estimo --file backup.sql --remote` works, but only after clearing existing tables
+(the dump contains plain inserts). Prefer procedure B: it keeps the damaged database intact for
+inspection.
+
+### Migration rollback
+
+Migrations are **forward-only**. There is no automatic down migration, by design, because dropping a
+column in production can destroy data that the code has already written.
+
+The policy is:
+
+1. Never edit an applied migration. Add a new file under `lib/db/migrations`.
+2. If a migration is wrong, write a compensating migration that reverses the change safely (drop the
+   added index, add back a removed column as nullable, and so on).
+3. If data was corrupted, restore with Time Travel to the moment before the migration, then re-apply the
+   corrected migration.
+4. Record the migration name, the bookmark before it, and the reason in the release notes so the next
+   person has the timestamp they need.
+
+### Verified on 17 November 2026
+
+The backup and restore path was executed end to end, not just documented:
+
+- `wrangler d1 export estimo --remote` produced a 55,184 byte dump.
+- A fresh database `estimo-restore-test` was created and the dump imported.
+- Counts in the restored copy matched the live database: `catalogue_items` 122, `catalogue_prices` 9,
+  `estimates` 4, `project_templates` 0.
+- The scratch database was then deleted.
+
+That exercise should be repeated whenever the schema changes, and the result noted here.
+
+### What is not automated yet
+
+- Restores are manual. Automating a restore rehearsal monthly is the obvious next step.
+- There is no alert if the nightly export fails beyond the workflow failing; branch protection or a
+  notification should be added.
+- No off-site copy beyond GitHub artifact retention; a copy to object storage would survive repository
+  deletion.
+
+## 15. Automated testing
+
+Two suites exist today, both runnable locally and in CI:
+
+| Suite | Command | Needs |
+| --- | --- | --- |
+| Unit | `npm test` | Node 24 only |
+| Integration | `npm run test:integration` | The website running and network access to the API |
+
+CI: `.github/workflows/tests.yml` runs type checking and the unit suite on every push and pull request.
+
+### Coverage against the six critical behaviours
+
+| Behaviour | How it is checked | Kind |
+| --- | --- | --- |
+| Cross-account data isolation | `tests/storage-reset.test.ts`: a different account clears local data, signing out clears it, first sign-in keeps guest work. Server-side isolation is enforced by `owner_key` filtering and covered by the 401 checks below; a two-account test with real sessions remains manual. | Unit + manual |
+| Admin-only price modification | `tests/integration.mjs`: `POST /admin/catalogue/prices` and `POST /admin/templates` without a token return 401. The 403 path is exercised manually by signing in as a non-admin staff account. | Integration + manual |
+| Estimate calculation accuracy | `tests/estimate-model.test.ts`: the two-bedroom anchor equals GH₵16,800, quality increases the total monotonically, adding a room increases the total, and every one of the nine project types gives a positive total whose lines sum to the total within 2%. | Unit |
+| PDF output correctness | `tests/integration.mjs`: the PDF route returns 200, `application/pdf`, a body beginning `%PDF`, and more than 10 KB (which proves the typeface is embedded). Page structure is generated by one shared builder, covered by the same check for both the website and the console. | Integration |
+| Desktop installation and updating | Manual, with a written checklist in section 8. The installer is our own NSIS script; the updater can be exercised without publishing via `ESTIMO_UPDATE_FEED` and `ESTIMO_UPDATE_AUTO=1`. Automating an installer in CI needs a Windows runner and is not done. | Manual |
+| Recovery when the API is unavailable | `tests/catalogue-prices.test.ts`: a failing fetch yields an empty price map and the page degrades to `Pending` instead of erroring; non-numeric values are discarded. | Unit |
+
+### What the suites do not cover
+
+- Two real Clerk sessions proving account A cannot read account B's estimates end to end. The
+  mechanism is tested in pieces; the full path needs a seeded pair of accounts.
+- Visual regressions. Layout is checked by eye against the artboards.
+- The installer and updater as a single automated run.
+- Load and rate-limit behaviour of the API.
+
+### Extending the suites
+
+Add a file under `tests/` for unit work; it is picked up by `npm test` if listed in the script, so add
+the name there. For endpoint work, extend `tests/integration.mjs`: each `check(name, fn)` becomes one
+line in the report, and the script exits non-zero when anything fails, which is what CI needs.
