@@ -1,7 +1,7 @@
 # ESTIMO
 
 ESTIMO is an electrical estimating app for Ghana. It turns a description of a building into a clear
-first estimate — lights, sockets, distribution board, earthing and labour — and lets you price the
+first estimate: lights, sockets, distribution board, earthing and labour and lets you price the
 materials that go into it.
 
 ## What it does
