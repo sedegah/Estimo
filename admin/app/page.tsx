@@ -276,7 +276,6 @@ export default function AdminPage() {
                         <th>New price</th>
                         <th>Change</th>
                         <th>Status</th>
-                        <th />
                       </tr>
                     </thead>
                     <tbody>
@@ -303,7 +302,6 @@ export default function AdminPage() {
                             </td>
                             <td className={change === null ? "muted" : change > 0 ? "admin-up" : "admin-down"}>{change === null ? "—" : `${change > 0 ? "+" : ""}${change}%`}</td>
                             <td><span className={next !== null ? "admin-status is-changed" : current !== null ? "admin-status is-set" : "admin-status is-pending"}>{next !== null ? "Changed" : current !== null ? "Live" : "Pending"}</span></td>
-                            <td><button className="admin-edit" type="button">Edit</button></td>
                           </tr>
                         );
                       })}

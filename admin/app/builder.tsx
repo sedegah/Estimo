@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useRef, useState } from "react";
 
 type Tool = "light" | "socket" | "board" | "run" | "erase";
@@ -58,7 +59,7 @@ export function BuilderView() {
   return (
     <div className="eb">
       <nav className="eb-nav">
-        <span className="eb-logo">estimo<span>.</span></span>
+        <Link className="eb-logo" href="/prices" aria-label="Back to dashboard">estimo<span>.</span></Link>
         <input className="eb-title" value={project} onChange={(event) => setProject(event.target.value)} aria-label="Project name" />
         <button className="eb-save" type="button" onClick={() => setSaved(true)}>{saved ? "Saved" : "Save project"}</button>
       </nav>
