@@ -49,3 +49,26 @@ the admin allowlist can change prices or add materials — everyone else sees th
 - Blank fields stay “Pending”; nothing is invented.
 - The admin interface uses the system typeface (Bricolage Grotesque) and the same
   navy/amber palette as the estimating app.
+
+## Code signing
+
+The installer is built unsigned, so Windows SmartScreen shows "Windows protected your PC" the first time it is downloaded.
+
+To sign it, buy a code-signing certificate (an OV or EV certificate; EV clears SmartScreen
+reputation immediately, OV builds it over time), export it as a .pfx, then build with:
+
+``powershell
+$env:CSC_LINK="C:\path\to\certificate.pfx"
+$env:CSC_KEY_PASSWORD="the certificate password"
+npm run dist
+``
+
+electron-builder signs the app and the installer automatically when those two variables are
+set. Verify with:
+
+``powershell
+Get-AuthenticodeSignature "release\ESTIMO-Admin-Setup-1.0.0.exe"
+``
+
+A self-signed certificate does not help — SmartScreen only trusts certificates chained to a
+public authority with reputation.
