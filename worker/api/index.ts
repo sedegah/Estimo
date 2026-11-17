@@ -17,6 +17,7 @@ type Env = {
   CLERK_PUBLISHABLE_KEY: string;
   DB_PEPPER: string;
   ADMIN_USER_IDS?: string;
+  ADMIN_CLERK_PUBLISHABLE_KEY?: string;
 };
 
 type SessionClaims = { sub: string; exp?: number; nbf?: number; iss?: string };
@@ -212,6 +213,7 @@ async function listCatalogue(env: Env): Promise<Response> {
 }
 
 async function isAdmin(env: Env, userId: string): Promise<boolean> {
+  if (env.ADMIN_CLERK_PUBLISHABLE_KEY) return true;
   const allowed = (env.ADMIN_USER_IDS ?? "").split(",").map((value) => value.trim()).filter(Boolean);
   return allowed.includes(userId);
 }
@@ -322,7 +324,8 @@ export default {
     const token = header.startsWith("Bearer ") ? header.slice(7) : "";
     if (!token) return json({ ok: false, error: "unauthorized" }, 401);
 
-    const claims = await verifySession(token, env.CLERK_PUBLISHABLE_KEY);
+    const adminPath = url.pathname.startsWith("/admin/") || url.pathname === "/whoami";
+    const claims = await verifySession(token, adminPath && env.ADMIN_CLERK_PUBLISHABLE_KEY ? env.ADMIN_CLERK_PUBLISHABLE_KEY : env.CLERK_PUBLISHABLE_KEY);
     if (!claims) return json({ ok: false, error: "invalid_session" }, 401);
 
     const owner = await ownerKey(claims.sub, env.DB_PEPPER);
