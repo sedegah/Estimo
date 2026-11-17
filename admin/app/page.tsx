@@ -2,7 +2,7 @@
 
 import { SignIn, useClerk, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { addItem, listCatalogue, setPrice, setUnit, type CatalogueItem } from "@/lib/api";
 import { LoadingScreen } from "./loading-screen";
 
@@ -98,6 +98,7 @@ export default function AdminPage() {
   const [form, setForm] = useState({ name: "", category: "", unit: "", spec: "" });
   const [chip, setChip] = useState("All");
   const [page, setPage] = useState(1);
+  const csvRef = useRef<HTMLInputElement>(null);
   const debouncedQuery = useDebounced(query);
   const [lastPublished, setLastPublished] = useState<string | null>(null);
 
@@ -129,6 +130,37 @@ export default function AdminPage() {
 
   useEffect(() => { setPage(1); }, [query, chip, tab]);
 
+  const exportCsv = () => {
+    const rows = [["id", "name", "category", "unit", "price_ghs"], ...(items ?? []).map((item) => [item.id, item.name, item.category, item.unit, item.price_ghs ?? ""])];
+    const csv = rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "estimo-prices.csv";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const importCsv = async (file: File) => {
+    const text = await file.text();
+    const lines = text.split(/\r?\n/).filter((line) => line.trim() !== "");
+    const next: Record<string, string> = {};
+    let matched = 0;
+    for (const line of lines) {
+      const cells = line.split(",").map((cell) => cell.replace(/^"|"$/g, "").trim());
+      if (cells.length < 2) continue;
+      const [first, second] = cells;
+      if (/price/i.test(first)) continue;
+      const item = (items ?? []).find((entry) => entry.id === first || entry.name.toLowerCase() === first.toLowerCase());
+      const price = second;
+      if (item && price && Number.isFinite(Number(price))) {
+        next[item.id] = String(Number(price));
+        matched += 1;
+      }
+    }
+    setDrafts((current) => ({ ...current, ...next }));
+    setMessage(matched ? `Imported ${matched} price${matched === 1 ? "" : "s"} as drafts. Review, then publish.` : "No matching rows found. Use columns: id or name, then price.");
+  };
   const draftCount = Object.values(drafts).filter((value) => value.trim() !== "").length;
 
   const publish = async () => {
@@ -195,9 +227,10 @@ export default function AdminPage() {
                 <input className="admin-search" placeholder="Search items" value={query} onChange={(event) => setQuery(event.target.value)} />
                 <span className="admin-note">{items ? `${visible.length} of ${items.length}` : ""}</span>
                 <div className="admin-actions">
-                  <button className="admin-btn" type="button">Import CSV</button>
-                  <button className="admin-btn" type="button">Export</button>
-                  <button className="admin-btn admin-btn-primary" type="button">Add item</button>
+                  <button className="admin-btn" type="button" onClick={() => csvRef.current?.click()}>Import CSV</button>
+                  <input ref={csvRef} type="file" accept=".csv,text/csv" hidden onChange={(event) => { const file = event.target.files?.[0]; if (file) void importCsv(file); event.target.value = ""; }} />
+                  <button className="admin-btn" type="button" onClick={exportCsv}>Export</button>
+                  <button className="admin-btn admin-btn-primary" type="button" onClick={() => { setTab("materials"); setMessage(""); }}>Add item</button>
                 </div>
               </div>
               <div className="admin-chips">

@@ -1,76 +1,69 @@
-﻿# ESTIMO — architecture
+# ESTIMO architecture
 
-ESTIMO is a Next.js App Router application with **no backend**. The material library ships with the bundle; guest
-estimates live in the browser.
+Two applications share one database.
 
-## Flow
+## Applications
 
-1. **Home** (`/`) — pick a project type. The floor-plan illustration maps the four legend symbols to lights, sockets,
-   a distribution board and circuit runs.
-2. **Set up** (`/quick-estimate?template=-¦`) — room counts (expand a room to see its lights, sockets, switches and
-   points) plus fitting quality. The sidebar recalculates the preliminary total live.
-3. **Estimate** (`/estimate?template=-¦&rooms-¦`) — cost groups, total, save project, print/PDF and adjust.
-4. **Catalogue** (`/catalogue`) — search and category chips over the bundled 122-material library; add to estimate.
-5. **Basket** (`/estimate-basket`) — quantities in localStorage, save as a project.
-6. **Saved projects** (`/projects`) — quick estimates and material lists from localStorage.
+| Part | What it is | Where it runs |
+| --- | --- | --- |
+| Estimating app | Customer site: home, catalogue, estimate, projects, PDF | Hosted (Vercel) |
+| Admin console | Private price, catalogue and plan editor | Windows desktop app (Electron) that starts its own copy of the admin screens |
 
+The console lives in `admin/` as a separate Next.js app. Electron starts it as a stand-alone server on a
+loopback port and opens a window on it, so sign-in has a normal web origin. `desktop/` holds the Electron
+shell, the NSIS installer script and the updater.
 
-## Layout
+## Console screens
 
-```
-ESTIMO/
--œ- app/                     # routes only (App Router)
--   -œ- layout.tsx           # fonts, global styles, header
--   -œ- loading.tsx          # branded splash during navigation
--   -œ- icon.svg             # app icon (official brand pack)
--   -œ- apple-icon.png
--   -œ- page.tsx             # home
--   -œ- quick-estimate/      # step 2 — project setup
--   -œ- estimate/            # step 3 — your estimate
--   -œ- catalogue/           # material prices + [materialId] detail
--   -œ- estimate-basket/
--   -œ- projects/
--   - api/health/
--œ- components/
--   -œ- layout/              # header, official logo assets
--   -œ- home/                # floor-plan illustration
--   -œ- catalogue/           # material card
--   -œ- estimate/            # basket, add-to-estimate, basket link
--   - ui/                  # project icons
--œ- lib/
--   -œ- types.ts             # domain types
--   -œ- format.ts            # GHS/date formatting
--   -œ- estimate-model.ts    # calibration anchors, room -†’ points, cost groups
--   -œ- data/catalogue.ts    # 122 core materials, bundled
--   - storage/             # localStorage adapters (basket, saved estimates)
--œ- styles/                  # globals, home, pages, brand
--œ- public/brand/            # official logo pack (SVG)
--œ- tools/                   # seed -†’ dataset generator, CSS prune helper
-- docs/
-```
+- **Prices** — search, category chips, per-row price entry, draft panel, publish. Import CSV reads
+  `id` or `name` plus `price` columns into the draft; Export writes the full list with current prices as CSV.
+  Add item jumps to Materials.
+- **Materials** — add a material (name, category, unit, specification) and correct units inline.
+- **Estimate builder** — project-type presets (single room through workshop), interactive floor plan,
+  placement and dragging of lights, sockets, boards and runs, erase, live cost panel. Save project writes
+  to `project_templates`; Download estimate produces a PDF from the plan.
+- **Sign in** — Clerk, using the separate admin application.
 
-## Data flow
+## Data
 
-1. **Material library** — `lib/data/catalogue.ts` is generated from the original ESTIMO seed by
-   `tools/build-catalogue-data.mjs` (122 materials). Plain module: catalogue pages render server-side, no network.
-2. **Basket** — `lib/storage/basket.ts` reads/writes `localStorage` and emits `estimo-basket-change`, so the header
-   counter and the basket page stay in sync without a store library.
-3. **Saved estimates** — `lib/storage/saved-estimates.ts` persists quick estimates and material lists.
-4. **Estimate model** — `lib/estimate-model.ts` holds the staging calibration anchors, converts rooms into electrical
-   points and splits the preliminary total into cost groups.
+Cloudflare D1, the `estimo` database, reached through one worker, `estimo-api` (`worker/api/index.ts`).
 
-No authentication, database or server actions. Components that need browser state are client components.
+| Table | Holds |
+| --- | --- |
+| `users` | account rows keyed by the hashed owner id |
+| `estimates`, `estimate_items` | saved estimates and their lines |
+| `saved_projects` | saved projects |
+| `catalogue_items` | seeded materials plus anything added in the console |
+| `catalogue_prices` | append-only price observations with author and time |
+| `service_prices` | prices for services |
+| `project_templates` | plans saved from the estimate builder |
+| `admin_audit` | every admin write |
 
-## Design system
+`estimates` and `saved_projects` carry `owner_key`, a salted SHA-256 of the Clerk user id. D1 has no
+row-level security, so the worker enforces ownership: every statement filters by `owner_key`, and admin
+routes verify a token from the admin Clerk application. `ADMIN_USER_IDS` is an optional extra allowlist.
 
-- Font: **Bricolage Grotesque** (`next/font/google`), one family across the product.
-- Colour tokens (`styles/globals.css`): navy `#0B1F3F`, amber `#F5B301`, plaster `#F1F2EE`.
-- Logo: official pack in `public/brand/` (horizontal for the header, stacked for the loading splash, app icon for the
-  favicon). Do not redraw the mark — reference the pack.
+## API surface
 
-## Constraints
+Public: `GET /catalogue`, `GET /health`.
 
-Prices are deliberately absent: there is no verified supplier feed, so the catalogue shows "Pending" instead of
-inventing figures. The estimate total is an illustrative calibration baseline, labelled as such. Adding a real
-pricing backend means adding a data layer behind `lib/data/`, not reaching into components.
+Signed-in: `GET /whoami`, `GET/POST/PATCH/DELETE /estimates`.
 
+Admin: `GET/POST/PATCH` catalogue items, `POST` catalogue and service prices, `GET/POST` templates.
+
+## Other pieces
+
+- Monthly email worker (`worker/index.ts`), separate deployment, dormant until provider secrets exist.
+- Web catalogue reads prices server-side with no caching, so a published price shows on the next refresh.
+- Desktop updates: the console checks the latest GitHub release, downloads the installer and runs it
+  silently in place. A local feed can be substituted with `ESTIMO_UPDATE_FEED`.
+
+## Local data
+
+Basket, draft and guest estimates live in `localStorage`. Signed-in estimates sync through the worker.
+Local data is cleared when a different account signs in or a session ends.
+
+## Configuration
+
+`worker/wrangler.toml` and `worker/api/wrangler.toml` are not committed because they contain account ids;
+`docs/PRODUCTION.md` lists what they must contain.

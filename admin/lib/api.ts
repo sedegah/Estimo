@@ -56,6 +56,16 @@ export async function addItem(payload: { name: string; category: string; unit: s
   return response ? ((await response.json()) as { ok: boolean; error?: string }) : { ok: false, error: "Not signed in" };
 }
 
+
+export async function saveTemplate(payload: {
+  name: string;
+  preset: string;
+  plan: unknown;
+  totals: unknown;
+}) {
+  const response = await call("/admin/templates", { method: "POST", body: JSON.stringify(payload) });
+  return response ? ((await response.json()) as { ok: boolean; id?: string; error?: string }) : { ok: false, error: "Not signed in" };
+}
 export async function setUnit(id: string, unit: string) {
   const response = await call(`/admin/catalogue/items/${id}`, { method: "PATCH", body: JSON.stringify({ unit }) });
   return response ? ((await response.json()) as { ok: boolean; error?: string }) : { ok: false, error: "Not signed in" };
