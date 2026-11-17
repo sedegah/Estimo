@@ -7,8 +7,10 @@
 const path = require("node:path");
 const http = require("node:http");
 const net = require("node:net");
+const fs = require("node:fs");
 const { spawn } = require("node:child_process");
 const { app, BrowserWindow, Menu, shell } = require("electron");
+const { checkForUpdates } = require("./updater");
 
 let serverProcess = null;
 let serverPort = 0;
@@ -41,6 +43,18 @@ function waitForServer(port, attempts = 120) {
     };
     probe();
   });
+}
+
+function remoteAdminUrl() {
+  if (process.env.ESTIMO_ADMIN_URL) return process.env.ESTIMO_ADMIN_URL;
+  try {
+    const file = path.join(app.getPath("userData"), "config.json");
+    if (fs.existsSync(file)) {
+      const config = JSON.parse(fs.readFileSync(file, "utf8"));
+      if (typeof config.adminUrl === "string" && config.adminUrl.startsWith("http")) return config.adminUrl;
+    }
+  } catch {}
+  return "";
 }
 
 async function startServer() {
@@ -107,15 +121,19 @@ const template = [
     submenu: [
       { label: "Prices and materials", click: () => BrowserWindow.getAllWindows()[0]?.loadURL(`http://127.0.0.1:${serverPort}/`) },
       { label: "Estimate builder", click: () => BrowserWindow.getAllWindows()[0]?.loadURL(`http://127.0.0.1:${serverPort}/builder`) },
+      { type: "separator" },
+      { label: "Check for updates…", click: () => checkForUpdates({ silent: false }) },
     ],
   },
 ];
 
 app.whenReady().then(async () => {
   try {
-    const baseUrl = await startServer();
+    const remote = remoteAdminUrl();
+    const baseUrl = remote || (await startServer());
     Menu.setApplicationMenu(Menu.buildFromTemplate(template));
     createWindow(baseUrl);
+    setTimeout(() => void checkForUpdates({ silent: true }), 6000);
   } catch (error) {
     const { dialog } = require("electron");
     dialog.showErrorBox("ESTIMO Admin could not start", String(error));
