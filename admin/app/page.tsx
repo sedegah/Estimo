@@ -212,23 +212,17 @@ export default function AdminPage() {
           {message ? <p className="admin-ok">{message}</p> : null}
           {error ? <p className="admin-error">{error}</p> : null}
 
-          {tab !== "settings" ? (
-            <div className="admin-toolbar">
-              <input className="admin-search" placeholder="Search material" value={query} onChange={(event) => setQuery(event.target.value)} />
-              <span className="admin-note">{items ? `${visible.length} of ${items.length}` : ""}</span>
-            </div>
-          ) : null}
 
           {tab === "prices" ? (
             <>
-              <div className="admin-actions" style={{ marginTop: 18, justifyContent: "flex-end" }}>
-                <button className="admin-btn" type="button">Import CSV</button>
-                <button className="admin-btn" type="button">Export</button>
-                <button className="admin-btn admin-btn-primary" type="button">Add item</button>
-              </div>
-
-              <div className="admin-toolbar">
+              <div className="admin-toolbar prices-toolbar">
                 <input className="admin-search" placeholder="Search items" value={query} onChange={(event) => setQuery(event.target.value)} />
+                <span className="admin-note">{items ? `${visible.length} of ${items.length}` : ""}</span>
+                <div className="admin-actions">
+                  <button className="admin-btn" type="button">Import CSV</button>
+                  <button className="admin-btn" type="button">Export</button>
+                  <button className="admin-btn admin-btn-primary" type="button">Add item</button>
+                </div>
               </div>
               <div className="admin-chips">
                 {["All", ...categories].map((category) => (
@@ -318,7 +312,11 @@ export default function AdminPage() {
           ) : null}
           {tab === "materials" ? (
             <>
-              <div className="admin-panel" style={{ padding: 18, marginTop: 16 }}>
+              <div className="admin-toolbar" style={{ marginTop: 16 }}>
+              <input className="admin-search" placeholder="Search materials" value={query} onChange={(event) => setQuery(event.target.value)} />
+              <span className="admin-note">{items ? `${visible.length} of ${items.length}` : ""}</span>
+            </div>
+            <div className="admin-panel" style={{ padding: 18, marginTop: 12 }}>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(12rem, 1fr))", gap: 12 }}>
                   <input className="admin-search" placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
                   <input className="admin-search" placeholder="Category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />

@@ -296,3 +296,8 @@
 .admin-brand-logo { height: 26px; width: auto; display: block; }
 .admin-brand-admin { font-weight: 500; font-size: 14px; color: #c3cee2; letter-spacing: .04em; }
 
+
+.prices-toolbar { align-items: center; }
+.prices-toolbar .admin-search { flex: 1 1 280px; }
+.prices-toolbar .admin-actions { flex-wrap: wrap; }
+
