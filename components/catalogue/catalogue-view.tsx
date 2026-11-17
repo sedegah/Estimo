@@ -204,8 +204,7 @@ export async function CatalogueView({ q = "", cat = "all", page = 1 }: { q?: str
       </nav>
 
       <p className="page-note">
-        {matched.length ? `Showing ${(currentPage - 1) * pageSize + 1}–${(currentPage - 1) * pageSize + results.length} of ${matched.length}` : "No"} material{matched.length === 1 ? "" : "s"}. Prices are published from the ESTIMO catalogue and
-        appear here as soon as they are set; anything unpriced stays pending.
+        {matched.length ? `Showing ${(currentPage - 1) * pageSize + 1}–${(currentPage - 1) * pageSize + results.length} of ${matched.length}` : "No"} material{matched.length === 1 ? "" : "s"}. Prices are published from the ESTIMO catalogue.
       </p>
     </>
   );
