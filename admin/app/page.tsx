@@ -4,7 +4,6 @@ import { useClerk, useSignIn, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { addItem, listCatalogue, setPrice, setUnit, type CatalogueItem } from "@/lib/api";
-import { BuilderView } from "./builder";
 
 /** Prices accept digits and one decimal separator only; commas become periods. */
 function cleanPrice(value: string): string {
@@ -210,7 +209,7 @@ export default function AdminPage() {
           <p className="admin-rail-label">Manage</p>
           <button type="button" className={tab === "prices" ? "admin-rail-link is-active" : "admin-rail-link"} onClick={() => setTab("prices")}>Prices</button>
           <button type="button" className={tab === "materials" ? "admin-rail-link is-active" : "admin-rail-link"} onClick={() => setTab("materials")}>Materials</button>
-          <button type="button" className={tab === "builder" ? "admin-rail-link is-active" : "admin-rail-link"} onClick={() => setTab("builder")}>Estimate builder</button>
+          <a className="admin-rail-link" href="/builder">Estimate builder</a>
           <button type="button" className={tab === "settings" ? "admin-rail-link is-active" : "admin-rail-link"} onClick={() => setTab("settings")}>Settings</button>
         </aside>
 
@@ -378,8 +377,6 @@ export default function AdminPage() {
               </div>
             </>
           ) : null}
-
-          {tab === "builder" ? <BuilderView /> : null}
 
           {tab === "settings" ? (
             <div className="admin-panel" style={{ padding: 22, marginTop: 16 }}>

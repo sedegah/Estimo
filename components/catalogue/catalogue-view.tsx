@@ -2,6 +2,7 @@ import Link from "next/link";
 import { AddToEstimateButton } from "@/components/estimate/add-to-estimate";
 import { CATALOGUE_MATERIALS } from "@/lib/data/catalogue";
 import type { CatalogueMaterial } from "@/lib/types";
+import { getLivePrices } from "@/lib/api/catalogue-prices";
 
 const FILTERS: { id: string; label: string; categories: string[] }[] = [
   { id: "all", label: "All", categories: [] },
@@ -96,7 +97,8 @@ const filterHref = (id: string, term: string) => {
 };
 
 /** Material search + results table. Used by the public catalogue and the in-app catalogue. */
-export function CatalogueView({ q = "", cat = "all" }: { q?: string; cat?: string }) {
+export async function CatalogueView({ q = "", cat = "all" }: { q?: string; cat?: string }) {
+  const livePrices = await getLivePrices();
   const term = q.trim().slice(0, 100);
   const filter = FILTERS.find((entry) => entry.id === cat) ?? FILTERS[0];
 
@@ -152,7 +154,7 @@ export function CatalogueView({ q = "", cat = "all" }: { q?: string; cat?: strin
                   <Link className="table-link" href={`/catalogue/${material.id}`}>{material.name}</Link>
                 </td>
                 <td className="muted-cell">{unitLabel(material)}</td>
-                <td className="muted-cell">Pending</td>
+                <td className="muted-cell">{typeof livePrices[material.id] === "number" ? `GHS ${livePrices[material.id].toLocaleString("en-GH")}` : "Pending"}</td>
                 <td className="table-action">
                   <AddToEstimateButton
                     variant="outline"
@@ -162,7 +164,7 @@ export function CatalogueView({ q = "", cat = "all" }: { q?: string; cat?: strin
                       name: material.name,
                       category: material.category,
                       unit: material.unit,
-                      priceGhs: null,
+                      priceGhs: livePrices[material.id] ?? null,
                       brandName: null,
                       supplierName: null,
                       verifiedAt: null,

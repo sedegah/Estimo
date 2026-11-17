@@ -340,3 +340,33 @@
 .admin-price-input { width: 8rem; }
 .admin-edit { background: none; border: 0; padding: 0; font: inherit; font-size: 13px; color: #4a5a75; text-decoration: underline; cursor: pointer; }
 .admin-status.is-set { background: #eef0e8; color: #4a5a75; }
+
+.admin-main { overflow-x: auto; }
+.builder { width: 100%; max-width: 100%; }
+.builder-topbar { flex-wrap: wrap; }
+.builder-name { min-width: 12rem; }
+.builder-plan { max-width: 100%; }
+
+
+/* estimate builder (artboard) */
+.eb { min-height: 100vh; display: flex; flex-direction: column; background: #F4F2EC; color: #0B2142; font-family: "Bricolage Grotesque", -apple-system, "Segoe UI", Arial, sans-serif; }
+.eb-nav { background: #0B2142; color: #fff; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; padding: 20px clamp(20px, 4vw, 48px); }
+.eb-logo { font-weight: 700; font-size: 26px; }
+.eb-logo span { color: #F5B800; }
+.eb-title { flex: 1; text-align: center; background: transparent; border: 0; color: #fff; font: inherit; font-size: 15px; min-width: 12rem; }
+.eb-save { background: #F5B800; color: #0B2142; font: inherit; font-weight: 600; padding: 12px 20px; border-radius: 10px; border: 0; cursor: pointer; }
+.eb-body { flex: 1; display: flex; flex-wrap: wrap; gap: 24px; padding: 24px clamp(20px, 4vw, 48px); }
+.eb-tools { flex: 0 0 210px; display: flex; flex-direction: column; gap: 10px; }
+.eb-tools-label { margin: 0 0 4px; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: #4A5A75; }
+.eb-tool { display: flex; align-items: center; gap: 12px; padding: 14px; border: 1px solid #cfcab9; border-radius: 10px; background: #fff; font: inherit; font-size: 14px; font-weight: 600; color: #0B2142; cursor: pointer; text-align: left; }
+.eb-canvas { flex: 1 1 480px; min-width: 0; background: #0B2142; border-radius: 16px; padding: 24px; display: flex; align-items: center; }
+.eb-plan { width: 100%; height: auto; }
+.eb-summary { flex: 0 0 300px; background: #0B2142; color: #fff; border-radius: 16px; padding: 24px; display: flex; flex-direction: column; }
+.eb-summary h1 { margin: 0; font-weight: 800; font-size: 22px; }
+.eb-summary ul { list-style: none; margin: 16px 0; padding: 0; }
+.eb-summary li { display: flex; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid #1d3a6b; font-size: 14px; }
+.eb-summary li span:last-child { color: #F5B800; font-weight: 600; }
+.eb-first { margin: auto 0 0; font-size: 14px; color: #C3CEE2; }
+.eb-total { margin: 4px 0 16px; font-weight: 800; font-size: 34px; }
+.eb-download { text-align: center; border: 1px solid #6d82a8; font: inherit; font-weight: 600; padding: 15px; border-radius: 10px; background: transparent; color: #fff; cursor: pointer; }
+@media (max-width: 900px) { .eb-tools, .eb-summary { flex: 1 1 100%; } }
