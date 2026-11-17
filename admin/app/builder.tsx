@@ -81,7 +81,6 @@ const buildPreset = (code: string): Placed[] => {
 export function BuilderView() {
   const [tool, setTool] = useState<Tool>("light");
   const [placed, setPlaced] = useState<Placed[]>(() => buildPreset("HOME-2B"));
-  const [project, setProject] = useState("Family house");
   const [preset, setPreset] = useState<string>("HOME-2B");
   const [saved, setSaved] = useState(false);
   const svgRef = useRef<SVGSVGElement | null>(null);
@@ -144,7 +143,6 @@ export function BuilderView() {
           <select className="eb-preset" value={preset} onChange={(event) => { setPreset(event.target.value); setPlaced(buildPreset(event.target.value)); setSaved(false); }} aria-label="Project template">
             {PRESETS.map((entry) => (<option key={entry.code} value={entry.code}>{entry.label}</option>))}
           </select>
-          <input className="eb-title" value={project} onChange={(event) => setProject(event.target.value)} aria-label="Project name" />
         </div>
         <button className="eb-save" type="button" onClick={() => setSaved(true)}>{saved ? "Saved" : "Save project"}</button>
       </nav>
