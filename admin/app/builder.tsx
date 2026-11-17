@@ -59,7 +59,7 @@ export function BuilderView() {
   return (
     <div className="eb">
       <nav className="eb-nav">
-        <Link className="eb-logo" href="/prices" aria-label="Back to dashboard">estimo<span>.</span></Link>
+        <Link className="eb-logo" href="/" aria-label="Back to dashboard">estimo<span>.</span></Link>
         <input className="eb-title" value={project} onChange={(event) => setProject(event.target.value)} aria-label="Project name" />
         <button className="eb-save" type="button" onClick={() => setSaved(true)}>{saved ? "Saved" : "Save project"}</button>
       </nav>

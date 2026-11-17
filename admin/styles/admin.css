@@ -353,7 +353,7 @@
 /* estimate builder (artboard) */
 .eb { min-height: 100vh; display: flex; flex-direction: column; background: #F4F2EC; color: #0B2142; font-family: "Bricolage Grotesque", -apple-system, "Segoe UI", Arial, sans-serif; }
 .eb-nav { background: #0B2142; color: #fff; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; padding: 20px clamp(20px, 4vw, 48px); }
-.eb-logo { font-weight: 700; font-size: 26px; }
+.eb-logo { font-weight: 700; font-size: 26px; color: #fff; text-decoration: none; }
 .eb-logo span { color: #F5B800; }
 .eb-title { flex: 1; text-align: center; background: transparent; border: 0; color: #fff; font: inherit; font-size: 15px; min-width: 12rem; }
 .eb-save { background: #F5B800; color: #0B2142; font: inherit; font-weight: 600; padding: 12px 20px; border-radius: 10px; border: 0; cursor: pointer; }
