@@ -1,74 +1,58 @@
-# ESTIMO Admin (desktop)
+# ESTIMO Admin
 
-The desktop app for maintaining the catalogue: material prices, services, units and
-new items. It is an Electron window around the same admin interface the web app
-serves at `/admin`, so there is one implementation to maintain.
+The desktop program the ESTIMO team uses to keep material prices and the material list up to date.
+It is private: it is not for customers and it is not part of the estimating website.
 
-## Run it
+## Installing
 
-```bash
-cd desktop
-npm install          # installs Electron
-npm start            # opens the admin at http://localhost:3000/admin/prices
-```
+1. Run **ESTIMO-Admin-Setup** from the copy you were given.
+2. Accept the terms and, if you want, change where it is installed.
+3. Wait for the bar to finish, then leave **Open ESTIMO Admin now** ticked and press Finish.
 
-Point it at a deployed site instead:
-
-```bash
-ESTIMO_ADMIN_URL=https://your-domain.com/admin/prices npm start
-```
-
-On Windows PowerShell:
-
-```powershell
-$env:ESTIMO_ADMIN_URL="https://your-domain.com/admin/prices"; npm start
-```
-
-The project's own dev server must be running (`npm run dev` at the repo root) when
-using `localhost`.
+A shortcut appears on your desktop and in the Start menu. You do not need to be an administrator
+on the computer to install it.
 
 ## Signing in
 
-Sign-in is Clerk, the same account system as the rest of ESTIMO. Only accounts on
-the admin allowlist can change prices or add materials — everyone else sees the
-“Not authorised” screen. The allowlist lives in the `ADMIN_USER_IDS` secret on the
-`estimo-api` worker.
+Open the program and sign in with the ESTIMO staff account you were given. If you have not been
+given one, ask before trying to create an account — access is limited to staff.
+
+Only staff accounts can change prices or add materials. Anyone else who opens the program is told
+they are not authorised and cannot make changes.
 
 ## What you can do
 
-- **Prices** — search the catalogue, type new prices, review the draft panel and
-  publish. Every published price is stored in Cloudflare D1 with the account that
-  changed it and a timestamp.
-- **Materials** — add a material (name, category, unit, specification) and correct
-  the unit of an existing one.
-- **Settings** — see the signed-in account, its role and the API it talks to.
+**Prices** — search for a material, type the new price, review what you have changed, then publish.
+A published price is visible on the estimating website within a minute. Anything you leave blank
+stays as it was.
 
-## Notes
+**Materials** — add a material that is missing, or correct the unit it is sold in (each, roll,
+metre).
 
-- Prices are per unit and in Ghana cedis (GHS).
-- Blank fields stay “Pending”; nothing is invented.
-- The admin interface uses the system typeface (Bricolage Grotesque) and the same
-  navy/amber palette as the estimating app.
+**Estimate builder** — choose the type of building, place lights, sockets, boards and cable runs on
+the plan, and watch the first estimate add up. You can drag things around, and erase them if you
+change your mind.
 
-## Code signing
+## Updating
 
-The installer is built unsigned, so Windows SmartScreen shows "Windows protected your PC" the first time it is downloaded.
+The program checks for a newer version when it opens. If there is one, it asks before installing.
 
-To sign it, buy a code-signing certificate (an OV or EV certificate; EV clears SmartScreen
-reputation immediately, OV builds it over time), export it as a .pfx, then build with:
+Choose **Admin → Check for updates** any time to look manually.
 
-``powershell
-$env:CSC_LINK="C:\path\to\certificate.pfx"
-$env:CSC_KEY_PASSWORD="the certificate password"
-npm run dist
-``
+An update installs itself in place: there is no setup wizard, your shortcuts stay as they are, and
+nothing you have entered is affected. If you are busy, choose Later; it will offer again next time.
 
-electron-builder signs the app and the installer automatically when those two variables are
-set. Verify with:
+## Removing it
 
-``powershell
-Get-AuthenticodeSignature "release\ESTIMO-Admin-Setup-1.0.0.exe"
-``
+Open Windows **Settings → Apps**, find **ESTIMO Admin** and choose Uninstall. Removing the program
+does not remove anything you saved.
 
-A self-signed certificate does not help — SmartScreen only trusts certificates chained to a
-public authority with reputation.
+## Prices are planning figures
+
+Prices in the program are the ESTIMO price list, not a live feed from a supplier. They change.
+An estimate made from them is a planning figure, not a quotation.
+
+## Getting help
+
+If a price will not save, the program will not open, or an update does not arrive, contact the
+ESTIMO team and say which screen you were on and what happened.

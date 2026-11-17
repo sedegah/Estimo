@@ -405,3 +405,6 @@
 .auth-clerk { width: 100%; max-width: 400px; }
 .auth-clerk h2 { margin: 0; font-weight: 800; font-size: clamp(26px, 2.6vw, 34px); letter-spacing: -.02em; }
 
+
+body { overflow-x: hidden; }
+.eb { overflow-x: hidden; }
