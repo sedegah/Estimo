@@ -352,11 +352,13 @@
 
 /* estimate builder (artboard) */
 .eb { min-height: 100vh; display: flex; flex-direction: column; background: #F4F2EC; color: #0B2142; font-family: "Bricolage Grotesque", -apple-system, "Segoe UI", Arial, sans-serif; }
-.eb-nav { background: #0B2142; color: #fff; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; padding: 20px clamp(20px, 4vw, 48px); }
+.eb-nav { background: #0B2142; color: #fff; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 16px; padding: 18px clamp(20px, 4vw, 48px); }
+.eb-nav-center { display: flex; align-items: center; justify-content: center; gap: 12px; min-width: 0; }
 .eb-logo { font-weight: 700; font-size: 26px; color: #fff; text-decoration: none; }
 .eb-logo span { color: #F5B800; }
-.eb-title { flex: 1; text-align: center; background: transparent; border: 0; color: #fff; font: inherit; font-size: 15px; min-width: 12rem; }
-.eb-save { background: #F5B800; color: #0B2142; font: inherit; font-weight: 600; padding: 12px 20px; border-radius: 10px; border: 0; cursor: pointer; }
+.eb-title { flex: 0 1 16rem; min-width: 8rem; text-align: center; background: transparent; border: 0; border-bottom: 1px solid transparent; color: #fff; font: inherit; font-size: 15px; padding: 6px 4px; }
+.eb-title:focus { outline: none; border-bottom-color: #f5b800; }
+.eb-save { white-space: nowrap; background: #F5B800; color: #0B2142; font: inherit; font-weight: 600; padding: 12px 20px; border-radius: 10px; border: 0; cursor: pointer; }
 .eb-body { flex: 1; display: flex; flex-wrap: wrap; gap: 24px; padding: 24px clamp(20px, 4vw, 48px); }
 .eb-tools { flex: 0 0 210px; display: flex; flex-direction: column; gap: 10px; }
 .eb-tools-label { margin: 0 0 4px; font-size: 13px; letter-spacing: .1em; text-transform: uppercase; color: #4A5A75; }

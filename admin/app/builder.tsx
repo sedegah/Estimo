@@ -123,10 +123,13 @@ export function BuilderView() {
     <div className="eb">
       <nav className="eb-nav">
         <Link className="eb-logo" href="/" aria-label="Back to dashboard">estimo<span>.</span></Link>
-        <select className="eb-preset" value={preset} onChange={(event) => { setPreset(event.target.value); setPlaced(buildPreset(event.target.value)); setSaved(false); }} aria-label="Project template">
-          {PRESETS.map((entry) => (<option key={entry.code} value={entry.code}>{entry.label}</option>))}
-        </select>
-        <input className="eb-title" value={project} onChange={(event) => setProject(event.target.value)} aria-label="Project name" />
+
+        <div className="eb-nav-center">
+          <select className="eb-preset" value={preset} onChange={(event) => { setPreset(event.target.value); setPlaced(buildPreset(event.target.value)); setSaved(false); }} aria-label="Project template">
+            {PRESETS.map((entry) => (<option key={entry.code} value={entry.code}>{entry.label}</option>))}
+          </select>
+          <input className="eb-title" value={project} onChange={(event) => setProject(event.target.value)} aria-label="Project name" />
+        </div>
         <button className="eb-save" type="button" onClick={() => setSaved(true)}>{saved ? "Saved" : "Save project"}</button>
       </nav>
 
