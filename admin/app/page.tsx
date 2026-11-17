@@ -144,7 +144,7 @@ export default function AdminPage() {
   const [query, setQuery] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [form, setForm] = useState({ name: "", category: "", unit: "each", spec: "" });
+  const [form, setForm] = useState({ name: "", category: "", unit: "", spec: "" });
   const [chip, setChip] = useState("All");
   const debouncedQuery = useDebounced(query);
   const [lastPublished, setLastPublished] = useState<string | null>(null);
@@ -338,7 +338,7 @@ export default function AdminPage() {
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(12rem, 1fr))", gap: 12 }}>
                   <input className="admin-search" placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
                   <input className="admin-search" placeholder="Category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
-                  <input className="admin-search" placeholder="Unit" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} />
+                  <input className="admin-search" placeholder="Unit (each, roll, metre)" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} />
                   <input className="admin-search" placeholder="Specification" value={form.spec} onChange={(e) => setForm({ ...form, spec: e.target.value })} />
                 </div>
                 <button
@@ -348,7 +348,7 @@ export default function AdminPage() {
                   onClick={() => void addItem(form).then(async (result) => {
                     if (result.ok) {
                       setMessage("Material added.");
-                      setForm({ name: "", category: "", unit: "each", spec: "" });
+                      setForm({ name: "", category: "", unit: "", spec: "" });
                       await load();
                     } else {
                       setError(result.error ?? "Could not add");
