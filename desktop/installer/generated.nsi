@@ -9,12 +9,12 @@ Unicode true
 
 !define APP_NAME "ESTIMO Admin"
 !define APP_EXE "ESTIMO Admin.exe"
-!define APP_VERSION "1.1.3"
+!define APP_VERSION "1.1.4"
 !define PUBLISHER "ESTIMO"
 !define APP_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\ESTIMOAdmin"
 
 !define SOURCE_DIR "C:\\Users\\kimat\\Desktop\\ESTIMO\\desktop\\release\\win-unpacked"
-!define OUTPUT_FILE "C:\\Users\\kimat\\Desktop\\ESTIMO\\desktop\\release\\ESTIMO-Admin-Setup-1.1.3.exe"
+!define OUTPUT_FILE "C:\\Users\\kimat\\Desktop\\ESTIMO\\desktop\\release\\ESTIMO-Admin-Setup-1.1.4.exe"
 !define LICENSE_FILE "C:\\Users\\kimat\\Desktop\\ESTIMO\\desktop\\build\\LICENSE.txt"
 !define ICON_FILE "C:\\Users\\kimat\\Desktop\\ESTIMO\\desktop\\build\\icon.ico"
 !define HEADER_BMP "C:\\Users\\kimat\\Desktop\\ESTIMO\\desktop\\build\\installerHeader.bmp"
