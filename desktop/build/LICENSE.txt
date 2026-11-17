@@ -1,0 +1,14 @@
+﻿ESTIMO Admin
+
+Copyright (c) ESTIMO. All rights reserved.
+
+This software is provided for authorised ESTIMO staff to maintain the material
+catalogue and prices used by the ESTIMO estimating application.
+
+You may install and use this software on computers you are authorised to use for
+ESTIMO work. You may not redistribute, resell or sublicense it without written
+permission from ESTIMO.
+
+The software is provided "as is", without warranty of any kind. Prices and
+estimates produced with it are planning figures and must be checked by a
+qualified person before they are used commercially.

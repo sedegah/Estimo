@@ -1,21 +1,76 @@
-// ESTIMO admin desktop shell.
+// ESTIMO Admin desktop app.
 //
-// The admin interface is the same web app used in the browser, so there is one
-// implementation of the catalogue screens. Electron supplies the window, the
-// native menu and the "open in browser" behaviour.
-//
-// Run:  ESTIMO_ADMIN_URL=http://localhost:3001 npm start
-// Prod: ESTIMO_ADMIN_URL=https://admin.<your-domain> npm start
+// Packages the admin console as a standalone Next server and starts it on a free
+// loopback port, then opens the window on it. Clerk therefore gets a real http
+// origin, which is what its sign-in flow needs.
 
+const path = require("node:path");
+const http = require("node:http");
+const net = require("node:net");
+const { spawn } = require("node:child_process");
 const { app, BrowserWindow, Menu, shell } = require("electron");
 
-const ADMIN_URL = process.env.ESTIMO_ADMIN_URL || "http://localhost:3001";
+let serverProcess = null;
+let serverPort = 0;
 
-function isInternal(url) {
-  return url.startsWith(ADMIN_URL.replace(/\/[^/]*$/, "")) || url.startsWith("http://localhost:3001") || url.startsWith("http://localhost:3000");
+function freePort() {
+  return new Promise((resolve, reject) => {
+    const server = net.createServer();
+    server.on("error", reject);
+    server.listen(0, "127.0.0.1", () => {
+      const { port } = server.address();
+      server.close(() => resolve(port));
+    });
+  });
 }
 
-function createWindow() {
+function waitForServer(port, attempts = 120) {
+  return new Promise((resolve, reject) => {
+    let remaining = attempts;
+    const probe = () => {
+      const request = http.get({ host: "127.0.0.1", port, path: "/", timeout: 1000 }, (response) => {
+        response.resume();
+        resolve(true);
+      });
+      request.on("error", () => {
+        remaining -= 1;
+        if (remaining <= 0) reject(new Error("Admin server did not start"));
+        else setTimeout(probe, 250);
+      });
+      request.on("timeout", () => request.destroy());
+    };
+    probe();
+  });
+}
+
+async function startServer() {
+  const root = app.isPackaged ? path.join(process.resourcesPath, "admin") : path.join(__dirname, "..", "admin");
+  const entry = path.join(root, "server.js");
+  serverPort = await freePort();
+
+  serverProcess = spawn(process.execPath, [entry], {
+    cwd: root,
+    env: {
+      ...process.env,
+      ELECTRON_RUN_AS_NODE: "1",
+      NODE_ENV: "production",
+      PORT: String(serverPort),
+      HOSTNAME: "127.0.0.1",
+      NEXT_TELEMETRY_DISABLED: "1",
+    },
+    stdio: "ignore",
+    windowsHide: true,
+  });
+
+  serverProcess.on("exit", () => {
+    serverProcess = null;
+  });
+
+  await waitForServer(serverPort);
+  return `http://127.0.0.1:${serverPort}`;
+}
+
+function createWindow(baseUrl) {
   const window = new BrowserWindow({
     width: 1440,
     height: 920,
@@ -25,26 +80,17 @@ function createWindow() {
     title: "ESTIMO Admin",
     autoHideMenuBar: true,
     webPreferences: {
-      preload: `${__dirname}/preload.js`,
       contextIsolation: true,
       nodeIntegration: false,
       sandbox: true,
     },
   });
 
-  window.loadURL(ADMIN_URL);
+  window.loadURL(baseUrl);
 
-  // Links that leave the admin app open in the default browser instead.
   window.webContents.setWindowOpenHandler(({ url }) => {
-    if (!isInternal(url)) shell.openExternal(url);
+    if (!url.startsWith("http://127.0.0.1")) shell.openExternal(url);
     return { action: "deny" };
-  });
-
-  window.webContents.on("will-navigate", (event, url) => {
-    if (!isInternal(url)) {
-      event.preventDefault();
-      shell.openExternal(url);
-    }
   });
 
   return window;
@@ -53,46 +99,37 @@ function createWindow() {
 const template = [
   {
     label: "ESTIMO",
-    submenu: [
-      { role: "reload" },
-      { role: "toggleDevTools" },
-      { type: "separator" },
-      { role: "quit" },
-    ],
+    submenu: [{ role: "reload" }, { role: "toggleDevTools" }, { type: "separator" }, { role: "quit" }],
   },
   {
     label: "Admin",
     submenu: [
-      {
-        label: "Prices",
-        click: () => BrowserWindow.getAllWindows()[0]?.loadURL(`${ADMIN_URL}/`),
-      },
-      {
-        label: "Materials",
-        click: () => BrowserWindow.getAllWindows()[0]?.loadURL(`${ADMIN_URL}/`),
-      },
-      {
-        label: "Settings",
-        click: () => BrowserWindow.getAllWindows()[0]?.loadURL(`${ADMIN_URL}/`),
-      },
-      { type: "separator" },
-      {
-        label: "Open estimating app",
-        click: () => shell.openExternal(ADMIN_URL.replace(/\/admin\/.*$/, "/dashboard")),
-      },
+      { label: "Prices and materials", click: () => BrowserWindow.getAllWindows()[0]?.loadURL(`http://127.0.0.1:${serverPort}/`) },
+      { label: "Estimate builder", click: () => BrowserWindow.getAllWindows()[0]?.loadURL(`http://127.0.0.1:${serverPort}/builder`) },
     ],
   },
 ];
 
-app.whenReady().then(() => {
-  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
-  createWindow();
+app.whenReady().then(async () => {
+  try {
+    const baseUrl = await startServer();
+    Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+    createWindow(baseUrl);
+  } catch (error) {
+    const { dialog } = require("electron");
+    dialog.showErrorBox("ESTIMO Admin could not start", String(error));
+    app.quit();
+  }
 
   app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    if (BrowserWindow.getAllWindows().length === 0) createWindow(`http://127.0.0.1:${serverPort}`);
   });
 });
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
+});
+
+app.on("before-quit", () => {
+  if (serverProcess) serverProcess.kill();
 });

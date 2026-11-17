@@ -1,14 +1,50 @@
 {
   "name": "estimo-admin-desktop",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
-  "description": "ESTIMO admin desktop app — catalogue and price management",
+  "description": "ESTIMO Admin - catalogue and price console",
+  "author": "ESTIMO",
   "main": "main.js",
   "scripts": {
+    "vendor:admin": "node scripts/vendor-admin.mjs",
     "start": "electron .",
-    "dev": "ESTIMO_ADMIN_URL=http://localhost:3000/admin/prices electron ."
+    "dist": "npm run vendor:admin && electron-builder --win nsis",
+    "dist:dir": "npm run vendor:admin && electron-builder --win --dir"
   },
   "devDependencies": {
-    "electron": "^33.2.0"
+    "electron": "^33.2.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.estimo.admin",
+    "productName": "ESTIMO Admin",
+    "copyright": "ESTIMO",
+    "directories": { "output": "release", "buildResources": "build" },
+    "files": ["main.js", "package.json"],
+    "extraResources": [{ "from": "vendor/admin", "to": "admin" }],
+    "win": {
+      "target": [{ "target": "nsis", "arch": ["x64"] }],
+      "icon": "build/icon.png",
+      "artifactName": "ESTIMO-Admin-Setup-${version}.${ext}"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowElevation": true,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "ESTIMO Admin",
+      "uninstallDisplayName": "ESTIMO Admin",
+      "installerIcon": "build/icon.png",
+      "uninstallerIcon": "build/icon.png",
+      "installerHeaderIcon": "build/icon.png",
+      "installerHeader": "build/installerHeader.bmp",
+      "installerSidebar": "build/installerSidebar.bmp",
+      "uninstallerSidebar": "build/installerSidebar.bmp",
+      "license": "build/LICENSE.txt",
+      "deleteAppDataOnUninstall": false,
+      "runAfterFinish": true
+    }
   }
 }
