@@ -309,6 +309,33 @@ async function addServicePrice(env: Env, actor: string, body: Record<string, unk
   await audit(env, actor, "service_price.create", "service", code, `${price}`);
   return json({ ok: true, id }, 201);
 }
+async function listTemplates(env: Env): Promise<Response> {
+  const { results } = await env.DB
+    .prepare("SELECT id, name, preset, plan_json, totals_json, updated_at FROM project_templates ORDER BY updated_at DESC LIMIT 100")
+    .all();
+  return json({ ok: true, templates: results ?? [] });
+}
+
+async function saveTemplate(env: Env, actor: string, body: Record<string, unknown>): Promise<Response> {
+  const name = String(body.name ?? "").trim();
+  const plan = body.plan;
+  if (!name || !plan) return json({ ok: false, error: "name and plan are required" }, 400);
+
+  const id = String(body.id ?? "") || crypto.randomUUID();
+  const preset = String(body.preset ?? "");
+  await env.DB
+    .prepare(
+      `INSERT INTO project_templates (id, name, preset, plan_json, totals_json)
+       VALUES (?, ?, ?, ?, ?)
+       ON CONFLICT(id) DO UPDATE SET name = excluded.name, preset = excluded.preset,
+         plan_json = excluded.plan_json, totals_json = excluded.totals_json, updated_at = datetime('now')`,
+    )
+    .bind(id, name, preset, JSON.stringify(plan), JSON.stringify(body.totals ?? {}))
+    .run();
+
+  await audit(env, actor, "template.save", "project_template", id, name);
+  return json({ ok: true, id });
+}
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     if (request.method === "OPTIONS") return json({ ok: true });
@@ -347,7 +374,10 @@ export default {
       if (url.pathname === "/admin/catalogue/prices" && request.method === "POST") {
         return addCataloguePrice(env, owner, (await request.json().catch(() => ({}))) as Record<string, unknown>);
       }
-      if (url.pathname === "/admin/services/prices" && request.method === "POST") {
+      if (url.pathname === "/admin/templates" && request.method === "GET") return listTemplates(env);
+      if (url.pathname === "/admin/templates" && request.method === "POST") {
+        return saveTemplate(env, owner, (await request.json().catch(() => ({}))) as Record<string, unknown>);
+      }      if (url.pathname === "/admin/services/prices" && request.method === "POST") {
         return addServicePrice(env, owner, (await request.json().catch(() => ({}))) as Record<string, unknown>);
       }
     }

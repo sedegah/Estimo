@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useRef, useState } from "react";
+import { saveTemplate } from "@/lib/api";
 
 type Tool = "light" | "socket" | "board" | "run" | "erase";
 
@@ -84,6 +85,8 @@ export function BuilderView() {
   const [preset, setPreset] = useState<string>("HOME-2B");
   const [dragId, setDragId] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [note, setNote] = useState("");
   const svgRef = useRef<SVGSVGElement | null>(null);
 
   const counts = {
@@ -146,7 +149,15 @@ export function BuilderView() {
             {PRESETS.map((entry) => (<option key={entry.code} value={entry.code}>{entry.label}</option>))}
           </select>
         </div>
-        <button className="eb-save" type="button" onClick={() => setSaved(true)}>{saved ? "Saved" : "Save project"}</button>
+        <button className="eb-save" type="button" disabled={saving} onClick={async () => {
+          setSaving(true);
+          const label = LABELS[tool === "erase" ? "light" : tool];
+          void label;
+          const result = await saveTemplate({ name: `${preset} plan`, preset, plan: placed, totals: { counts, total } });
+          setSaving(false);
+          setSaved(result.ok);
+          setNote(result.ok ? "Saved" : result.error ?? "Could not save");
+        }}>{saving ? "Saving..." : saved ? "Saved" : "Save project"}</button>
       </nav>
 
       <div className="eb-body">
@@ -262,7 +273,22 @@ export function BuilderView() {
           </ul>
           <p className="eb-first">First estimate</p>
           <p className="eb-total">GHS {total.toLocaleString("en-GH")}</p>
-          <button className="eb-download" type="button">Download estimate</button>
+          <button className="eb-download" type="button" onClick={async () => {
+            const response = await fetch("/api/estimate-pdf", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ name: preset, preset, plan: placed, rates: RATES }),
+            });
+            if (!response.ok) { setNote("Could not build the PDF"); return; }
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = "estimo-estimate.pdf";
+            link.click();
+            URL.revokeObjectURL(url);
+          }}>Download estimate</button>
+          {note ? <p className="eb-note">{note}</p> : null}
         </aside>
       </div>
     </div>
