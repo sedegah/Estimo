@@ -331,3 +331,12 @@
 .builder-total strong { font-size: 26px; color: #fff; }
 .builder-download { margin-top: 12px; background: transparent; border: 1px solid #3b5384; color: #e6ecf7; border-radius: 8px; padding: 12px; font: inherit; cursor: pointer; }
 @media (max-width: 900px) { .builder-body { grid-template-columns: 1fr; } }
+
+/* prices table fit */
+.admin-layout { grid-template-columns: minmax(0, 1fr) clamp(14rem, 19vw, 17rem); }
+.admin-table { min-width: 0; table-layout: auto; }
+.admin-table th, .admin-table td { padding-left: 12px; padding-right: 12px; }
+.admin-table td:last-child, .admin-table th:last-child { padding-right: 20px; }
+.admin-price-input { width: 8rem; }
+.admin-edit { background: none; border: 0; padding: 0; font: inherit; font-size: 13px; color: #4a5a75; text-decoration: underline; cursor: pointer; }
+.admin-status.is-set { background: #eef0e8; color: #4a5a75; }
