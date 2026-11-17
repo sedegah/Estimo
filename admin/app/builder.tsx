@@ -6,7 +6,7 @@ import { saveTemplate } from "@/lib/api";
 
 type Tool = "light" | "socket" | "board" | "run" | "erase";
 
-type Placed = { id: string; type: Exclude<Tool, "erase">; x: number; y: number };
+type Placed = { id: string; type: Exclude<Tool, "erase">; x: number; y: number; axis?: "h" | "v" };
 
 const RATES = { light: 180, socket: 95, board: 850, run: 320 } as const;
 
@@ -81,6 +81,7 @@ const buildPreset = (code: string): Placed[] => {
 };
 export function BuilderView() {
   const [tool, setTool] = useState<Tool>("light");
+  const [runAxis, setRunAxis] = useState<"h" | "v">("h");
   const [placed, setPlaced] = useState<Placed[]>(() => buildPreset("HOME-2B"));
   const [preset, setPreset] = useState<string>("HOME-2B");
   const [dragId, setDragId] = useState<string | null>(null);
@@ -130,7 +131,10 @@ export function BuilderView() {
       setSaved(false);
       return;
     }
-    setPlaced((current) => [...current, { id: `${Date.now()}-${Math.random().toString(16).slice(2)}`, type: tool, ...at }]);
+    setPlaced((current) => [
+      ...current,
+      { id: `${Date.now()}-${Math.random().toString(16).slice(2)}`, type: tool, ...at, ...(tool === "run" ? { axis: runAxis } : {}) },
+    ]);
     setSaved(false);
   };
 
@@ -185,6 +189,12 @@ export function BuilderView() {
               {LABELS[value]}
             </button>
           ))}
+          {tool === "run" ? (
+            <div className="eb-axis">
+              <button type="button" className={runAxis === "h" ? "eb-axis-btn is-active" : "eb-axis-btn"} onClick={() => setRunAxis("h")}>Horizontal</button>
+              <button type="button" className={runAxis === "v" ? "eb-axis-btn is-active" : "eb-axis-btn"} onClick={() => setRunAxis("v")}>Vertical</button>
+            </div>
+          ) : null}
           <button type="button" className={tool === "erase" ? "eb-tool is-active" : "eb-tool"} onClick={() => setTool("erase")}>
             Erase
           </button>
@@ -248,10 +258,11 @@ export function BuilderView() {
                   </g>
                 );
               }
+              const runPath = item.axis === "v" ? `M${item.x} ${item.y - 26}V${item.y + 26}` : `M${item.x - 26} ${item.y}H${item.x + 26}`;
               return (
                 <path
                   key={item.id}
-                  d={`M${item.x - 26} ${item.y}H${item.x + 26}`}
+                  d={runPath}
                   stroke="#F5B800"
                   strokeWidth="3"
                   strokeDasharray="3 8"
