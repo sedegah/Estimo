@@ -5,6 +5,12 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { addItem, listCatalogue, setPrice, setUnit, type CatalogueItem } from "@/lib/api";
 
+/** Prices accept digits and one decimal separator only; commas become periods. */
+function cleanPrice(value: string): string {
+  const stripped = value.replace(/[^0-9.,]/g, "").replace(/,/g, ".");
+  const [whole, ...rest] = stripped.split(".");
+  return rest.length ? `${whole}.${rest.join("").slice(0, 2)}` : whole;
+}
 type Tab = "prices" | "materials" | "settings";
 
 function AuthScreen() {
@@ -272,7 +278,7 @@ export default function AdminPage() {
                                 inputMode="decimal"
                                 placeholder="—"
                                 value={draft}
-                                onChange={(event) => setDrafts({ ...drafts, [item.id]: event.target.value })}
+                                onChange={(event) => setDrafts({ ...drafts, [item.id]: cleanPrice(event.target.value) })}
                               />
                             </td>
                             <td className={change === null ? "muted" : change > 0 ? "admin-up" : "admin-down"}>{change === null ? "—" : `${change > 0 ? "+" : ""}${change}%`}</td>
