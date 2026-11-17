@@ -131,6 +131,8 @@ export default function AdminPage() {
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [form, setForm] = useState({ name: "", category: "", unit: "each", spec: "" });
+  const [chip, setChip] = useState("All");
+  const [lastPublished, setLastPublished] = useState<string | null>(null);
 
   const load = async () => {
     const rows = await listCatalogue();
@@ -142,9 +144,11 @@ export default function AdminPage() {
     if (isLoaded && isSignedIn) void load();
   }, [isLoaded, isSignedIn]);
 
+  const categories = useMemo(() => Array.from(new Set((items ?? []).map((item) => item.category).filter(Boolean))).slice(0, 6), [items]);
+
   const visible = useMemo(() => {
     const search = query.trim().toLowerCase();
-    return (items ?? []).filter((item) => !search || `${item.name} ${item.category} ${item.spec}`.toLowerCase().includes(search));
+    return (items ?? []).filter((item) => (chip === "All" || item.category === chip) && (!search || `${item.name} ${item.category} ${item.spec}`.toLowerCase().includes(search)));
   }, [items, query]);
 
   const draftCount = Object.values(drafts).filter((value) => value.trim() !== "").length;
@@ -158,6 +162,7 @@ export default function AdminPage() {
     }
     setDrafts({});
     setMessage(`Published ${saved} price${saved === 1 ? "" : "s"}.`);
+    setLastPublished(new Date().toLocaleDateString("en-GB"));
     await load();
   };
 
@@ -170,7 +175,6 @@ export default function AdminPage() {
         <div className="admin-brand">
           estimo<span>.</span>&nbsp;admin
           <span className="admin-badge">Live app</span>
-          <span style={{ color: "#8fa2c4", fontWeight: 500 }}>{draftCount ? `${draftCount} unpublished change${draftCount === 1 ? "" : "s"}` : "Up to date"}</span>
         </div>
         <div className="admin-user">
           <span className="admin-user-pill">{user?.primaryEmailAddress?.emailAddress}</span>
@@ -183,19 +187,12 @@ export default function AdminPage() {
       <div className="admin-body">
         <aside className="admin-rail">
           <p className="admin-rail-label">Manage</p>
+          <button type="button" className={tab === "prices" ? "admin-rail-link is-active" : "admin-rail-link"} onClick={() => setTab("prices")}>Prices</button>
+          <button type="button" className={tab === "materials" ? "admin-rail-link is-active" : "admin-rail-link"} onClick={() => setTab("materials")}>Materials</button>
           <span className="admin-rail-link is-muted">Project templates</span>
           <span className="admin-rail-link is-muted">Users</span>
           <span className="admin-rail-link is-muted">Audit log</span>
-          {(["prices", "materials", "settings"] as Tab[]).map((value) => (
-            <button
-              key={value}
-              type="button"
-              className={tab === value ? "admin-rail-link is-active" : "admin-rail-link"}
-              onClick={() => setTab(value)}
-            >
-              {value[0].toUpperCase() + value.slice(1)}
-            </button>
-          ))}
+          <button type="button" className={tab === "settings" ? "admin-rail-link is-active" : "admin-rail-link"} onClick={() => setTab("settings")}>Settings</button>
         </aside>
 
         <main className="admin-main">
@@ -223,34 +220,102 @@ export default function AdminPage() {
           ) : null}
 
           {tab === "prices" ? (
-            <div className="admin-layout" style={{ marginTop: 16 }}>
-              <div className="admin-panel">
-                <table className="admin-table">
-                  <thead>
-                    <tr><th>Material</th><th>Unit</th><th>Current</th><th style={{ textAlign: "right" }}>New price</th></tr>
-                  </thead>
-                  <tbody>
-                    {visible.map((item) => (
-                      <tr key={item.id}>
-                        <td><div className="name">{item.name}</div><div className="muted">{item.spec || item.code}</div></td>
-                        <td className="muted">{item.unit}</td>
-                        <td><span className={item.price_ghs === null ? "admin-status is-pending" : "admin-status is-set"}>{item.price_ghs === null ? "Pending" : `GHS ${item.price_ghs}`}</span></td>
-                        <td style={{ textAlign: "right" }}>
-                          <input className="admin-price-input" inputMode="decimal" value={drafts[item.id] ?? ""} onChange={(event) => setDrafts({ ...drafts, [item.id]: event.target.value })} />
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+            <>
+              <div className="admin-actions" style={{ marginTop: 18, justifyContent: "flex-end" }}>
+                <button className="admin-btn" type="button">Import CSV</button>
+                <button className="admin-btn" type="button">Export</button>
+                <button className="admin-btn admin-btn-primary" type="button">Add item</button>
               </div>
-              <aside className="admin-draft">
-                <h2 className="admin-draft-title">Draft changes</h2>
-                <p className="admin-draft-count">{draftCount ? `${draftCount} ready` : "No changes yet"}</p>
-                <button className="admin-btn admin-btn-amber" type="button" disabled={!draftCount} onClick={() => void publish()}>Publish to app</button>
-              </aside>
-            </div>
-          ) : null}
 
+              <div className="admin-toolbar">
+                <input className="admin-search" placeholder="Search items" value={query} onChange={(event) => setQuery(event.target.value)} />
+              </div>
+              <div className="admin-chips">
+                {["All", ...categories].map((category) => (
+                  <button
+                    key={category}
+                    type="button"
+                    className={chip === category ? "admin-chip is-active" : "admin-chip"}
+                    onClick={() => setChip(category)}
+                  >
+                    {category}
+                  </button>
+                ))}
+              </div>
+
+              <div className="admin-layout" style={{ marginTop: 16 }}>
+                <div className="admin-panel">
+                  <table className="admin-table">
+                    <thead>
+                      <tr>
+                        <th className="check" />
+                        <th>Item</th>
+                        <th>Category</th>
+                        <th>Unit</th>
+                        <th>Current</th>
+                        <th>New price</th>
+                        <th>Change</th>
+                        <th>Status</th>
+                        <th />
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {visible.map((item) => {
+                        const draft = drafts[item.id] ?? "";
+                        const current = item.price_ghs;
+                        const next = draft.trim() === "" ? null : Number(draft);
+                        const change = current && next ? Math.round(((next - current) / current) * 100) : null;
+                        return (
+                          <tr key={item.id}>
+                            <td className="check"><input type="checkbox" aria-label={`Select ${item.name}`} /></td>
+                            <td><div className="name">{item.name}</div></td>
+                            <td className="muted">{item.category || "—"}</td>
+                            <td className="muted">{item.unit || "—"}</td>
+                            <td className="muted">{current === null ? "Pending" : `GHS ${current}`}</td>
+                            <td>
+                              <input
+                                className={draft.trim() ? "admin-price-input is-dirty" : "admin-price-input"}
+                                inputMode="decimal"
+                                placeholder="—"
+                                value={draft}
+                                onChange={(event) => setDrafts({ ...drafts, [item.id]: event.target.value })}
+                              />
+                            </td>
+                            <td className={change === null ? "muted" : change > 0 ? "admin-up" : "admin-down"}>{change === null ? "—" : `${change > 0 ? "+" : ""}${change}%`}</td>
+                            <td><span className={next !== null ? "admin-status is-changed" : "admin-status is-pending"}>{next !== null ? "Changed" : "Live"}</span></td>
+                            <td className="muted">Edit</td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                <aside className="admin-draft">
+                  <h2 className="admin-draft-title">Draft changes</h2>
+                  <p className="admin-draft-count">
+                    {draftCount ? `${draftCount} price${draftCount === 1 ? "" : "s"} edited, not yet live` : "No unpublished changes"}
+                  </p>
+                  <ul className="admin-draft-list">
+                    {Object.entries(drafts)
+                      .filter(([, value]) => value.trim() !== "")
+                      .slice(0, 6)
+                      .map(([id, value]) => (
+                        <li key={id}>
+                          <span>{items?.find((row) => row.id === id)?.name ?? id}</span>
+                          <b>{value}</b>
+                        </li>
+                      ))}
+                  </ul>
+                  <p className="admin-draft-last">Last published {lastPublished ?? "—"}</p>
+                  <div className="admin-draft-actions">
+                    <button className="admin-btn admin-btn-amber" type="button" disabled={!draftCount} onClick={() => void publish()}>Publish to app</button>
+                    <button className="admin-btn admin-btn-ghost" type="button" disabled={!draftCount} onClick={() => setDrafts({})}>Discard changes</button>
+                  </div>
+                </aside>
+              </div>
+            </>
+          ) : null}
           {tab === "materials" ? (
             <>
               <div className="admin-panel" style={{ padding: 18, marginTop: 16 }}>

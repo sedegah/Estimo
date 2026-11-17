@@ -65,15 +65,15 @@ const template = [
     submenu: [
       {
         label: "Prices",
-        click: () => BrowserWindow.getAllWindows()[0]?.loadURL(`${ADMIN_URL}/prices`),
+        click: () => BrowserWindow.getAllWindows()[0]?.loadURL(`${ADMIN_URL}/`),
       },
       {
         label: "Materials",
-        click: () => BrowserWindow.getAllWindows()[0]?.loadURL(`${ADMIN_URL}/materials`),
+        click: () => BrowserWindow.getAllWindows()[0]?.loadURL(`${ADMIN_URL}/`),
       },
       {
         label: "Settings",
-        click: () => BrowserWindow.getAllWindows()[0]?.loadURL(`${ADMIN_URL}/settings`),
+        click: () => BrowserWindow.getAllWindows()[0]?.loadURL(`${ADMIN_URL}/`),
       },
       { type: "separator" },
       {
