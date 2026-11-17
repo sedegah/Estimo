@@ -305,7 +305,7 @@ concrete and records what has actually been exercised.
 | Layer | What it gives | Where it lives |
 | --- | --- | --- |
 | D1 Time Travel | Point-in-time restore of the live database, 30 day window | Cloudflare, per database |
-| Daily automated export | A SQL dump as a GitHub Actions artifact, kept 90 days | `.github/workflows/db-backup.yml` |
+| Scheduled export | A SQL dump produced by the operator and kept off the machine | Operator machine or storage |
 | Manual export | Ad hoc dump before risky work | Operator machine |
 | Append-only prices | Price history cannot be lost by an edit | `catalogue_prices` rows |
 
