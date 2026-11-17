@@ -6,7 +6,7 @@ const API_URL = process.env.NEXT_PUBLIC_ESTIMO_API_URL ?? "https://estimo-api.se
  */
 export async function getLivePrices(): Promise<Record<string, number>> {
   try {
-    const response = await fetch(`${API_URL}/catalogue`, { next: { revalidate: 60 } });
+    const response = await fetch(`${API_URL}/catalogue`, { cache: "no-store" });
     if (!response.ok) return {};
     const body = (await response.json()) as { items?: Array<{ id: string; price_ghs: number | null }> };
     const prices: Record<string, number> = {};
