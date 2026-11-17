@@ -375,3 +375,6 @@
 .eb-hint { margin: 10px 0 0; font-size: 12px; line-height: 1.5; color: #6B7684; }
 .eb-plan { cursor: crosshair; touch-action: none; }
 
+
+.admin-pager { display: flex; align-items: center; justify-content: flex-end; gap: 14px; margin-top: 16px; }
+

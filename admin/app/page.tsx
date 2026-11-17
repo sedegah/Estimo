@@ -12,6 +12,7 @@ function cleanPrice(value: string): string {
   return rest.length ? `${whole}.${rest.join("").slice(0, 2)}` : whole;
 }
 type Tab = "prices" | "materials" | "builder" | "settings";
+const PAGE_SIZE = 20;
 
 function AuthScreen() {
   const { signIn } = useSignIn();
@@ -146,6 +147,7 @@ export default function AdminPage() {
   const [error, setError] = useState("");
   const [form, setForm] = useState({ name: "", category: "", unit: "", spec: "" });
   const [chip, setChip] = useState("All");
+  const [page, setPage] = useState(1);
   const debouncedQuery = useDebounced(query);
   const [lastPublished, setLastPublished] = useState<string | null>(null);
 
@@ -171,6 +173,12 @@ export default function AdminPage() {
     const search = debouncedQuery.trim().toLowerCase();
     return (items ?? []).filter((item) => !search || `${item.name} ${item.category} ${item.spec} ${item.code}`.toLowerCase().includes(search));
   }, [items, debouncedQuery]);
+  const pageCount = Math.max(1, Math.ceil(Math.max(visible.length, visibleMaterials.length) / PAGE_SIZE));
+  const pagedPrices = visible.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const pagedMaterials = visibleMaterials.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  useEffect(() => { setPage(1); }, [query, chip, tab]);
+
   const draftCount = Object.values(drafts).filter((value) => value.trim() !== "").length;
 
   const publish = async () => {
@@ -272,7 +280,7 @@ export default function AdminPage() {
                       </tr>
                     </thead>
                     <tbody>
-                      {visible.map((item) => {
+                      {pagedPrices.map((item) => {
                         const draft = drafts[item.id] ?? "";
                         const current = item.price_ghs;
                         const next = draft.trim() === "" ? null : Number(draft);
@@ -362,7 +370,7 @@ export default function AdminPage() {
                 <table className="admin-table">
                   <thead><tr><th>Material</th><th>Category</th><th>Unit</th><th /></tr></thead>
                   <tbody>
-                    {visibleMaterials.map((item) => (
+                    {pagedMaterials.map((item) => (
                       <tr key={item.id}>
                         <td><div className="name">{item.name}</div><div className="muted">{item.spec}</div></td>
                         <td className="muted">{item.category}</td>
@@ -376,6 +384,14 @@ export default function AdminPage() {
                 </table>
               </div>
             </>
+          ) : null}
+
+          {tab !== "settings" ? (
+            <div className="admin-pager">
+              <button className="admin-btn" type="button" disabled={page <= 1} onClick={() => setPage((current) => Math.max(1, current - 1))}>Previous</button>
+              <span className="admin-note">Page {page} of {pageCount}</span>
+              <button className="admin-btn" type="button" disabled={page >= pageCount} onClick={() => setPage((current) => Math.min(pageCount, current + 1))}>Next</button>
+            </div>
           ) : null}
 
           {tab === "settings" ? (
