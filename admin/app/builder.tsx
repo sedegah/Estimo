@@ -29,6 +29,33 @@ const PRESETS = [
   { code: "IND-WORK", label: "Workshop", lights: 4, sockets: 4, boards: 2 },
 ] as const;
 
+const roomGrid = (cols: number, rows: number, labels: string[]) => {
+  const left = 20;
+  const top = 20;
+  const width = 580;
+  const height = 390;
+  const cellW = width / cols;
+  const cellH = height / rows;
+  return labels.map((label, index) => ({
+    label,
+    x: left + (index % cols) * cellW,
+    y: top + Math.floor(index / cols) * cellH,
+    w: cellW,
+    h: cellH,
+  }));
+};
+
+const ROOMS: Record<string, ReturnType<typeof roomGrid>> = {
+  "HOME-1R": roomGrid(1, 1, ["Room"]),
+  "HOME-1B": roomGrid(2, 1, ["Living", "Bedroom"]),
+  "HOME-2B": roomGrid(2, 2, ["Living", "Bedroom 1", "Kitchen", "Bedroom 2"]),
+  "HOME-3B": roomGrid(3, 2, ["Living", "Bedroom 1", "Bedroom 2", "Kitchen", "Bedroom 3", "Bath"]),
+  "HOME-4B": roomGrid(4, 2, ["Living", "Bedroom 1", "Bedroom 2", "Bedroom 3", "Kitchen", "Bath", "Bedroom 4", "Store"]),
+  "SHOP-KIOSK": roomGrid(1, 1, ["Kiosk"]),
+  "SHOP-RETAIL": roomGrid(2, 1, ["Shop floor", "Store"]),
+  "COMM-OFF-S": roomGrid(3, 1, ["Open office", "Meeting", "Lobby"]),
+  "IND-WORK": roomGrid(2, 1, ["Workshop", "Store"]),
+};
 const buildPreset = (code: string): Placed[] => {
   const preset = PRESETS.find((entry) => entry.code === code) ?? PRESETS[2];
   const lights = Array.from({ length: preset.lights }, (_, index) => ({
@@ -66,6 +93,7 @@ export function BuilderView() {
     run: placed.filter((item) => item.type === "run").length,
   };
 
+  const rooms = ROOMS[preset] ?? ROOMS["HOME-2B"];
   const total = counts.light * RATES.light + counts.socket * RATES.socket + counts.board * RATES.board + counts.run * RATES.run;
 
   const point = (event: React.PointerEvent<SVGSVGElement>) => {
@@ -142,18 +170,12 @@ export function BuilderView() {
             className="eb-plan"
             onPointerDown={place}
           >
-            <g fill="none" stroke="#fff" strokeWidth="7">
-              <rect x="20" y="20" width="580" height="390" />
-              <path d="M340 20V150M340 200V410M20 210H190M240 210H600M520 210V300M520 345V410" />
-            </g>
-            <path d="M60 210V320H185M185 210V130H170" fill="none" stroke="#F5B800" strokeWidth="3" strokeDasharray="3 8" strokeLinecap="round" />
-            <g fontSize="14" fill="#C3CEE2">
-              <text x="60" y="60">Living</text>
-              <text x="400" y="60">Bedroom 1</text>
-              <text x="60" y="250">Kitchen</text>
-              <text x="380" y="250">Bedroom 2</text>
-              <text x="535" y="250">Bath</text>
-            </g>
+            {rooms.map((room) => (
+              <g key={room.label}>
+                <rect x={room.x} y={room.y} width={room.w} height={room.h} fill="none" stroke="#fff" strokeWidth="7" />
+                <text x={room.x + 26} y={room.y + 34} fontSize="14" fill="#C3CEE2">{room.label}</text>
+              </g>
+            ))}
 
             {placed.map((item) => {
               if (item.type === "light") {
