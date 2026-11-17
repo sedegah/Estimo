@@ -126,6 +126,14 @@ function AuthScreen() {
   );
 }
 
+function useDebounced<T>(value: T, delay = 250): T {
+  const [settled, setSettled] = useState(value);
+  useEffect(() => {
+    const timer = setTimeout(() => setSettled(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  return settled;
+}
 export default function AdminPage() {
   const { isLoaded, isSignedIn, user } = useUser();
   const { signOut } = useClerk();
@@ -138,6 +146,7 @@ export default function AdminPage() {
   const [error, setError] = useState("");
   const [form, setForm] = useState({ name: "", category: "", unit: "each", spec: "" });
   const [chip, setChip] = useState("All");
+  const debouncedQuery = useDebounced(query);
   const [lastPublished, setLastPublished] = useState<string | null>(null);
 
   const load = async () => {
@@ -153,10 +162,15 @@ export default function AdminPage() {
   const categories = useMemo(() => Array.from(new Set((items ?? []).map((item) => item.category).filter(Boolean))).slice(0, 6), [items]);
 
   const visible = useMemo(() => {
-    const search = query.trim().toLowerCase();
+    const search = debouncedQuery.trim().toLowerCase();
     return (items ?? []).filter((item) => (chip === "All" || item.category === chip) && (!search || `${item.name} ${item.category} ${item.spec}`.toLowerCase().includes(search)));
-  }, [items, query, chip]);
+  }, [items, debouncedQuery, chip]);
 
+
+  const visibleMaterials = useMemo(() => {
+    const search = debouncedQuery.trim().toLowerCase();
+    return (items ?? []).filter((item) => !search || `${item.name} ${item.category} ${item.spec} ${item.code}`.toLowerCase().includes(search));
+  }, [items, debouncedQuery]);
   const draftCount = Object.values(drafts).filter((value) => value.trim() !== "").length;
 
   const publish = async () => {
@@ -320,7 +334,7 @@ export default function AdminPage() {
             <>
               <div className="admin-toolbar" style={{ marginTop: 16 }}>
               <input className="admin-search" placeholder="Search materials" value={query} onChange={(event) => setQuery(event.target.value)} />
-              <span className="admin-note">{items ? `${visible.length} of ${items.length}` : ""}</span>
+              <span className="admin-note">{items ? `${visibleMaterials.length} of ${items.length}` : ""}</span>
             </div>
             <div className="admin-panel" style={{ padding: 18, marginTop: 12 }}>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(12rem, 1fr))", gap: 12 }}>
@@ -350,7 +364,7 @@ export default function AdminPage() {
                 <table className="admin-table">
                   <thead><tr><th>Material</th><th>Category</th><th>Unit</th><th /></tr></thead>
                   <tbody>
-                    {visible.map((item) => (
+                    {visibleMaterials.map((item) => (
                       <tr key={item.id}>
                         <td><div className="name">{item.name}</div><div className="muted">{item.spec}</div></td>
                         <td className="muted">{item.category}</td>
