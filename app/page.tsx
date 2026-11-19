@@ -60,9 +60,6 @@ export default function Home() {
               <Link className="home-cta" href="/quick-estimate?template=HOME-2B">Start an estimate</Link>
               <Link className="home-cta-outline" href="/catalogue">Check material prices</Link>
             </div>
-            <p className="home-pro">
-              <Link href="/projects">Professional / saved projects</Link>
-            </p>
           </div>
 
           <div className="home-plan">
