@@ -14,6 +14,7 @@
 
 type Env = {
   DB: D1Database;
+  IMAGES?: R2Bucket;
   CLERK_PUBLISHABLE_KEY: string;
   DB_PEPPER: string;
   ADMIN_USER_IDS?: string;
@@ -196,6 +197,7 @@ type CatalogueRow = {
   tier: string;
   relevance: string;
   keywords: string | null;
+  image_key: string | null;
   price_ghs: number | null;
   price_brand: string | null;
   price_source: string | null;
@@ -205,7 +207,7 @@ type CatalogueRow = {
 async function listCatalogue(env: Env): Promise<Response> {
   const { results } = await env.DB
     .prepare(
-      `SELECT i.id, i.code, i.name, i.category, i.unit, i.spec, i.tier, i.relevance, i.keywords,
+      `SELECT i.id, i.code, i.name, i.category, i.unit, i.spec, i.tier, i.relevance, i.keywords, i.image_key,
               (SELECT p.price_ghs FROM catalogue_prices p WHERE p.item_id = i.id ORDER BY p.effective_from DESC LIMIT 1) AS price_ghs,
               (SELECT p.brand FROM catalogue_prices p WHERE p.item_id = i.id ORDER BY p.effective_from DESC LIMIT 1) AS price_brand,
               (SELECT p.source FROM catalogue_prices p WHERE p.item_id = i.id ORDER BY p.effective_from DESC LIMIT 1) AS price_source,
@@ -216,8 +218,27 @@ async function listCatalogue(env: Env): Promise<Response> {
   return json({ ok: true, items: results ?? [] });
 }
 
-async function isAdmin(env: Env, userId: string): Promise<boolean> {
-  if (env.ADMIN_CLERK_PUBLISHABLE_KEY) return true;
+const IMAGE_TYPES: Record<string, string> = { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp" };
+
+/** Streams a material photo out of R2. Keys are public and content-addressed by material. */
+async function serveImage(env: Env, key: string): Promise<Response> {
+  if (!env.IMAGES || !/^materials\/[a-z0-9._-]+\.(jpg|jpeg|png|webp)$/i.test(key)) {
+    return new Response("Not found", { status: 404 });
+  }
+  const object = await env.IMAGES.get(key);
+  if (!object) return new Response("Not found", { status: 404 });
+
+  const extension = key.split(".").pop()?.toLowerCase() ?? "jpg";
+  return new Response(object.body, {
+    headers: {
+      "Content-Type": object.httpMetadata?.contentType ?? IMAGE_TYPES[extension] ?? "application/octet-stream",
+      "Cache-Control": "public, max-age=31536000, immutable",
+      "Access-Control-Allow-Origin": "*",
+    },
+  });
+}
+
+async function isAdmin(env: Env, userId: string): Promise<boolean> {  if (env.ADMIN_CLERK_PUBLISHABLE_KEY) return true;
   const allowed = (env.ADMIN_USER_IDS ?? "").split(",").map((value) => value.trim()).filter(Boolean);
   return allowed.includes(userId);
 }
@@ -346,6 +367,9 @@ export default {
 
     const url = new URL(request.url);
     if (url.pathname === "/catalogue" && request.method === "GET") return listCatalogue(env);
+
+    // material photos live in R2; the key is public (it is only a picture)
+    if (url.pathname.startsWith("/images/") && request.method === "GET") return serveImage(env, url.pathname.slice("/images/".length));
 
     if (url.pathname === "/health" || url.pathname === "/") {
       return json({ ok: true, service: "estimo-data-api", storage: "d1", isolation: "owner_key" });

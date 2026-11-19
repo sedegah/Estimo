@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { BASKET_EVENT, basketUnitCount, readBasket } from "@/lib/storage/basket";
+import { BASKET_EVENT, basketMaterialCount, readBasket } from "@/lib/storage/basket";
 
 export function EstimateBasketLink() {
   const [count, setCount] = useState(0);
 
   useEffect(() => {
-    const sync = () => setCount(basketUnitCount(readBasket()));
+    const sync = () => setCount(basketMaterialCount(readBasket()));
     sync();
     window.addEventListener(BASKET_EVENT, sync);
     window.addEventListener("storage", sync);
@@ -22,7 +22,7 @@ export function EstimateBasketLink() {
     <Link
       className="estimate-basket-link"
       href="/estimate-basket"
-      aria-label={`Estimate basket: ${count} item${count === 1 ? "" : "s"}`}
+      aria-label={`Estimate basket: ${count} material${count === 1 ? "" : "s"}`}
     >
       <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" strokeWidth="1.7" aria-hidden="true">
         <path d="M3 4h2.2l1.5 9.3a2 2 0 0 0 2 1.7h7.9a2 2 0 0 0 2-1.6L20 7H6" strokeLinecap="round" strokeLinejoin="round" />

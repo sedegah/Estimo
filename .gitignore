@@ -16,4 +16,8 @@ worker/api/.dev.vars
 docs/ARCHITECTURE.md
 docs/PRODUCTION.md
 
+# downloaded material photos (they live in R2, not in git)
+.cache/
+.cache/supplier-images/
+
 *.exe
