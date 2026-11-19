@@ -218,11 +218,18 @@ async function listCatalogue(env: Env): Promise<Response> {
   return json({ ok: true, items: results ?? [] });
 }
 
-const IMAGE_TYPES: Record<string, string> = { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp" };
+const IMAGE_TYPES: Record<string, string> = {
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  webp: "image/webp",
+  avif: "image/avif",
+  gif: "image/gif",
+};
 
 /** Streams a material photo out of R2. Keys are public and content-addressed by material. */
 async function serveImage(env: Env, key: string): Promise<Response> {
-  if (!env.IMAGES || !/^materials\/[a-z0-9._-]+\.(jpg|jpeg|png|webp)$/i.test(key)) {
+  if (!env.IMAGES || !/^materials\/[a-z0-9._-]+\.(jpg|jpeg|png|webp|avif|gif)$/i.test(key)) {
     return new Response("Not found", { status: 404 });
   }
   const object = await env.IMAGES.get(key);

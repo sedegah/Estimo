@@ -544,7 +544,9 @@
 
   .catalogue-line:last-child { border-bottom: 0; }
 
-  .catalogue-line-main { display: grid; gap: 3px; min-width: 0; }
+  .catalogue-line-main { display: flex; gap: 12px; align-items: center; min-width: 0; }
+
+  .catalogue-line-copy { display: grid; gap: 3px; min-width: 0; }
 
   .catalogue-line-name {
     font-size: 14.5px;
