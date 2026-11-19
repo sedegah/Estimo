@@ -5,11 +5,11 @@ import { EstimateBasketLink } from "./estimate-basket-link";
 
 /**
  * The cart belongs to guests: it holds the estimate they are building before they
- * have an account. Signed-in users have saved estimates instead, so it is hidden.
+ * have an account. It shows until Clerk positively says somebody is signed in, so
+ * it never disappears while Clerk is still loading (or when it cannot load at all).
  */
 export function ClerkEstimateCount() {
   const { isLoaded, isSignedIn } = useUser();
-
-  if (!isLoaded) return null;
-  return isSignedIn ? null : <EstimateBasketLink />;
+  if (isLoaded && isSignedIn) return null;
+  return <EstimateBasketLink />;
 }

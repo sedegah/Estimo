@@ -1,9 +1,10 @@
 import Link from "next/link";
-import { AddToEstimateButton } from "@/components/estimate/add-to-estimate";
 import { CATALOGUE_MATERIALS } from "@/lib/data/catalogue";
-import type { CatalogueMaterial } from "@/lib/types";
 import { getCatalogueData, materialImageUrl } from "@/lib/api/catalogue-prices";
-import { formatPrice } from "@/lib/format";
+import { materialUnitLabel } from "@/lib/format";
+import type { CatalogueMaterial } from "@/lib/types";
+import { CatalogueQuantityControl } from "./catalogue-quantity-control";
+import { CatalogueSummaryBar } from "./catalogue-summary-bar";
 
 const FILTERS: { id: string; label: string; categories: string[] }[] = [
   { id: "all", label: "All", categories: [] },
@@ -88,17 +89,74 @@ const filterHref = (id: string, term: string) => {
   return suffix ? `/catalogue?${suffix}` : "/catalogue";
 };
 
-/** Material search + results table. Used by the public catalogue and the in-app catalogue. */
+/** Simple line drawing that stands in for a photo. */
+function CategoryGlyph({ categoryCode }: { categoryCode: string }) {
+  const common = { fill: "none", stroke: "currentColor", strokeWidth: 1.6, strokeLinecap: "round" as const, strokeLinejoin: "round" as const };
+  if (categoryCode === "CAT-CAB") {
+    return (
+      <svg viewBox="0 0 32 32" width="56" height="56" aria-hidden="true" {...common}>
+        <path d="M4 22c6 0 6-12 12-12s6 12 12 12" />
+        <circle cx="4" cy="22" r="1.5" />
+        <circle cx="28" cy="22" r="1.5" />
+      </svg>
+    );
+  }
+  if (categoryCode === "CAT-SWS") {
+    return (
+      <svg viewBox="0 0 32 32" width="56" height="56" aria-hidden="true" {...common}>
+        <rect x="5" y="5" width="22" height="22" rx="5" />
+        <path d="M12 12v3M20 12v3M16 21v1" />
+      </svg>
+    );
+  }
+  if (categoryCode === "CAT-LGT") {
+    return (
+      <svg viewBox="0 0 32 32" width="56" height="56" aria-hidden="true" {...common}>
+        <rect x="7" y="4" width="18" height="24" rx="4" />
+        <path d="M16 10v6" />
+      </svg>
+    );
+  }
+  if (categoryCode === "CAT-PRO" || categoryCode === "CAT-DB") {
+    return (
+      <svg viewBox="0 0 32 32" width="56" height="56" aria-hidden="true" {...common}>
+        <path d="M18 3 7 18h8l-1 11 11-15h-8z" />
+      </svg>
+    );
+  }
+  if (categoryCode === "CAT-CON" || categoryCode === "CAT-TRK") {
+    return (
+      <svg viewBox="0 0 32 32" width="56" height="56" aria-hidden="true" {...common}>
+        <rect x="3" y="12" width="26" height="8" rx="4" />
+        <path d="M10 12v8M22 12v8" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 32 32" width="56" height="56" aria-hidden="true" {...common}>
+      <rect x="5" y="5" width="22" height="22" rx="5" />
+      <path d="M11 16h10M16 11v10" />
+    </svg>
+  );
+}
+
+/** Material search + price cards. Used by the public catalogue and the in-app catalogue. */
 export async function CatalogueView({ q = "", cat = "all", page = 1 }: { q?: string; cat?: string; page?: number }) {
-  const catalogue = await getCatalogueData();
-  const prices = catalogue.prices;
-  const thumb = (material: CatalogueMaterial) => materialImageUrl(catalogue.images[material.id]);
-  const priceLabel = (material: CatalogueMaterial) => {
-    const entry = prices[material.id];
-    return entry ? formatPrice(entry.price, material.unit) : "Pending";
-  };
+  const { prices, images } = await getCatalogueData();
   const term = q.trim().slice(0, 100);
   const filter = FILTERS.find((entry) => entry.id === cat) ?? FILTERS[0];
+
+  /** Cards show the amount and, where it matters, the basis underneath. */
+  const priceOf = (material: CatalogueMaterial) => {
+    const entry = prices[material.id];
+    if (!entry) return null;
+    const amount = `GHS ${entry.price.toLocaleString("en-GH", {
+      minimumFractionDigits: Number.isInteger(entry.price) ? 0 : 2,
+      maximumFractionDigits: 2,
+    })}`;
+    const basis = material.unit === "No." ? "" : materialUnitLabel(material.unit);
+    return { entry, amount, basis };
+  };
 
   const inFilter = CATALOGUE_MATERIALS.filter(
     (material) => !filter.categories.length || filter.categories.includes(material.categoryCode),
@@ -109,8 +167,19 @@ export async function CatalogueView({ q = "", cat = "all", page = 1 }: { q?: str
         .map((material) => ({ material, score: scoreMaterial(material, term) }))
         .filter((row) => row.score > 0)
         .sort((a, b) => b.score - a.score || a.material.name.localeCompare(b.material.name))
-            .map((row) => row.material)
+        .map((row) => row.material)
     : [...inFilter].sort((a, b) => popularity(a) - popularity(b) || a.name.localeCompare(b.name));
+
+  // chips count what the current search would show in each group
+  const searchPool = term
+    ? CATALOGUE_MATERIALS.map((material) => ({ material, score: scoreMaterial(material, term) }))
+        .filter((row) => row.score > 0)
+        .map((row) => row.material)
+    : CATALOGUE_MATERIALS;
+  const countFor = (entry: (typeof FILTERS)[number]) =>
+    entry.categories.length
+      ? searchPool.filter((material) => entry.categories.includes(material.categoryCode)).length
+      : searchPool.length;
 
   const pageSize = 40;
   const pageCount = Math.max(1, Math.ceil(matched.length / pageSize));
@@ -128,131 +197,129 @@ export async function CatalogueView({ q = "", cat = "all", page = 1 }: { q?: str
 
   return (
     <>
-      <form className="price-search" method="get" action="/catalogue">
+      <header className="catalogue-head">
+        <div className="catalogue-head-copy">
+          <span className="catalogue-eyebrow">Material prices</span>
+          <h1>Check material prices</h1>
+          <p>Search the catalogue for current prices before you start an estimate.</p>
+        </div>
+        <span className="catalogue-currency"><i aria-hidden="true" />Prices in Ghana cedis (GHS)</span>
+      </header>
+
+      <form className="catalogue-search" method="get" action="/catalogue">
         {filter.id !== "all" ? <input type="hidden" name="cat" value={filter.id} /> : null}
-        <label className="price-search-label" htmlFor="material-search">Search materials</label>
-        <input
-          id="material-search"
-          name="q"
-          defaultValue={q}
-          placeholder="For example: 2.5 mm cable, 13 A socket"
-          autoComplete="off"
-        />
+        <label htmlFor="material-search">Search materials</label>
+        <div className="catalogue-search-field">
+          <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" />
+            <path d="M20 20l-3.5-3.5" />
+          </svg>
+          <input
+            id="material-search"
+            name="q"
+            type="search"
+            defaultValue={q}
+            placeholder="For example: 2.5 mm cable, 13 A socket"
+            autoComplete="off"
+          />
+        </div>
       </form>
 
-      <div className="chip-row" aria-label="Material categories">
-        {FILTERS.map((entry) => (
-          <Link key={entry.id} className={entry.id === filter.id ? "chip is-active" : "chip"} href={filterHref(entry.id, term)}>
-            {entry.label}
-          </Link>
-        ))}
+      <div className="catalogue-chips" role="group" aria-label="Filter by category">
+        {FILTERS.map((entry) => {
+          const active = entry.id === filter.id;
+          return (
+            <Link
+              key={entry.id}
+              className={active ? "catalogue-chip is-active" : "catalogue-chip"}
+              aria-pressed={active}
+              href={filterHref(entry.id, term)}
+            >
+              <span>{entry.label}</span>
+              <span className="catalogue-chip-count">{countFor(entry)}</span>
+            </Link>
+          );
+        })}
       </div>
 
-      <section className="table-card catalogue-table">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Item</th>
-              <th>Price</th>
-              <th>Brand</th>
-              <th aria-label="Add to estimate" />
-            </tr>
-          </thead>
-          <tbody>
-            {results.map((material) => (
-              <tr key={material.id}>
-                <td>
-                  <div className="material-name-cell">
-                    <span className={thumb(material) ? "material-thumb" : "material-thumb is-empty"}>
-                      {thumb(material) ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img src={thumb(material)!} alt="" loading="lazy" decoding="async" />
-                      ) : null}
-                    </span>
-                    <Link className="table-link" href={`/catalogue/${material.id}`}>{material.name}</Link>
-                  </div>
-                </td>
-                <td className="price-cell">{priceLabel(material)}</td>
-                <td className="muted-cell">{prices[material.id]?.brand ?? "—"}</td>
-                <td className="table-action">
-                  <AddToEstimateButton
-                    variant="outline"
-                    label="Add"
-                    item={{
-                      materialId: material.id,
-                      name: material.name,
-                      category: material.category,
-                      unit: material.unit,
-                      priceGhs: prices[material.id]?.price ?? null,
-                      brandName: prices[material.id]?.brand ?? null,
-                      supplierName: prices[material.id]?.source ?? null,
-                      verifiedAt: prices[material.id]?.updatedAt ?? null,
-                    }}
-                  />
-                </td>
-              </tr>
-            ))}
-            {!results.length ? (
-              <tr>
-                <td colSpan={4} className="table-empty">
-                  No materials match that search. Try a simpler term such as <b>cable</b>, <b>socket</b> or <b>conduit</b>.
-                </td>
-              </tr>
-            ) : null}
-          </tbody>
-        </table>
-      </section>
-
-      <ul className="catalogue-lines">
-        {results.map((material) => (
-          <li className="catalogue-line" key={material.id}>
-            <div className="catalogue-line-main">
-              <span className={thumb(material) ? "material-thumb" : "material-thumb is-empty"}>
-                {thumb(material) ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={thumb(material)!} alt="" loading="lazy" decoding="async" />
-                ) : null}
-              </span>
-              <div className="catalogue-line-copy">
-                <Link className="catalogue-line-name" href={`/catalogue/${material.id}`}>{material.name}</Link>
-                <span className="catalogue-line-meta">
-                  {priceLabel(material)}
-                  {prices[material.id]?.brand ? ` · ${prices[material.id].brand}` : ""}
-                </span>
-              </div>
-            </div>
-            <AddToEstimateButton
-              variant="outline"
-              label="Add"
-              item={{
-                materialId: material.id,
-                name: material.name,
-                category: material.category,
-                unit: material.unit,
-                priceGhs: prices[material.id]?.price ?? null,
-                brandName: prices[material.id]?.brand ?? null,
-                supplierName: prices[material.id]?.source ?? null,
-                verifiedAt: prices[material.id]?.updatedAt ?? null,
-              }}
-            />
-          </li>
-        ))}
-        {!results.length ? (
-          <li className="catalogue-line catalogue-line-empty">
-            No materials match that search. Try a simpler term such as <b>cable</b>, <b>socket</b> or <b>conduit</b>.
-          </li>
-        ) : null}
-      </ul>
-
-      <nav className="pager" aria-label="Catalogue pages">
-        {currentPage > 1 ? <Link className="pager-btn" href={pageHref(currentPage - 1)}>Previous</Link> : <span className="pager-btn is-disabled">Previous</span>}
-        <span className="pager-info">Page {currentPage} of {pageCount}</span>
-        {currentPage < pageCount ? <Link className="pager-btn" href={pageHref(currentPage + 1)}>Next</Link> : <span className="pager-btn is-disabled">Next</span>}
-      </nav>
-
-      <p className="page-note">
-        {matched.length ? `Showing ${(currentPage - 1) * pageSize + 1}–${(currentPage - 1) * pageSize + results.length} of ${matched.length}` : "No"} material{matched.length === 1 ? "" : "s"}. Prices are published from the ESTIMO catalogue.
+      <p className="catalogue-result" aria-live="polite">
+        {matched.length === 1 ? "1 material" : `${matched.length} materials`}
+        {matched.length > pageSize ? ` · showing ${(currentPage - 1) * pageSize + 1}–${(currentPage - 1) * pageSize + results.length}` : ""}
       </p>
+
+      {results.length ? (
+        <ul className="catalogue-grid">
+          {results.map((material) => {
+            const price = priceOf(material);
+            const photo = materialImageUrl(images[material.id]);
+            return (
+              <li key={material.id}>
+                <article className="catalogue-card">
+                  <div className="catalogue-card-media">
+                    {photo ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={photo} alt={material.name} loading="lazy" decoding="async" />
+                    ) : (
+                      <CategoryGlyph categoryCode={material.categoryCode} />
+                    )}
+                  </div>
+
+                  <span className="catalogue-card-brand">{price?.entry.brand ?? "Brand TBC"}</span>
+
+                  <div className="catalogue-card-copy">
+                    <span className="catalogue-card-category">{material.category}</span>
+                    <Link className="catalogue-card-name" href={`/catalogue/${material.id}`}>{material.name}</Link>
+                  </div>
+
+                  <div className="catalogue-card-foot">
+                    <div className="catalogue-card-price">
+                      {price ? (
+                        <>
+                          <strong>{price.amount}</strong>
+                          {price.basis ? <span>{price.basis}</span> : null}
+                        </>
+                      ) : (
+                        <>
+                          <strong className="is-pending">Price pending</strong>
+                          <span>We will confirm this price soon</span>
+                        </>
+                      )}
+                    </div>
+                    <CatalogueQuantityControl
+                      item={{
+                        materialId: material.id,
+                        name: material.name,
+                        category: material.category,
+                        unit: material.unit,
+                        priceGhs: price?.entry.price ?? null,
+                        brandName: price?.entry.brand ?? null,
+                        supplierName: price?.entry.source ?? null,
+                        verifiedAt: price?.entry.updatedAt ?? null,
+                      }}
+                    />
+                  </div>
+                </article>
+              </li>
+            );
+          })}
+        </ul>
+      ) : (
+        <div className="catalogue-empty">
+          <strong>No materials match that search</strong>
+          <p>Try a shorter term, such as “cable” or “socket”, or switch back to All categories.</p>
+          <Link className="catalogue-empty-cta" href="/catalogue">Clear search</Link>
+        </div>
+      )}
+
+      {pageCount > 1 ? (
+        <nav className="pager" aria-label="Catalogue pages">
+          {currentPage > 1 ? <Link className="pager-btn" href={pageHref(currentPage - 1)}>Previous</Link> : <span className="pager-btn is-disabled">Previous</span>}
+          <span className="pager-info">Page {currentPage} of {pageCount}</span>
+          {currentPage < pageCount ? <Link className="pager-btn" href={pageHref(currentPage + 1)}>Next</Link> : <span className="pager-btn is-disabled">Next</span>}
+        </nav>
+      ) : null}
+
+      <CatalogueSummaryBar />
     </>
   );
 }

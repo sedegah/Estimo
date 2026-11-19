@@ -1,4 +1,4 @@
-/* Flow pages: material prices, project setup, estimate. */
+﻿/* Flow pages: material prices, project setup, estimate. */
 
 .page-shell { padding: clamp(24px, 4vw, 46px) 0 clamp(40px, 6vw, 64px); }
 
@@ -153,7 +153,7 @@
 .data-table .table-empty { text-align: center; color: #6b7684; padding: 34px; }
 .data-table .total-row td { font-weight: 700; border-top: 2px solid var(--navy); border-bottom: 0; }
 
-/* step 2 -¢-¬- setup */
+/* step 2 -Â¢-Â¬- setup */
 .setup-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(16rem, 22rem);
@@ -343,7 +343,7 @@
 .side-card .side-link { display: block; width: 100%; margin: 14px auto 0; text-align: center; }
 .side-fineprint { margin: 14px 0 0; text-align: center; font-size: 11px; color: #8a94a3; }
 
-/* step 3 -¢-¬- estimate */
+/* step 3 -Â¢-Â¬- estimate */
 .estimate-head {
   display: flex;
   align-items: flex-end;
@@ -516,71 +516,79 @@
   .estimate-summary-total { font-size: clamp(2rem, 9vw, 2.75rem); }
 }
 
-/* ── mobile catalogue: one card per material, price and add always visible ── */
-.catalogue-lines { display: none; }
+/* ── catalogue: card grid with photos, counts and quantity steppers ──────── */
+.catalogue-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:24px;margin:4px 0 4px}
+.catalogue-head-copy{display:flex;flex-direction:column;gap:12px;max-width:640px}
+.catalogue-eyebrow{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#5b6475}
+.catalogue-head h1{margin:0;font-size:clamp(2.3rem,4.4vw,3.4rem);line-height:1.02;letter-spacing:-.03em;font-weight:800;color:var(--navy)}
+.catalogue-head p{margin:0;font-size:17px;line-height:1.5;color:#4a5568}
+.catalogue-currency{display:inline-flex;align-items:center;gap:10px;font-size:14px;color:#4a5568;background:#fff;border:1px solid #e2e0d8;border-radius:999px;padding:10px 16px;white-space:nowrap}
+.catalogue-currency i{width:8px;height:8px;border-radius:50%;background:#1f8a5b}
 
-@media (max-width: 760px) {
-  .catalogue-table { display: none; }
+.catalogue-search{display:flex;flex-direction:column;gap:10px;margin:16px 0 0}
+.catalogue-search label{font-size:14px;font-weight:600;color:var(--navy)}
+.catalogue-search-field{position:relative;display:flex;align-items:center}
+.catalogue-search-field svg{position:absolute;left:20px;color:#5b6475;pointer-events:none}
+.catalogue-search-field input{width:100%;box-sizing:border-box;height:60px;padding:0 20px 0 52px;font-size:17px;color:var(--navy);background:#fff;border:1.5px solid #cfcdc4;border-radius:16px}
+.catalogue-search-field input:focus{outline:none;border-color:var(--navy);box-shadow:0 0 0 3px rgba(11,31,63,.08)}
 
-  .catalogue-lines {
-    display: grid;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    background: #fff;
-    border: 1px solid #e2e4dc;
-    border-radius: 12px;
-    overflow: hidden;
-  }
+.catalogue-chips{display:flex;flex-wrap:wrap;gap:10px}
+.catalogue-chip{display:inline-flex;align-items:center;gap:8px;height:44px;padding:0 18px;border-radius:999px;font-size:15px;font-weight:500;border:1.5px solid #cfcdc4;background:#fff;color:var(--navy)}
+.catalogue-chip:hover{border-color:#a9ad9f}
+.catalogue-chip.is-active{background:var(--navy);border-color:var(--navy);color:#fff}
+.catalogue-chip-count{font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--surface);color:#4a5568}
+.catalogue-chip.is-active .catalogue-chip-count{background:rgba(255,255,255,.18);color:#fff}
 
-  .catalogue-line {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: center;
-    gap: 12px;
-    padding: 14px 16px;
-    border-bottom: 1px solid #e3e5de;
-  }
+.catalogue-result{margin:0;font-size:14px;color:#4a5568}
 
-  .catalogue-line:last-child { border-bottom: 0; }
+.catalogue-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:20px}
+.catalogue-grid > li{display:flex}
+.catalogue-card{width:100%;background:#fff;border:1px solid #e2e0d8;border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:16px}
+.catalogue-card-media{height:190px;border-radius:14px;background:#f7f6f2;border:1px solid #eceae3;overflow:hidden;display:grid;place-items:center;color:var(--navy)}
+.catalogue-card-media img{width:100%;height:100%;object-fit:contain;display:block}
+.catalogue-card-brand{align-self:flex-start;font-size:12px;font-weight:600;letter-spacing:.06em;color:#4a5568;background:var(--surface);border-radius:999px;padding:6px 12px}
+.catalogue-card-copy{display:flex;flex-direction:column;gap:6px;flex:1}
+.catalogue-card-category{font-size:12px;color:#5b6475}
+.catalogue-card-name{font-size:19px;line-height:1.25;font-weight:700;letter-spacing:-.01em;color:var(--navy)}
+.catalogue-card-name:hover{text-decoration:underline;text-underline-offset:3px}
+.catalogue-card-foot{display:flex;align-items:flex-end;justify-content:space-between;gap:12px}
+.catalogue-card-price{display:flex;flex-direction:column;gap:2px;min-width:0}
+.catalogue-card-price strong{font-size:25px;font-weight:800;letter-spacing:-.02em;line-height:1.1;color:var(--navy)}
+.catalogue-card-price strong.is-pending{font-size:13px;font-weight:600;letter-spacing:0;color:#8a5a00;background:#fff3d6;border-radius:8px;padding:5px 10px;align-self:flex-start}
+.catalogue-card-price span{font-size:13px;color:#5b6475}
+.catalogue-add{height:48px;padding:0 22px;border-radius:12px;border:1.5px solid var(--navy);background:#fff;color:var(--navy);font-size:15px;font-weight:600;cursor:pointer}
+.catalogue-add:hover{background:#f4f5f1}
+.catalogue-stepper{display:flex;align-items:center;background:var(--navy);color:#fff;border-radius:12px;height:48px}
+.catalogue-stepper button{width:44px;height:48px;border:0;background:transparent;color:#fff;font-size:20px;line-height:1;cursor:pointer;border-radius:12px}
+.catalogue-stepper button:hover{background:rgba(255,255,255,.1)}
+.catalogue-stepper span{min-width:24px;text-align:center;font-weight:700}
 
-  .catalogue-line-main { display: flex; gap: 12px; align-items: center; min-width: 0; }
+.catalogue-empty{background:#fff;border:1px dashed #cfcdc4;border-radius:20px;padding:48px 24px;text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center}
+.catalogue-empty strong{font-size:22px;font-weight:700;color:var(--navy)}
+.catalogue-empty p{margin:0;font-size:15px;color:#4a5568;max-width:420px}
+.catalogue-empty-cta{margin-top:12px;display:inline-flex;align-items:center;height:48px;padding:0 22px;border-radius:12px;background:var(--navy);color:#fff;font-size:15px;font-weight:600}
 
-  .catalogue-line-copy { display: grid; gap: 3px; min-width: 0; }
+.catalogue-summary{position:sticky;bottom:24px;margin:32px auto 0;background:var(--navy);color:#fff;border-radius:20px;padding:14px 14px 14px 24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:16px;box-shadow:0 12px 32px rgba(11,31,63,.25)}
+.catalogue-summary-copy{display:flex;flex-direction:column;gap:2px}
+.catalogue-summary-copy>span{font-size:13px;color:#c9d3e8}
+.catalogue-summary-copy>div{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.catalogue-summary-copy strong{font-size:24px;font-weight:800}
+.catalogue-summary-copy small{font-size:13px;color:#c9d3e8}
+.catalogue-summary-cta{height:52px;display:inline-flex;align-items:center;padding:0 28px;border-radius:14px;background:var(--yellow);color:var(--navy);font-size:16px;font-weight:700}
 
-  .catalogue-line-name {
-    font-size: 14.5px;
-    font-weight: 700;
-    line-height: 1.3;
-    color: var(--navy);
-  }
-
-  .catalogue-line-meta { font-size: 12.5px; color: #6b7684; }
-
-  .catalogue-line .btn-outline {
-    min-height: 40px;
-    padding: 0 18px;
-    white-space: nowrap;
-  }
-
-  .catalogue-line-empty {
-    display: block;
-    padding: 22px 16px;
-    font-size: 14px;
-    line-height: 1.55;
-    color: #6b7684;
-    text-align: center;
-  }
+@media (max-width:560px){
+  .catalogue-card-media{height:150px}
+  .catalogue-card-price strong{font-size:22px}
+  .catalogue-summary{position:static;margin-top:24px}
 }
-
-/* ── mobile estimate: total first, then a readable line list ─────────────── */
+/* â”€â”€ mobile estimate: total first, then a readable line list â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
 .estimate-lines { display: none; }
 
 @media (max-width: 760px) {
   .estimate-page { display: flex; flex-direction: column; }
 
   /* the actions live in the header on desktop; release them so the order reads
-     title → total → actions → lines → fine print on a phone */
+     title â†’ total â†’ actions â†’ lines â†’ fine print on a phone */
   .estimate-head { display: contents; }
   .estimate-head > div:first-child { order: 1; margin-bottom: 16px; }
   .estimate-head .page-sub { margin-bottom: 0; }

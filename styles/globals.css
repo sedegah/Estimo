@@ -1,4 +1,4 @@
-:root {
+﻿:root {
   --navy: #0b1f3f;
   --navy-bar: #0b1f3f;
   --charcoal: #17202c;
@@ -150,7 +150,7 @@ select.input { appearance: auto; }
 .price-review-form .btn{justify-self:start}
 
 
-/* Phase 3 · Step 12 — Product Intelligence */
+/* Phase 3 Â· Step 12 â€” Product Intelligence */
 .material-page{padding-bottom:80px}
 .config-section td small{display:block;color:#667085;margin-top:4px}
 .product-meta{display:flex;flex-wrap:wrap;gap:8px}
@@ -176,12 +176,6 @@ select.input { appearance: auto; }
   .material-hero{grid-template-columns:minmax(0,1fr)}
   .material-photo{aspect-ratio:auto;min-height:150px;max-width:440px}
 }
-
-/* material thumbnails in the catalogue */
-.material-name-cell{display:flex;align-items:center;gap:12px;min-width:0}
-.material-thumb{width:46px;height:46px;flex:0 0 auto;border-radius:9px;border:1px solid #e7e9e2;background:#fff;overflow:hidden;display:grid;place-items:center}
-.material-thumb img{width:100%;height:100%;object-fit:cover;display:block}
-.material-thumb.is-empty{background:#f4f5f1;border-style:dashed;border-color:#dde0d7}
 
 /* the material page's specification reads as label / value rows, not a grid table */
 .spec-section .table-wrap{background:transparent;border:0;border-radius:0;overflow:visible}
@@ -260,7 +254,7 @@ select.input { appearance: auto; }
 @media(max-width:640px){.material-result-topline{align-items:flex-start}}
 
 
-/* V17 — guest estimate basket */
+/* V17 â€” guest estimate basket */
 .estimate-basket-link{display:inline-flex!important;align-items:center;gap:7px;color:#cfd9e4;padding:4px 2px}
 .estimate-basket-link:hover{color:#fff}
 .estimate-basket-link svg{display:block}
@@ -306,7 +300,7 @@ select.input { appearance: auto; }
 @media(max-width:640px){.estimate-basket-summary{width:100%;overflow-x:auto}.estimate-basket-summary>span{min-width:86px}.estimate-basket-item{grid-template-columns:1fr auto}.estimate-basket-item-main{grid-column:1/-1}.estimate-line-total{min-width:92px}.material-result-actions{align-items:stretch}.material-result-actions .btn{width:100%;justify-content:center}}
 
 
-/* ESTIMO Master V2 — guest basket to saved project */
+/* ESTIMO Master V2 â€” guest basket to saved project */
 .basket-save-form{display:grid;gap:12px;margin-top:18px}
 .basket-save-form label{display:grid;gap:6px;font-size:.82rem;font-weight:800;color:#475569}
 .basket-save-form input,.basket-save-form select{width:100%;border:1px solid #d8dee8;border-radius:10px;padding:11px 12px;background:#fff;color:#0b1f3a;font:inherit}
