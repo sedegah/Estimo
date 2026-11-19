@@ -177,6 +177,12 @@ select.input { appearance: auto; }
   .material-photo{aspect-ratio:auto;min-height:150px;max-width:440px}
 }
 
+/* material thumbnails in the catalogue */
+.material-name-cell{display:flex;align-items:center;gap:12px;min-width:0}
+.material-thumb{width:46px;height:46px;flex:0 0 auto;border-radius:9px;border:1px solid #e7e9e2;background:#fff;overflow:hidden;display:grid;place-items:center}
+.material-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.material-thumb.is-empty{background:#f4f5f1;border-style:dashed;border-color:#dde0d7}
+
 /* the material page's specification reads as label / value rows, not a grid table */
 .spec-section .table-wrap{background:transparent;border:0;border-radius:0;overflow:visible}
 .spec-section table{width:100%;min-width:0}
