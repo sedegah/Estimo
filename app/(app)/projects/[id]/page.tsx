@@ -146,7 +146,8 @@ export default function ProjectPage() {
     const lines = project.items ?? [];
     const priced = lines.reduce((sum, line) => (line.priceGhs == null ? sum : sum + line.priceGhs * line.quantity), 0);
     const unpriced = lines.filter((line) => line.priceGhs == null).length;
-    const money = (value: number) => `GHS ${value.toLocaleString("en-GH", { maximumFractionDigits: 2 })}`;
+    const money = (value: number) =>
+      `GHS ${value.toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
     return (
       <>
