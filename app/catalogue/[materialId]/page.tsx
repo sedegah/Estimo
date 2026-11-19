@@ -45,7 +45,7 @@ export default async function MaterialPage({ params }: { params: Promise<{ mater
         </figure>
       </section>
 
-      <section className="card config-section">
+      <section className="card config-section spec-section">
         <h2>Specification</h2>
         <div className="table-wrap">
           <table>
@@ -68,11 +68,27 @@ export default async function MaterialPage({ params }: { params: Promise<{ mater
               </tr>
               <tr>
                 <th>Quick-build relevance</th>
-                <td>{material.relevance || "Not set"}</td>
+                <td>
+                  {material.relevance ? (
+                    <span className={`spec-chip is-${material.relevance.toLowerCase()}`}>{material.relevance}</span>
+                  ) : (
+                    "Not set"
+                  )}
+                </td>
               </tr>
               <tr>
                 <th>Search keywords</th>
-                <td>{material.keywords.length ? material.keywords.join(", ") : "-"}</td>
+                <td>
+                  {material.keywords.length ? (
+                    <span className="spec-chips">
+                      {material.keywords.map((keyword) => (
+                        <span className="spec-chip" key={keyword}>{keyword}</span>
+                      ))}
+                    </span>
+                  ) : (
+                    "-"
+                  )}
+                </td>
               </tr>
             </tbody>
           </table>
