@@ -151,18 +151,29 @@ select.input { appearance: auto; }
 
 
 /* Phase 3 · Step 12 — Product Intelligence */
-.intelligence-page,.product-intelligence-page{padding-bottom:80px}
+.material-page{padding-bottom:80px}
 .config-section td small{display:block;color:#667085;margin-top:4px}
-.product-intel-hero{display:flex;justify-content:space-between;gap:30px;align-items:flex-start;margin:20px 0}
-.product-intel-hero h1{font-size:clamp(2rem,4vw,3.2rem);letter-spacing:-.04em;margin:5px 0}
-.product-intel-hero p{color:#667085;max-width:750px}
 .product-meta{display:flex;flex-wrap:wrap;gap:8px}
 .product-meta span{background:#f1f3f6;border:1px solid #e1e5ea;border-radius:999px;padding:6px 9px;font-size:.72rem;font-weight:750}
-.intelligence-guard{max-width:340px;background:#fff8df;border:1px solid #ecd279;border-radius:14px;padding:15px}
-.intelligence-guard strong{color:#0B1F3A}
-.intelligence-guard p{font-size:.8rem;line-height:1.5;margin:6px 0 0;color:#66561d}
-.product-intelligence-page .breadcrumb{margin-top:20px}
-@media(max-width:720px){.intelligence-toolbar,.product-intel-hero,.region-filter{flex-direction:column;align-items:flex-start}}
+
+/* material page: copy and a photo slot, then specification, then the price */
+.material-page .breadcrumb{display:flex;align-items:center;gap:8px;margin:20px 0 6px;font-size:.85rem;color:#6b7684}
+.material-hero{display:grid;grid-template-columns:minmax(0,1fr) minmax(220px,320px);gap:clamp(20px,4vw,44px);align-items:start;margin:14px 0 26px}
+.material-hero h1{margin:6px 0 10px;font-size:clamp(2rem,4vw,3.2rem);line-height:1.04;letter-spacing:-.035em;color:var(--navy)}
+.material-purpose{margin:0 0 16px;max-width:640px;font-size:15.5px;line-height:1.6;color:#5f6b7a}
+.material-photo{margin:0;display:grid;place-items:center;gap:10px;aspect-ratio:4/3;padding:18px;border:1px dashed #cfd5dd;border-radius:16px;background:#fafbfc;color:#9aa4b1;text-align:center}
+.material-photo figcaption{display:grid;gap:2px}
+.material-photo strong{font-size:.82rem;font-weight:700;color:#6b7684}
+.material-photo span{font-size:.72rem;color:#9aa4b1}
+.material-price-card{padding:clamp(18px,2.6vw,26px)}
+.material-price{margin:6px 0 4px;font-size:clamp(1.9rem,3.4vw,2.6rem);font-weight:800;letter-spacing:-.03em;line-height:1.05;color:var(--navy)}
+.material-price-missing{color:#8a94a3}
+.material-price-meta{margin:0;font-size:.8rem;color:#6b7684}
+.material-price-note{margin:10px 0 18px;max-width:520px;font-size:.82rem;line-height:1.55;color:#6b7684}
+@media (max-width:820px){
+  .material-hero{grid-template-columns:minmax(0,1fr)}
+  .material-photo{aspect-ratio:16/9;max-width:440px}
+}
 .simple-home-copy .lead{max-width:690px}
 @media(max-width:760px){.quick-result-actions .btn{width:100%;justify-content:center}}
 .material-search-hero .lead{max-width:720px}
