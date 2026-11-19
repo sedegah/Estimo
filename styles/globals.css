@@ -172,7 +172,20 @@ select.input { appearance: auto; }
 .material-price-note{margin:10px 0 18px;max-width:520px;font-size:.82rem;line-height:1.55;color:#6b7684}
 @media (max-width:820px){
   .material-hero{grid-template-columns:minmax(0,1fr)}
-  .material-photo{aspect-ratio:16/9;max-width:440px}
+  .material-photo{aspect-ratio:auto;min-height:150px;max-width:440px}
+}
+
+/* the specification table stacks into label/value pairs on a phone */
+@media (max-width:720px){
+  .material-page .table-wrap{overflow:visible}
+  .material-page .table-wrap table{min-width:0}
+  .material-page .table-wrap tbody,
+  .material-page .table-wrap tr,
+  .material-page .table-wrap th,
+  .material-page .table-wrap td{display:block;width:100%}
+  .material-page .table-wrap th{padding:10px 14px;font-size:12px;border-bottom:0}
+  .material-page .table-wrap td{padding:10px 14px 14px;font-size:14px;border-bottom:1px solid var(--line)}
+  .material-page .table-wrap tr:last-child td{border-bottom:0}
 }
 .simple-home-copy .lead{max-width:690px}
 @media(max-width:760px){.quick-result-actions .btn{width:100%;justify-content:center}}
