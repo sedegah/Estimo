@@ -8,9 +8,11 @@ type Props = {
   item: Omit<BasketItem, "quantity">;
   variant?: "primary" | "outline";
   label?: string;
+  removeLabel?: string;
 };
 
-export function AddToEstimateButton({ item, variant = "primary", label = "+ Add to estimate" }: Props) {
+/** Adds the material to the estimate basket, then turns into the way back out. */
+export function AddToEstimateButton({ item, variant = "primary", label = "+ Add to estimate", removeLabel }: Props) {
   const [added, setAdded] = useState(false);
 
   useEffect(() => {
@@ -24,24 +26,26 @@ export function AddToEstimateButton({ item, variant = "primary", label = "+ Add 
     };
   }, [item.materialId]);
 
-  const add = () => {
+  const toggle = () => {
     const current = readBasket();
-    const existing = current.find((entry) => entry.materialId === item.materialId);
-    if (existing) {
-      writeBasket(current.map((entry) => entry.materialId === item.materialId
-        ? { ...entry, quantity: entry.quantity + 1 }
-        : entry));
-    } else {
-      writeBasket([...current, { ...item, quantity: 1 }]);
+    const exists = current.some((entry) => entry.materialId === item.materialId);
+    if (exists) {
+      writeBasket(current.filter((entry) => entry.materialId !== item.materialId));
+      setAdded(false);
+      return;
     }
+    writeBasket([...current, { ...item, quantity: 1 }]);
     setAdded(true);
   };
 
-  const className = variant === "outline" ? "btn-outline btn-sm" : `btn ${added ? "btn-added" : "btn-primary"}`;
+  const removed = removeLabel ?? (variant === "outline" ? "Remove" : "Remove from estimate");
+  const className = variant === "outline"
+    ? `btn-outline btn-sm${added ? " is-added" : ""}`
+    : `btn ${added ? "btn-added" : "btn-primary"}`;
 
   return (
-    <button className={className} type="button" onClick={add}>
-      {variant === "outline" ? (added ? "Added" : label) : (added ? "Add another" : label)}
+    <button className={className} type="button" onClick={toggle} aria-pressed={added}>
+      {added ? removed : label}
     </button>
   );
 }
