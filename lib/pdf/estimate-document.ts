@@ -38,6 +38,11 @@ function loadFontFile(fileName: string): Uint8Array {
   return new Uint8Array(fs.readFileSync(path.join(process.cwd(), "public", "fonts", fileName)));
 }
 
+/** Official brand artwork, so the PDF carries the same wordmark as the app. */
+function loadBrandFile(fileName: string): Uint8Array {
+  return new Uint8Array(fs.readFileSync(path.join(process.cwd(), "public", "brand", fileName)));
+}
+
 function strongText(page: PDFPage, text: string, options: DrawOptions) {
   page.drawText(text, options);
 }
@@ -50,22 +55,44 @@ function rightStrong(page: PDFPage, text: string, right: number, y: number, size
   page.drawText(text, { x: right - font.widthOfTextAtSize(text, size), y, size, font, color });
 }
 
-/** The busbar "E" mark, drawn with primitives so the PDF needs no embedded images. */
-function drawMark(page: PDFPage, x: number, y: number, scale = 1) {
-  const bar = 3.4 * scale;
-  const height = 26 * scale;
-  const width = 18 * scale;
+/** Breaks a single line into as many lines as the width needs. */
+function wrapToWidth(text: string, font: PDFFont, size: number, maxWidth: number): string[] {
+  const lines: string[] = [];
+  let current = "";
+  for (const word of text.split(/\s+/).filter(Boolean)) {
+    const next = current ? `${current} ${word}` : word;
+    if (!current || font.widthOfTextAtSize(next, size) <= maxWidth) {
+      current = next;
+    } else {
+      lines.push(current);
+      current = word;
+    }
+  }
+  if (current) lines.push(current);
+  return lines.length ? lines : [""];
+}
 
-  page.drawRectangle({ x, y, width: bar, height, color: WHITE });
-  page.drawRectangle({ x, y: y + height - bar, width, height: bar, color: WHITE });
-  page.drawRectangle({ x, y: y + height / 2 - bar / 2, width: width * 0.72, height: bar, color: WHITE });
-  page.drawRectangle({ x, y, width, height: bar, color: WHITE });
+/** Trims a line until it and its ellipsis fit the width. */
+function ellipsize(text: string, font: PDFFont, size: number, maxWidth: number): string {
+  if (font.widthOfTextAtSize(text, size) <= maxWidth) return text;
+  let cut = text;
+  while (cut.length > 1 && font.widthOfTextAtSize(`${cut}...`, size) > maxWidth) cut = cut.slice(0, -1).trimEnd();
+  return `${cut}...`;
+}
 
-  const radius = 4.4 * scale;
-  const dotX = x + width + 7 * scale;
-  [y + height - bar / 2, y + height / 2, y + bar / 2].forEach((cy) => {
-    page.drawCircle({ x: dotX, y: cy, size: radius, color: AMBER });
-  });
+/** Fits a project name into at most two header lines, shrinking the type first. */
+function fitTitle(text: string, font: PDFFont, maxWidth: number, maxLines = 2) {
+  let size = 22;
+  let lines = wrapToWidth(text, font, size, maxWidth);
+  while (lines.length > maxLines && size > 15) {
+    size -= 1;
+    lines = wrapToWidth(text, font, size, maxWidth);
+  }
+  if (lines.length > maxLines) {
+    const tail = lines.slice(maxLines - 1).join(" ");
+    lines = [...lines.slice(0, maxLines - 1), ellipsize(tail, font, size, maxWidth)];
+  }
+  return { size, lines };
 }
 
 export async function buildEstimatePdf({ template, quality, counts, name, issuedAt = new Date() }: Input): Promise<Uint8Array> {
@@ -84,31 +111,40 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
 
   const font = await pdf.embedFont(loadFontFile("bricolage-regular.ttf"), { subset: false });
   const bold = await pdf.embedFont(loadFontFile("bricolage-bold.ttf"), { subset: false });
+  const wordmark = await pdf.embedPng(loadBrandFile("estimo-logo-horizontal-dark.png"));
+  const footerMark = await pdf.embedPng(loadBrandFile("estimo-logo-horizontal-mono-navy.png"));
 
   const page = pdf.addPage([595.28, 841.89]);
   const { width, height } = page.getSize();
   const margin = 48;
 
   // ── header ────────────────────────────────────────────────────────────────
-  const headerHeight = 168;
+  const title = fitTitle(name ?? type.label, bold, width - margin * 2);
+  const titleLead = 26;
+  const headerHeight = 168 + (title.lines.length - 1) * titleLead;
   page.drawRectangle({ x: 0, y: height - headerHeight, width, height: headerHeight, color: NAVY });
   page.drawRectangle({ x: 0, y: height - headerHeight, width, height: 4, color: AMBER });
 
-  drawMark(page, margin, height - 62, 1.05);
-  strongText(page, "estimo", { x: margin + 42, y: height - 58, size: 24, font: bold, color: WHITE });
+  const wordmarkHeight = 26;
+  const wordmarkWidth = (wordmark.width / wordmark.height) * wordmarkHeight;
+  page.drawImage(wordmark, { x: margin, y: height - 66, width: wordmarkWidth, height: wordmarkHeight });
 
-  strongText(page, "ELECTRICAL ESTIMATE", { x: margin, y: height - 92, size: 8.5, font: bold, color: AMBER });
-  strongText(page, name ?? type.label, { x: margin, y: height - 122, size: 22, font: bold, color: WHITE });
+  strongText(page, "ELECTRICAL ESTIMATE", { x: margin, y: height - 96, size: 8.5, font: bold, color: AMBER });
+  title.lines.forEach((line, index) => {
+    strongText(page, line, { x: margin, y: height - 126 - index * titleLead, size: title.size, font: bold, color: WHITE });
+  });
+
+  const subtitleY = height - 126 - (title.lines.length - 1) * titleLead - 20;
   page.drawText(`${type.label} · ${fittings} fittings · ${spaces} spaces`, {
     x: margin,
-    y: height - 142,
+    y: subtitleY,
     size: 10,
     font,
     color: PALE,
   });
 
   const dateLabel = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric" }).format(issuedAt);
-  rightText(page, dateLabel, width - margin, height - 142, 10, font, PALE);
+  rightText(page, dateLabel, width - margin, subtitleY, 10, font, PALE);
 
   // ── total card ────────────────────────────────────────────────────────────
   let y = height - headerHeight - 36;
@@ -116,13 +152,10 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
   page.drawRectangle({ x: margin, y: y - 74, width: 4, height: 74, color: AMBER });
   strongText(page, "ESTIMATED TOTAL", { x: margin + 20, y: y - 24, size: 8, font: bold, color: MUTED });
   strongText(page, money(total), { x: margin + 20, y: y - 58, size: 28, font: bold, color: NAVY });
-  page.drawText("Materials and labour. Illustrative planning figure, not a quotation.", {
-    x: margin + 250,
-    y: y - 34,
-    size: 8.5,
-    font,
-    color: MUTED,
-  });
+
+  const cardRight = width - margin - 20;
+  rightText(page, "Materials and labour.", cardRight, y - 30, 8.5, font, MUTED);
+  rightText(page, "Illustrative planning figure, not a quotation.", cardRight, y - 43, 8.5, font, MUTED);
 
   // ── table ─────────────────────────────────────────────────────────────────
   y -= 110;
@@ -171,11 +204,14 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
   // ── footer ────────────────────────────────────────────────────────────────
   const footerY = 54;
   page.drawLine({ start: { x: margin, y: footerY + 16 }, end: { x: tableRight, y: footerY + 16 }, thickness: 0.7, color: LINE });
-  drawMark(page, margin, footerY - 2, 0.55);
-  strongText(page, "ESTIMO · Ghana electrical estimates", { x: margin + 30, y: footerY, size: 8, font: bold, color: NAVY });
+
+  const footerMarkHeight = 10;
+  const footerMarkWidth = (footerMark.width / footerMark.height) * footerMarkHeight;
+  page.drawImage(footerMark, { x: margin, y: footerY - 1, width: footerMarkWidth, height: footerMarkHeight });
+  strongText(page, "Ghana electrical estimates", { x: margin + footerMarkWidth + 10, y: footerY, size: 8, font: bold, color: NAVY });
   rightText(page, "estimo.app", tableRight, footerY, 8, font, MUTED);
   page.drawText(`Issued ${dateLabel} · Reference ${type.code}-${quality.slice(0, 3).toUpperCase()}`, {
-    x: margin + 30,
+    x: margin,
     y: footerY - 12,
     size: 7.5,
     font,

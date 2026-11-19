@@ -74,7 +74,8 @@
 
 .app-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  /* auto-fill keeps empty tracks, so one project stays a card instead of stretching */
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 15rem), 1fr));
   gap: clamp(12px, 1.6vw, 18px);
 }
 
@@ -198,7 +199,6 @@
 
 @media (max-width: 1080px) {
   .app-cols { grid-template-columns: minmax(0, 1fr); }
-  .app-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 860px) {
