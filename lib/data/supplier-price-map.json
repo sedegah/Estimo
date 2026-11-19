@@ -43,6 +43,7 @@
     { "material": "mat-lgt-batten-20w", "match": "Midea LED Linear Batten – 20W", "unit": "No.", "basis": "per piece", "confidence": "exact" },
     { "material": "mat-lgt-panel-600-40w", "match": "UNO LED Panel Light Recessed Ceiling 600x600mm 48W", "unit": "No.", "basis": "per piece", "confidence": "close", "note": "48 W panel nearest the 40 W item" },
     { "material": "mat-lgt-flood-100w", "match": "Midea LED Floodlight 100W", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-lgt-flood-50w", "match": "Midea LED Floodlight 50W", "unit": "No.", "basis": "per piece", "confidence": "exact" },
     { "material": "mat-lgt-hibay-100w", "match": "SUIMING 100W LED High Bay Light", "unit": "No.", "basis": "per piece", "confidence": "exact" },
 
     { "material": "mat-ear-clamp", "match": "U‑Bolt Earth Clamp – Copper Bolt", "unit": "No.", "basis": "per piece", "confidence": "close", "note": "U-bolt clamp supplied for earth rods" },
@@ -52,6 +53,9 @@
     { "material": "mat-term-lug-cu-10", "match": "Cable Lug for 10 mm Conductor", "unit": "No.", "basis": "per piece", "confidence": "exact" },
     { "material": "mat-term-lug-cu-16", "match": "Cable Lug for 16 mm Conductor", "unit": "No.", "basis": "per piece", "confidence": "exact" },
     { "material": "mat-con-pvc-20", "match": "SUIMING 20 mm PVC Conduit Pipe — White", "unit": "length", "basis": "per length", "confidence": "close", "note": "listing does not state the pipe length; priced as one length" },
+    { "material": "mat-con-flx-20", "match": "Flexible Conduit – 20mm, Black, 100M Roll", "unit": "m", "basis": "100 m roll", "convert": "roll-100m-to-metre", "confidence": "exact" },
+    { "material": "mat-con-flx-25", "match": "Flexible Conduit – 25mm, Black, 100M Roll", "unit": "m", "basis": "100 m roll", "convert": "roll-100m-to-metre", "confidence": "exact" },
+    { "material": "mat-acc-connector-15a", "match": "20 A Multi-Pole H-Type Screw Terminal Connector Strip", "unit": "strip", "basis": "per strip", "confidence": "close", "note": "supplied as a 20 A H-type strip rather than 15 A" },
 
     { "material": "mat-cab-sc-cu-16", "match": "1 × 16mm² Conduit Cable Single Core (Price Per Yard)", "unit": "m", "basis": "per yard", "confidence": "exact", "convert": "yard-to-metre" },
     { "material": "mat-cab-sc-cu-25", "match": "1 × 25mm² Conduit Cable Single Core (Price Per Yard)", "unit": "m", "basis": "per yard", "confidence": "exact", "convert": "yard-to-metre" },

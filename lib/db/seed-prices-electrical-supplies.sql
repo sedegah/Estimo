@@ -38,10 +38,10 @@ INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, n
 VALUES ('price-esg-pro-mcb-tp-125a', 'mat-pro-mcb-tp-125a', 125.00, 'GHS', 'Electrical Supplies Ghana', 'UNO', 'UNO 3-Pole 125A C-Curve Miniature Circuit Breaker (MCB) 10kA Three-Phase DIN-Rail', 'import:electrical-supplies-gh')
 ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
 INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
-VALUES ('price-esg-lgt-down-12w', 'mat-lgt-down-12w', 65.00, 'GHS', 'Electrical Supplies Ghana', 'Midea', 'Midea MDL-DLM40R12W-03 12W LED Surface Mount Downlight – Round, White Frame, 6500K Daylight â€” surface-mounted rather than recessed', 'import:electrical-supplies-gh')
+VALUES ('price-esg-lgt-down-12w', 'mat-lgt-down-12w', 65.00, 'GHS', 'Electrical Supplies Ghana', 'Midea', 'Midea MDL-DLM40R12W-03 12W LED Surface Mount Downlight – Round, White Frame, 6500K Daylight Ã¢â‚¬â€ surface-mounted rather than recessed', 'import:electrical-supplies-gh')
 ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
 INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
-VALUES ('price-esg-sws-soc-13a-2g-usb', 'mat-sws-soc-13a-2g-usb', 200.00, 'GHS', 'Electrical Supplies Ghana', 'Midea', 'Midea 13A Double Universal Socket with 2 Gang Switch and USB & Type-C ports, Neon Power Indication Grey â€” universal (multi-pin) socket rather than BS 1363 only', 'import:electrical-supplies-gh')
+VALUES ('price-esg-sws-soc-13a-2g-usb', 'mat-sws-soc-13a-2g-usb', 200.00, 'GHS', 'Electrical Supplies Ghana', 'Midea', 'Midea 13A Double Universal Socket with 2 Gang Switch and USB & Type-C ports, Neon Power Indication Grey Ã¢â‚¬â€ universal (multi-pin) socket rather than BS 1363 only', 'import:electrical-supplies-gh')
 ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
 INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
 VALUES ('price-esg-sws-soc-13a-2g', 'mat-sws-soc-13a-2g', 50.00, 'GHS', 'Electrical Supplies Ghana', 'UNO', 'UNO Double Socket 13A Twin Switched Wall Outlet for Residential and Commercial Use', 'import:electrical-supplies-gh')
@@ -50,16 +50,19 @@ INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, n
 VALUES ('price-esg-sws-soc-13a-1g', 'mat-sws-soc-13a-1g', 30.00, 'GHS', 'Electrical Supplies Ghana', 'UNO', 'UNO Single Socket 13A Switched Wall Outlet for Residential and Commercial Use', 'import:electrical-supplies-gh')
 ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
 INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
-VALUES ('price-esg-sws-soc-wp-13a-2g', 'mat-sws-soc-wp-13a-2g', 350.00, 'GHS', 'Electrical Supplies Ghana', 'Electrical Supplies Ghana', 'IP66 Waterproof Outdoor Double Socket – 13A UK Sockets with Protective Cover â€” IP66 with cover, rated for outdoor use', 'import:electrical-supplies-gh')
+VALUES ('price-esg-sws-soc-wp-13a-2g', 'mat-sws-soc-wp-13a-2g', 350.00, 'GHS', 'Electrical Supplies Ghana', 'Electrical Supplies Ghana', 'IP66 Waterproof Outdoor Double Socket – 13A UK Sockets with Protective Cover Ã¢â‚¬â€ IP66 with cover, rated for outdoor use', 'import:electrical-supplies-gh')
 ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
 INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
-VALUES ('price-esg-sws-soc-wp-13a-1g', 'mat-sws-soc-wp-13a-1g', 250.00, 'GHS', 'Electrical Supplies Ghana', 'Unbranded', 'IP66 Waterproof Outdoor Single Socket – 13A UK Plug with Protective Cover â€” IP66 with cover, rated for outdoor use', 'import:electrical-supplies-gh')
+VALUES ('price-esg-sws-soc-wp-13a-1g', 'mat-sws-soc-wp-13a-1g', 250.00, 'GHS', 'Electrical Supplies Ghana', 'Unbranded', 'IP66 Waterproof Outdoor Single Socket – 13A UK Plug with Protective Cover Ã¢â‚¬â€ IP66 with cover, rated for outdoor use', 'import:electrical-supplies-gh')
 ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
 INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
 VALUES ('price-esg-lgt-flood-150w', 'mat-lgt-flood-150w', 1000.00, 'GHS', 'Electrical Supplies Ghana', 'Midea', 'Midea LED Floodlight 150W, 220–240V, 5700K', 'import:electrical-supplies-gh')
 ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
 INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
 VALUES ('price-esg-lgt-hibay-150w', 'mat-lgt-hibay-150w', 550.00, 'GHS', 'Electrical Supplies Ghana', 'SUIMING', 'SUIMING 150W LED High Bay Light — 6500K Daylight, AC 100–277V, High-Efficiency Industrial Lighting for Warehouses, Factories & High-Ceiling Applications', 'import:electrical-supplies-gh')
+ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
+INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
+VALUES ('price-esg-acc-connector-15a', 'mat-acc-connector-15a', 30.00, 'GHS', 'Electrical Supplies Ghana', 'Electrical Supplies Ghana', '20 A Multi-Pole H-Type Screw Terminal Connector Strip – Screw-Clamp Electrical Terminal Block Ã¢â‚¬â€ supplied as a 20 A H-type strip rather than 15 A', 'import:electrical-supplies-gh')
 ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
 INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
 VALUES ('price-esg-lgt-led-bulb-15w', 'mat-lgt-led-bulb-15w', 25.00, 'GHS', 'Electrical Supplies Ghana', 'Midea', 'Midea LED Bulb, 15W, 1500lm, 220–240V~50/60Hz, 6500K, B22 Base', 'import:electrical-supplies-gh')
@@ -86,10 +89,10 @@ INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, n
 VALUES ('price-esg-lgt-down-surf-16w', 'mat-lgt-down-surf-16w', 100.00, 'GHS', 'Electrical Supplies Ghana', 'Midea', 'Midea DLM06R 16W Surface Round LED Downlight – 6500K Daylight, 1300–1400lm, 220–240V AC, White Sleek Design, 20,000hrs Lifespan', 'import:electrical-supplies-gh')
 ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
 INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
-VALUES ('price-esg-db-spn-18w', 'mat-db-spn-18w', 650.00, 'GHS', 'Electrical Supplies Ghana', 'CHINT', 'Consumer Unit, Distribution Board – CHINT DB4-18S, Single Row, 18-Way MCB Housing, Plastic Enclosure, IP40, DIN Rail Mount, Part No. 446251 â€” CHINT single-row plastic enclosure', 'import:electrical-supplies-gh')
+VALUES ('price-esg-db-spn-18w', 'mat-db-spn-18w', 650.00, 'GHS', 'Electrical Supplies Ghana', 'CHINT', 'Consumer Unit, Distribution Board – CHINT DB4-18S, Single Row, 18-Way MCB Housing, Plastic Enclosure, IP40, DIN Rail Mount, Part No. 446251 Ã¢â‚¬â€ CHINT single-row plastic enclosure', 'import:electrical-supplies-gh')
 ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
 INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
-VALUES ('price-esg-lgt-down-18w', 'mat-lgt-down-18w', 120.00, 'GHS', 'Electrical Supplies Ghana', 'Midea', 'Midea 18W LED Surface Downlight | MDL-DLM60R18W-03 | 6500K Cool Daylight | 1530lm | 110° | 220-240V â€” surface-mounted rather than recessed', 'import:electrical-supplies-gh')
+VALUES ('price-esg-lgt-down-18w', 'mat-lgt-down-18w', 120.00, 'GHS', 'Electrical Supplies Ghana', 'Midea', 'Midea 18W LED Surface Downlight | MDL-DLM60R18W-03 | 6500K Cool Daylight | 1530lm | 110° | 220-240V Ã¢â‚¬â€ surface-mounted rather than recessed', 'import:electrical-supplies-gh')
 ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
 INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
 VALUES ('price-esg-sws-sw-2g1w', 'mat-sws-sw-2g1w', 20.00, 'GHS', 'Electrical Supplies Ghana', 'UNO', 'UNO 2 Gang 1 Way Light Switch for Residential and Commercial Lighting Control', 'import:electrical-supplies-gh')
@@ -110,13 +113,16 @@ INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, n
 VALUES ('price-esg-pro-mcb-tp-20a', 'mat-pro-mcb-tp-20a', 95.00, 'GHS', 'Electrical Supplies Ghana', 'UNO', 'UNO 3-Pole 20A C-Curve Miniature Circuit Breaker (MCB) 6kA Three-Phase 240/415V DIN-Rail IEC/IS 60898-1', 'import:electrical-supplies-gh')
 ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
 INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
-VALUES ('price-esg-con-pvc-20', 'mat-con-pvc-20', 8.50, 'GHS', 'Electrical Supplies Ghana', 'SUIMING', 'SUIMING 20 mm PVC Conduit Pipe — White, 1.25 mm Thickness, Heavy-Duty Electrical PVC Pipe for Surface & Concealed Wiring â€” listing does not state the pipe length; priced as one length', 'import:electrical-supplies-gh')
+VALUES ('price-esg-con-flx-20', 'mat-con-flx-20', 10.00, 'GHS', 'Electrical Supplies Ghana', 'Unbranded', 'Flexible Conduit – 20mm, Black, 100M Roll', 'import:electrical-supplies-gh')
+ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
+INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
+VALUES ('price-esg-con-pvc-20', 'mat-con-pvc-20', 8.50, 'GHS', 'Electrical Supplies Ghana', 'SUIMING', 'SUIMING 20 mm PVC Conduit Pipe — White, 1.25 mm Thickness, Heavy-Duty Electrical PVC Pipe for Surface & Concealed Wiring Ã¢â‚¬â€ listing does not state the pipe length; priced as one length', 'import:electrical-supplies-gh')
 ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
 INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
 VALUES ('price-esg-lgt-batten-20w', 'mat-lgt-batten-20w', 100.00, 'GHS', 'Electrical Supplies Ghana', 'Midea', 'Midea LED Linear Batten – 20W, 6500K Cool White,  (2ft)', 'import:electrical-supplies-gh')
 ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
 INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
-VALUES ('price-esg-db-spn-24w', 'mat-db-spn-24w', 750.00, 'GHS', 'Electrical Supplies Ghana', 'CHINT', 'Consumer Unit, Distribution Board – CHINT DB4-24S, Single Row, 24-Way MCB Housing, Plastic Enclosure, IP40, DIN Rail Mount, Part No. 446252 â€” CHINT single-row plastic enclosure', 'import:electrical-supplies-gh')
+VALUES ('price-esg-db-spn-24w', 'mat-db-spn-24w', 750.00, 'GHS', 'Electrical Supplies Ghana', 'CHINT', 'Consumer Unit, Distribution Board – CHINT DB4-24S, Single Row, 24-Way MCB Housing, Plastic Enclosure, IP40, DIN Rail Mount, Part No. 446252 Ã¢â‚¬â€ CHINT single-row plastic enclosure', 'import:electrical-supplies-gh')
 ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
 INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
 VALUES ('price-esg-lgt-panel-24w', 'mat-lgt-panel-24w', 200.00, 'GHS', 'Electrical Supplies Ghana', 'Midea', 'Midea LED Panel Light Surface Mount, 24W, 2000LM, 220–240V, 6500K', 'import:electrical-supplies-gh')
@@ -134,6 +140,9 @@ INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, n
 VALUES ('price-esg-pro-mcb-tp-25a', 'mat-pro-mcb-tp-25a', 95.00, 'GHS', 'Electrical Supplies Ghana', 'UNO', 'UNO 3-Pole 25A C-Curve Miniature Circuit Breaker (MCB) 6kA Three-Phase 240/415V', 'import:electrical-supplies-gh')
 ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
 INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
+VALUES ('price-esg-con-flx-25', 'mat-con-flx-25', 15.00, 'GHS', 'Electrical Supplies Ghana', 'Unbranded', 'Flexible Conduit – 25mm, Black, 100M Roll', 'import:electrical-supplies-gh')
+ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
+INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
 VALUES ('price-esg-cab-sc-cu-25', 'mat-cab-sc-cu-25', 76.55, 'GHS', 'Electrical Supplies Ghana', 'Electrical Supplies Ghana', '1 × 25mm² Conduit Cable Single Core (Price Per Yard)', 'import:electrical-supplies-gh')
 ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
 INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
@@ -143,7 +152,7 @@ INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, n
 VALUES ('price-esg-trk-pvc-25x40', 'mat-trk-pvc-25x40', 90.00, 'GHS', 'Electrical Supplies Ghana', 'Electrical Supplies Ghana', 'Grey Slotted Trunking 25 x 40mm 2m/pc', 'import:electrical-supplies-gh')
 ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
 INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
-VALUES ('price-esg-sws-sw-3g1w', 'mat-sws-sw-3g1w', 25.00, 'GHS', 'Electrical Supplies Ghana', 'BINOKA', 'BINOKA 3 Gang 2 Way Switch with Neon Power Indication White â€” supplied as a 2-way switch, which also works as a 1-way', 'import:electrical-supplies-gh')
+VALUES ('price-esg-sws-sw-3g1w', 'mat-sws-sw-3g1w', 25.00, 'GHS', 'Electrical Supplies Ghana', 'BINOKA', 'BINOKA 3 Gang 2 Way Switch with Neon Power Indication White Ã¢â‚¬â€ supplied as a 2-way switch, which also works as a 1-way', 'import:electrical-supplies-gh')
 ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
 INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
 VALUES ('price-esg-sws-sw-3g2w', 'mat-sws-sw-3g2w', 70.00, 'GHS', 'Electrical Supplies Ghana', 'Midea', '3 Gang 2 Way Switch White 10A/250V Midea', 'import:electrical-supplies-gh')
@@ -185,6 +194,9 @@ INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, n
 VALUES ('price-esg-cab-sc-cu-50', 'mat-cab-sc-cu-50', 147.64, 'GHS', 'Electrical Supplies Ghana', 'Electrical Supplies Ghana', '1 × 50mm² Conduit Cable Single Core (Price Per Yard)', 'import:electrical-supplies-gh')
 ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
 INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
+VALUES ('price-esg-lgt-flood-50w', 'mat-lgt-flood-50w', 450.00, 'GHS', 'Electrical Supplies Ghana', 'Midea', 'Midea LED Floodlight 50W, 220–240V, 5700K, 100°', 'import:electrical-supplies-gh')
+ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
+INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
 VALUES ('price-esg-trk-pvc-50x50', 'mat-trk-pvc-50x50', 187.50, 'GHS', 'Electrical Supplies Ghana', 'Electrical Supplies Ghana', 'Grey Slotted Trunking 50 x 50mm 2m/pc', 'import:electrical-supplies-gh')
 ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
 INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
@@ -194,7 +206,7 @@ INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, n
 VALUES ('price-esg-db-spn-6w', 'mat-db-spn-6w', 85.00, 'GHS', 'Electrical Supplies Ghana', 'UNO', 'UNO 6 Way Plastic Consumer Unit Empty', 'import:electrical-supplies-gh')
 ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
 INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
-VALUES ('price-esg-lgt-panel-600-40w', 'mat-lgt-panel-600-40w', 400.00, 'GHS', 'Electrical Supplies Ghana', 'UNO', 'UNO LED Panel Light Recessed Ceiling 600x600mm 48W 220-240V Energy Efficient â€” 48 W panel nearest the 40 W item', 'import:electrical-supplies-gh')
+VALUES ('price-esg-lgt-panel-600-40w', 'mat-lgt-panel-600-40w', 400.00, 'GHS', 'Electrical Supplies Ghana', 'UNO', 'UNO LED Panel Light Recessed Ceiling 600x600mm 48W 220-240V Energy Efficient Ã¢â‚¬â€ 48 W panel nearest the 40 W item', 'import:electrical-supplies-gh')
 ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
 INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
 VALUES ('price-esg-pro-rccb-2p-63a-30', 'mat-pro-rccb-2p-63a-30', 150.00, 'GHS', 'Electrical Supplies Ghana', 'UNO', 'UNO 2-Pole RCCB 63A 30mA AC Type 230/400V 50/60Hz DIN-Rail IEC/EN 61008 Compliant', 'import:electrical-supplies-gh')
@@ -242,10 +254,10 @@ INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, n
 VALUES ('price-esg-sws-data-rj45', 'mat-sws-data-rj45', 45.00, 'GHS', 'Electrical Supplies Ghana', 'UNO', 'UNO Gang Data Socket RJ45 Network Wall Outlet for Structured Cabling', 'import:electrical-supplies-gh')
 ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
 INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
-VALUES ('price-esg-ear-clamp', 'mat-ear-clamp', 150.00, 'GHS', 'Electrical Supplies Ghana', 'Unbranded', 'U‑Bolt Earth Clamp – Copper Bolt â€” U-bolt clamp supplied for earth rods', 'import:electrical-supplies-gh')
+VALUES ('price-esg-ear-clamp', 'mat-ear-clamp', 150.00, 'GHS', 'Electrical Supplies Ghana', 'Unbranded', 'U‑Bolt Earth Clamp – Copper Bolt Ã¢â‚¬â€ U-bolt clamp supplied for earth rods', 'import:electrical-supplies-gh')
 ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
 INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
-VALUES ('price-esg-sws-sw-int', 'mat-sws-sw-int', 17.00, 'GHS', 'Electrical Supplies Ghana', 'UNO', 'UNO 1 Gang 3 Way Intermediate Light Switch for Multi-Location Lighting Control â€” 1-gang intermediate switch', 'import:electrical-supplies-gh')
+VALUES ('price-esg-sws-sw-int', 'mat-sws-sw-int', 17.00, 'GHS', 'Electrical Supplies Ghana', 'UNO', 'UNO 1 Gang 3 Way Intermediate Light Switch for Multi-Location Lighting Control Ã¢â‚¬â€ 1-gang intermediate switch', 'import:electrical-supplies-gh')
 ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
 INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
 VALUES ('price-esg-acc-tape-pvc', 'mat-acc-tape-pvc', 20.00, 'GHS', 'Electrical Supplies Ghana', 'Electrical Supplies Ghana', 'Highpower PVC Electrical Insulation Tape – Electrician Tape (Multiple Colours)', 'import:electrical-supplies-gh')
@@ -254,5 +266,5 @@ INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, n
 VALUES ('price-esg-sws-tv-out', 'mat-sws-tv-out', 15.00, 'GHS', 'Electrical Supplies Ghana', 'UNO', 'UNO Single TV Socket Coaxial Wall Outlet for Satellite and Aerial Connections', 'import:electrical-supplies-gh')
 ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');
 INSERT INTO catalogue_prices (id, item_id, price_ghs, currency, source, brand, note, updated_by)
-VALUES ('price-esg-pro-spd-t2-1p', 'mat-pro-spd-t2-1p', 950.00, 'GHS', 'Electrical Supplies Ghana', 'Phoenix Contact', 'Phoenix Contact VAL-MS-EE-T2-1+1-385 – Type 2 Surge Arrester for 1-Phase System (L1, N, PE) – Item 2910562 â€” Phoenix Contact 1-phase Type 2 SPD', 'import:electrical-supplies-gh')
+VALUES ('price-esg-pro-spd-t2-1p', 'mat-pro-spd-t2-1p', 950.00, 'GHS', 'Electrical Supplies Ghana', 'Phoenix Contact', 'Phoenix Contact VAL-MS-EE-T2-1+1-385 – Type 2 Surge Arrester for 1-Phase System (L1, N, PE) – Item 2910562 Ã¢â‚¬â€ Phoenix Contact 1-phase Type 2 SPD', 'import:electrical-supplies-gh')
 ON CONFLICT(id) DO UPDATE SET price_ghs=excluded.price_ghs, source=excluded.source, brand=excluded.brand, note=excluded.note, updated_at=datetime('now');

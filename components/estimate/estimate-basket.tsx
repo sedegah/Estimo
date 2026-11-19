@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import { formatGhs } from "@/lib/format";
 import { BASKET_EVENT, readBasket, writeBasket } from "@/lib/storage/basket";
@@ -8,10 +9,10 @@ import { saveEstimate } from "@/lib/storage/saved-estimates";
 import type { BasketItem } from "@/lib/types";
 
 export function EstimateBasket() {
+  const router = useRouter();
   const [items, setItems] = useState<BasketItem[]>([]);
   const [ready, setReady] = useState(false);
   const [name, setName] = useState("My material estimate");
-  const [savedName, setSavedName] = useState("");
 
   useEffect(() => {
     setItems(readBasket());
@@ -48,7 +49,9 @@ export function EstimateBasket() {
       totalGhs: pricedSubtotal > 0 ? pricedSubtotal : null,
       items: items.map((item) => ({ name: item.name, quantity: item.quantity, unit: item.unit, priceGhs: item.priceGhs })),
     });
-    setSavedName(saved.name);
+    // the list is saved, so take the person to it rather than leaving them on the basket
+    writeBasket([]);
+    router.push(`/projects/${saved.id}`);
   };
 
   if (!ready) return <div className="notice">Loading your estimate…</div>;
@@ -121,13 +124,7 @@ export function EstimateBasket() {
             <label>Save as<input value={name} onChange={(event) => setName(event.target.value)} /></label>
             <button className="btn btn-primary" type="submit">Save estimate →</button>
           </form>
-          {savedName ? (
-            <small className="basket-saved-note">
-              Saved “{savedName}”. <Link href="/projects">View saved projects</Link>
-            </small>
-          ) : (
-            <small className="basket-saved-note">Saved locally in this browser.</small>
-          )}
+          <small className="basket-saved-note">Saved locally in this browser.</small>
         </aside>
       </div>
     </>

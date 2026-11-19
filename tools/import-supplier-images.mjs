@@ -96,6 +96,59 @@ console.log(`photos: ${rows.length} | skipped: ${skipped.length} | ${(rows.reduc
 const MEDIA_TYPES = { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp", avif: "image/avif", gif: "image/gif" };
 const contentTypeOf = (file) => MEDIA_TYPES[path.extname(file).slice(1).toLowerCase()] ?? "image/jpeg";
 
+// ── fill: give photo-less materials a picture from the nearest sibling we do have
+const catalogue = (() => {
+  const source = fs.readFileSync(path.join(REPO, "lib", "data", "catalogue.ts"), "utf8");
+  const start = source.indexOf("CATALOGUE_MATERIALS");
+  return JSON.parse(source.slice(source.indexOf("= [", start) + 2, source.lastIndexOf("];") + 1));
+})();
+
+const STOP = new Set([
+  "the", "and", "for", "with", "from", "into", "per", "pvc", "copper", "single", "core", "heavy",
+  "gauge", "nominal", "approx", "led", "mm", "amp", "way", "gang", "pole", "type", "rated", "kit",
+  "steel", "plastic", "metal", "white", "grey", "black", "green", "yellow", "socket", "switch",
+]);
+
+const words = (name) => name.toLowerCase().replace(/[^a-z0-9 ]+/g, " ").split(/\s+/)
+  .filter((word) => word.length > 2 && !/^\d/.test(word) && !STOP.has(word));
+
+const filled = [];
+for (const material of catalogue) {
+  if (rows.some((row) => row.material === material.id)) continue;
+  const mine = new Set(words(material.name));
+
+  let best = null;
+  let bestScore = 0;
+  for (const row of rows) {
+    const donor = catalogue.find((entry) => entry.id === row.material);
+    if (!donor) continue;
+    let score = donor.categoryCode === material.categoryCode ? 50 : 0;
+    for (const word of words(donor.name)) if (mine.has(word)) score += 10;
+    if (score > bestScore) { bestScore = score; best = row; }
+  }
+  // only borrow a picture when there is a real family overlap, never a random one
+  if (!best || bestScore < 50) {
+    skipped.push({ material: material.id, why: "no sibling photo in its family" });
+    continue;
+  }
+
+  const extension = path.extname(best.file);
+  const file = path.join(CACHE, `${material.id}${extension}`);
+  if (!fs.existsSync(file)) fs.copyFileSync(best.file, file);
+  filled.push({
+    material: material.id,
+    key: `materials/${material.id}${extension}`,
+    file,
+    source: `sibling photo of ${best.material}`,
+    product: best.product,
+    handle: best.handle,
+    bytes: fs.statSync(file).size,
+  });
+}
+
+rows.push(...filled);
+console.log(`photos: ${rows.length - filled.length} matched + ${filled.length} borrowed | skipped: ${skipped.length}`);
+
 if (upload) {
   // resolve wrangler once instead of paying npx startup per object
   let wranglerBin = null;
@@ -162,9 +215,10 @@ const md = [
   "",
   "| Catalogue material | Supplier product | Photo |",
   "| --- | --- | --- |",
-  ...rows.map((row) =>
-    `| ${row.material} | [${row.product.replace(/\|/g, "\\|")}](https://www.electricalsuppliesgh.com/products/${row.handle}) | \`${row.key}\` |`,
-  ),
+  ...rows.map((row) => {
+    const borrowed = typeof row.source === "string" && row.source.startsWith("sibling");
+    return `| ${row.material} | [${row.product.replace(/\|/g, "\\|")}](https://www.electricalsuppliesgh.com/products/${row.handle}) | \`${row.key}\`${borrowed ? " _(borrowed from a similar material)_" : ""} |`;
+  }),
   "",
   "Material without a photo: " + (skipped.map((row) => row.material).join(", ") || "none"),
   "",
