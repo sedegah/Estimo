@@ -3,7 +3,7 @@ import { AddToEstimateButton } from "@/components/estimate/add-to-estimate";
 import { CATALOGUE_MATERIALS } from "@/lib/data/catalogue";
 import type { CatalogueMaterial } from "@/lib/types";
 import { getCataloguePrices } from "@/lib/api/catalogue-prices";
-import { formatPrice, materialUnitLabel } from "@/lib/format";
+import { formatPrice } from "@/lib/format";
 
 const FILTERS: { id: string; label: string; categories: string[] }[] = [
   { id: "all", label: "All", categories: [] },
@@ -80,8 +80,6 @@ const popularity = (material: CatalogueMaterial) => {
   return index === -1 ? POPULAR_ORDER.length : index;
 };
 
-const unitLabel = (material: CatalogueMaterial) => materialUnitLabel(material.unit);
-
 const filterHref = (id: string, term: string) => {
   const params = new URLSearchParams();
   if (term) params.set("q", term);
@@ -153,7 +151,6 @@ export async function CatalogueView({ q = "", cat = "all", page = 1 }: { q?: str
           <thead>
             <tr>
               <th>Item</th>
-              <th>Unit</th>
               <th>Price</th>
               <th>Brand</th>
               <th aria-label="Add to estimate" />
@@ -165,7 +162,6 @@ export async function CatalogueView({ q = "", cat = "all", page = 1 }: { q?: str
                 <td>
                   <Link className="table-link" href={`/catalogue/${material.id}`}>{material.name}</Link>
                 </td>
-                <td className="muted-cell">{unitLabel(material)}</td>
                 <td className="price-cell">{priceLabel(material)}</td>
                 <td className="muted-cell">{prices[material.id]?.brand ?? "—"}</td>
                 <td className="table-action">
@@ -188,7 +184,7 @@ export async function CatalogueView({ q = "", cat = "all", page = 1 }: { q?: str
             ))}
             {!results.length ? (
               <tr>
-                <td colSpan={5} className="table-empty">
+                <td colSpan={4} className="table-empty">
                   No materials match that search. Try a simpler term such as <b>cable</b>, <b>socket</b> or <b>conduit</b>.
                 </td>
               </tr>
