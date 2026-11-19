@@ -141,7 +141,17 @@ function CategoryGlyph({ categoryCode }: { categoryCode: string }) {
 }
 
 /** Material search + price cards. Used by the public catalogue and the in-app catalogue. */
-export async function CatalogueView({ q = "", cat = "all", page = 1 }: { q?: string; cat?: string; page?: number }) {
+export async function CatalogueView({
+  q = "",
+  cat = "all",
+  page = 1,
+  showHeader = true,
+}: {
+  q?: string;
+  cat?: string;
+  page?: number;
+  showHeader?: boolean;
+}) {
   const { prices, images } = await getCatalogueData();
   const term = q.trim().slice(0, 100);
   const filter = FILTERS.find((entry) => entry.id === cat) ?? FILTERS[0];
@@ -197,14 +207,16 @@ export async function CatalogueView({ q = "", cat = "all", page = 1 }: { q?: str
 
   return (
     <>
-      <header className="catalogue-head">
-        <div className="catalogue-head-copy">
-          <span className="catalogue-eyebrow">Material prices</span>
-          <h1>Check material prices</h1>
-          <p>Search the catalogue for current prices before you start an estimate.</p>
-        </div>
-        <span className="catalogue-currency"><i aria-hidden="true" />Prices in Ghana cedis (GHS)</span>
-      </header>
+      {showHeader ? (
+        <header className="catalogue-head">
+          <div className="catalogue-head-copy">
+            <span className="catalogue-eyebrow">Material prices</span>
+            <h1>Check material prices</h1>
+            <p>Search the catalogue for current prices before you start an estimate.</p>
+          </div>
+          <span className="catalogue-currency"><i aria-hidden="true" />Prices in Ghana cedis (GHS)</span>
+        </header>
+      ) : null}
 
       <form className="catalogue-search" method="get" action="/catalogue">
         {filter.id !== "all" ? <input type="hidden" name="cat" value={filter.id} /> : null}

@@ -14,7 +14,7 @@ export default async function DashboardCataloguePage({ searchParams }: { searchP
           <h1 className="app-title">Catalogue</h1>
         </div>
       </header>
-      <CatalogueView q={q} cat={cat} />
+      <CatalogueView q={q} cat={cat} showHeader={false} />
     </>
   );
 }
