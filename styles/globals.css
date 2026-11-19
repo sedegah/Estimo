@@ -256,8 +256,7 @@ select.input { appearance: auto; }
 .estimate-basket-link{display:inline-flex!important;align-items:center;gap:7px;color:#cfd9e4;padding:4px 2px}
 .estimate-basket-link:hover{color:#fff}
 .estimate-basket-link svg{display:block}
-.estimate-basket-link .estimate-basket-count{display:grid;place-items:center;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:rgba(255,255,255,.16);color:#e8eef7;font-size:.68rem;font-weight:900}
-.estimate-basket-link.has-items .estimate-basket-count{background:var(--yellow);color:var(--navy)}
+.estimate-basket-link .estimate-basket-count{display:grid;place-items:center;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:var(--yellow);color:var(--navy);font-size:.68rem;font-weight:900}
 .btn-added{background:#eef9f2;border:1px solid #b9dfc5;color:#17643a}
 .btn-outline.is-added{background:#fdf6f5;border-color:#e4c6c0;color:#a4342a}
 .btn-outline.is-added:hover{border-color:#c98f85}

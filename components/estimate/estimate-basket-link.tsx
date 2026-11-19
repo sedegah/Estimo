@@ -20,7 +20,7 @@ export function EstimateBasketLink() {
 
   return (
     <Link
-      className={count > 0 ? "estimate-basket-link has-items" : "estimate-basket-link"}
+      className="estimate-basket-link"
       href="/estimate-basket"
       aria-label={`Estimate basket: ${count} item${count === 1 ? "" : "s"}`}
     >
