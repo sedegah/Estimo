@@ -2,7 +2,8 @@ import Link from "next/link";
 import { AddToEstimateButton } from "@/components/estimate/add-to-estimate";
 import { CATALOGUE_MATERIALS } from "@/lib/data/catalogue";
 import type { CatalogueMaterial } from "@/lib/types";
-import { getLivePrices } from "@/lib/api/catalogue-prices";
+import { getCataloguePrices } from "@/lib/api/catalogue-prices";
+import { formatPrice, materialUnitLabel } from "@/lib/format";
 
 const FILTERS: { id: string; label: string; categories: string[] }[] = [
   { id: "all", label: "All", categories: [] },
@@ -79,14 +80,7 @@ const popularity = (material: CatalogueMaterial) => {
   return index === -1 ? POPULAR_ORDER.length : index;
 };
 
-const unitLabel = (material: CatalogueMaterial) => {
-  switch (material.unit) {
-    case "m": return "per metre";
-    case "No.": return "each";
-    case "length": return "per length";
-    default: return `per ${material.unit.toLowerCase()}`;
-  }
-};
+const unitLabel = (material: CatalogueMaterial) => materialUnitLabel(material.unit);
 
 const filterHref = (id: string, term: string) => {
   const params = new URLSearchParams();
@@ -98,7 +92,11 @@ const filterHref = (id: string, term: string) => {
 
 /** Material search + results table. Used by the public catalogue and the in-app catalogue. */
 export async function CatalogueView({ q = "", cat = "all", page = 1 }: { q?: string; cat?: string; page?: number }) {
-  const livePrices = await getLivePrices();
+  const prices = await getCataloguePrices();
+  const priceLabel = (material: CatalogueMaterial) => {
+    const entry = prices[material.id];
+    return entry ? formatPrice(entry.price, material.unit) : "Pending";
+  };
   const term = q.trim().slice(0, 100);
   const filter = FILTERS.find((entry) => entry.id === cat) ?? FILTERS[0];
 
@@ -157,6 +155,7 @@ export async function CatalogueView({ q = "", cat = "all", page = 1 }: { q?: str
               <th>Item</th>
               <th>Unit</th>
               <th>Price</th>
+              <th>Brand</th>
               <th aria-label="Add to estimate" />
             </tr>
           </thead>
@@ -167,7 +166,8 @@ export async function CatalogueView({ q = "", cat = "all", page = 1 }: { q?: str
                   <Link className="table-link" href={`/catalogue/${material.id}`}>{material.name}</Link>
                 </td>
                 <td className="muted-cell">{unitLabel(material)}</td>
-                <td className="muted-cell">{typeof livePrices[material.id] === "number" ? `GHS ${livePrices[material.id].toLocaleString("en-GH")}` : "Pending"}</td>
+                <td className="price-cell">{priceLabel(material)}</td>
+                <td className="muted-cell">{prices[material.id]?.brand ?? "—"}</td>
                 <td className="table-action">
                   <AddToEstimateButton
                     variant="outline"
@@ -177,10 +177,10 @@ export async function CatalogueView({ q = "", cat = "all", page = 1 }: { q?: str
                       name: material.name,
                       category: material.category,
                       unit: material.unit,
-                      priceGhs: livePrices[material.id] ?? null,
-                      brandName: null,
-                      supplierName: null,
-                      verifiedAt: null,
+                      priceGhs: prices[material.id]?.price ?? null,
+                      brandName: prices[material.id]?.brand ?? null,
+                      supplierName: prices[material.id]?.source ?? null,
+                      verifiedAt: prices[material.id]?.updatedAt ?? null,
                     }}
                   />
                 </td>
@@ -188,7 +188,7 @@ export async function CatalogueView({ q = "", cat = "all", page = 1 }: { q?: str
             ))}
             {!results.length ? (
               <tr>
-                <td colSpan={4} className="table-empty">
+                <td colSpan={5} className="table-empty">
                   No materials match that search. Try a simpler term such as <b>cable</b>, <b>socket</b> or <b>conduit</b>.
                 </td>
               </tr>
@@ -203,9 +203,8 @@ export async function CatalogueView({ q = "", cat = "all", page = 1 }: { q?: str
             <div className="catalogue-line-main">
               <Link className="catalogue-line-name" href={`/catalogue/${material.id}`}>{material.name}</Link>
               <span className="catalogue-line-meta">
-                {unitLabel(material)} · {typeof livePrices[material.id] === "number"
-                  ? `GHS ${livePrices[material.id].toLocaleString("en-GH")}`
-                  : "Price pending"}
+                {priceLabel(material)}
+                {prices[material.id]?.brand ? ` · ${prices[material.id].brand}` : ""}
               </span>
             </div>
             <AddToEstimateButton
@@ -216,10 +215,10 @@ export async function CatalogueView({ q = "", cat = "all", page = 1 }: { q?: str
                 name: material.name,
                 category: material.category,
                 unit: material.unit,
-                priceGhs: livePrices[material.id] ?? null,
-                brandName: null,
-                supplierName: null,
-                verifiedAt: null,
+                priceGhs: prices[material.id]?.price ?? null,
+                brandName: prices[material.id]?.brand ?? null,
+                supplierName: prices[material.id]?.source ?? null,
+                verifiedAt: prices[material.id]?.updatedAt ?? null,
               }}
             />
           </li>

@@ -4,9 +4,9 @@ Curated on 2026-11-19 against 2,978 products published at
 [www.electricalsuppliesgh.com](https://www.electricalsuppliesgh.com/).
 
 - Catalogue materials: **157**
-- Matched to a supplier product: **79**
+- Matched to a supplier product: **85**
 - New materials added to the catalogue: **0**
-- Left without a supplier price: **78**
+- Left without a supplier price: **72**
 
 Prices are the supplier's **full (pre-promotion) price**, converted to our catalogue unit where
 the supplier sells a different quantity. Each row states what the supplier's price actually buys.
@@ -23,6 +23,7 @@ the supplier sells a different quantity. Each row states what the supplier's pri
 | 10A Double-Pole MCB | No. | 60.00 | [UNO 2-Pole 10A C-Curve Miniature Circuit Breaker (MCB) 6kA Thermal-Mag](https://www.electricalsuppliesgh.com/products/uno-2-pole-10a-c-curve-mcb-6ka-double-pole-240-415v) | UNO | per piece Â· 60.00 | exact |
 | 10A Single-Pole MCB | No. | 30.00 | [UNO 1-Pole 10A C-Curve Miniature Circuit Breaker (MCB) 6kA Single-Phas](https://www.electricalsuppliesgh.com/products/uno-1-pole-10a-c-curve-mcb-6ka-single-phase-din-rail) | UNO | per piece Â· 30.00 | exact |
 | 10A Triple-Pole MCB | No. | 95.00 | [UNO 3-Pole 10A C-Curve Miniature Circuit Breaker (MCB) 6kA Three-Phase](https://www.electricalsuppliesgh.com/products/uno-3-pole-10a-c-curve-mcb-6ka-three-phase-240-415v-iec-60898-1) | UNO | per piece Â· 95.00 | exact |
+| 10mm² Copper Cable Lug | No. | 4.50 | [Cable Lug for 10 mm Conductor – 8 mm Mounting Hole, Tin-Plated Copper](https://www.electricalsuppliesgh.com/products/cable-lug-for-10-mm-conductor-8-mm-mounting-hole-tin-plated-copper) | Electrical Supplies Ghana | per piece Â· 4.50 | exact |
 | 12-Way SPN Distribution Board | No. | 120.00 | [UNO 12 Way Plastic Consumer Unit Empty](https://www.electricalsuppliesgh.com/products/uno-12-way-plastic-consumer-unit-empty) | UNO | per piece Â· 120.00 | exact |
 | 120mm² Copper Single-Core Cable | m | 382.76 | [1 × 120mm² Conduit Cable Single Core (Price Per Yard)](https://www.electricalsuppliesgh.com/products/1-120mm-conduit-cable-single-core) | Electrical Supplies Ghana | per yard Â· 350.00 â†’ 1 yard = 0.9144 m, so Ã— 1.0936 to price a metre | exact |
 | 125A Triple-Pole MCB | No. | 125.00 | [UNO 3-Pole 125A C-Curve Miniature Circuit Breaker (MCB) 10kA Three-Pha](https://www.electricalsuppliesgh.com/products/uno-3-pole-125a-c-curve-mcb-10ka-three-phase-din-rail) | UNO | per piece Â· 125.00 | exact |
@@ -38,6 +39,7 @@ the supplier sells a different quantity. Each row states what the supplier's pri
 | 16A Double-Pole MCB | No. | 60.00 | [UNO 2-Pole 16A C-Curve Miniature Circuit Breaker (MCB) 6kA Thermal-Mag](https://www.electricalsuppliesgh.com/products/uno-2-pole-16a-c-curve-mcb-6ka-double-pole-240-415v) | UNO | per piece Â· 60.00 | exact |
 | 16A Single-Pole MCB | No. | 30.00 | [UNO 1-Pole 16A C-Curve Miniature Circuit Breaker (MCB) 6kA Thermal-Mag](https://www.electricalsuppliesgh.com/products/uno-1-pole-16a-c-curve-mcb-6ka-single-phase-din-rail) | UNO | per piece Â· 30.00 | exact |
 | 16A Triple-Pole MCB | No. | 95.00 | [UNO 3-Pole 16A C-Curve Miniature Circuit Breaker (MCB) 6kA Three-Phase](https://www.electricalsuppliesgh.com/products/uno-3-pole-16a-c-curve-mcb-6ka-three-phase-240-415v-din-rail) | UNO | per piece Â· 95.00 | exact |
+| 16mm² Copper Cable Lug | No. | 5.00 | [Cable Lug for 16 mm Conductor – 8 mm Mounting Hole, Tin-Plated Copper](https://www.electricalsuppliesgh.com/products/cable-lug-for-16-mm-conductor-8-mm-mounting-hole-tin-plated-copper) | Electrical Supplies Ghana | per piece Â· 5.00 | exact |
 | 16mm² Copper Single-Core Cable | m | 43.74 | [1 × 16mm² Conduit Cable Single Core (Price Per Yard)](https://www.electricalsuppliesgh.com/products/1-16mm-conduit-cable-single-core) | Electrical Supplies Ghana | per yard Â· 40.00 â†’ 1 yard = 0.9144 m, so Ã— 1.0936 to price a metre | exact |
 | 16W LED Panel Light | No. | 125.00 | [Midea LED Flush Panel Light, 16W, 6500K](https://www.electricalsuppliesgh.com/products/midea-led-flush-panel-light-16w-6500k) | Midea | per piece Â· 125.00 | exact |
 | 16W LED Surface Downlight | No. | 100.00 | [Midea DLM06R 16W Surface Round LED Downlight – 6500K Daylight, 1300–14](https://www.electricalsuppliesgh.com/products/midea-dlm06r-16w-surface-round-led-downlight-6500k-daylight-1300-1400lm-220-240v-ac-white-sleek-design-20-000hrs-lifespan) | Midea | per piece Â· 100.00 | exact |
@@ -49,15 +51,18 @@ the supplier sells a different quantity. Each row states what the supplier's pri
 | 20A Double-Pole MCB | No. | 60.00 | [UNO 2-Pole 20A C-Curve Miniature Circuit Breaker (MCB) 6kA Double-Pole](https://www.electricalsuppliesgh.com/products/uno-2-pole-20a-c-curve-mcb-6ka-double-pole-240-415v-iec-60898-1) | UNO | per piece Â· 60.00 | exact |
 | 20A Single-Pole MCB | No. | 30.00 | [UNO 1-Pole 20A C-Curve Miniature Circuit Breaker (MCB) 6kA Thermal-Mag](https://www.electricalsuppliesgh.com/products/uno-1-pole-20a-c-curve-mcb-6ka-single-phase-din-rail) | UNO | per piece Â· 30.00 | exact |
 | 20A Triple-Pole MCB | No. | 95.00 | [UNO 3-Pole 20A C-Curve Miniature Circuit Breaker (MCB) 6kA Three-Phase](https://www.electricalsuppliesgh.com/products/uno-3-pole-20a-c-curve-mcb-6ka-three-phase-240-415v-iec-60898-1) | UNO | per piece Â· 95.00 | exact |
+| 20mm Heavy-Gauge PVC Conduit | length | 8.50 | [SUIMING 20 mm PVC Conduit Pipe — White, 1.25 mm Thickness, Heavy-Duty ](https://www.electricalsuppliesgh.com/products/suiming-20-mm-pvc-conduit-pipe-white-1-25-mm-thickness-heavy-duty-electrical-pvc-pipe-for-surface-concealed-wiring) | SUIMING | per length Â· 8.50 | close |
 | 20W LED Batten | No. | 100.00 | [Midea LED Linear Batten – 20W, 6500K Cool White,  (2ft)](https://www.electricalsuppliesgh.com/products/midea-led-linear-batten-20w-6500k-cool-white-2ft) | Midea | per piece Â· 100.00 | exact |
 | 24-Way SPN Distribution Board | No. | 750.00 | [Consumer Unit, Distribution Board – CHINT DB4-24S, Single Row, 24-Way ](https://www.electricalsuppliesgh.com/products/consumer-unit-distribution-board-chint-db4-24s-single-row-24-way-mcb-housing-plastic-enclosure-ip40-din-rail-mount-part-no-446252) | CHINT | per piece Â· 750.00 | close |
 | 24W LED Panel Light | No. | 200.00 | [Midea LED Panel Light Surface Mount, 24W, 2000LM, 220–240V, 6500K](https://www.electricalsuppliesgh.com/products/midea-led-panel-light-surface-mount-24w-2000lm-220-240v-6500k) | Midea | per piece Â· 200.00 | exact |
 | 24W LED Surface Downlight | No. | 125.00 | [Midea DLM08R 24W Surface Round LED Downlight – 6500K Daylight, 2000–22](https://www.electricalsuppliesgh.com/products/midea-dlm08r-24w-surface-round-led-downlight-6500k-daylight-2000-2200lm-220-240v-ac-white-sleek-design-20-000hrs-lifespan) | Midea | per piece Â· 125.00 | exact |
+| 25A 3-Pole Contactor | No. | 175.00 | [UNO 25A AC Contactor for Three-Phase Motor Control and Power Switching](https://www.electricalsuppliesgh.com/products/uno-25a-ac-contactor) | UNO | per piece Â· 175.00 | close |
 | 25A Single-Pole MCB | No. | 30.00 | [UNO 1-Pole 25A C-Curve Miniature Circuit Breaker (MCB) 6kA Thermal-Mag](https://www.electricalsuppliesgh.com/products/uno-1-pole-25a-c-curve-mcb-6ka-single-phase-din-rail) | UNO | per piece Â· 30.00 | exact |
 | 25A Triple-Pole MCB | No. | 95.00 | [UNO 3-Pole 25A C-Curve Miniature Circuit Breaker (MCB) 6kA Three-Phase](https://www.electricalsuppliesgh.com/products/uno-3-pole-25a-c-curve-mcb-6ka-three-phase-240-415v) | UNO | per piece Â· 95.00 | exact |
 | 25mm² Copper Single-Core Cable | m | 76.55 | [1 × 25mm² Conduit Cable Single Core (Price Per Yard)](https://www.electricalsuppliesgh.com/products/1-25mm-conduit-cable-single-core-price-per-yard) | Electrical Supplies Ghana | per yard Â· 70.00 â†’ 1 yard = 0.9144 m, so Ã— 1.0936 to price a metre | exact |
 | 25x16mm PVC Mini Trunking | length | 10.34 | [SUIMING White PVC Wall Trunking — 25 × 16 mm × 2900 mm, 0.72 mm Thickn](https://www.electricalsuppliesgh.com/products/suiming-white-pvc-wall-trunking-25-16-mm-2900-mm-0-72-mm-thickness-electrical-cable-management-trunking-for-surface-wiring) | SUIMING | 2.9 m piece Â· 10.00 â†’ Ã— 3/2.9 to price a 3 m length | close |
 | 25x40mm PVC Trunking | length | 90.00 | [Grey Slotted Trunking 25 x 40mm 2m/pc](https://www.electricalsuppliesgh.com/products/grey-slotted-trunking-25-x-40mm-2m-pc) | Electrical Supplies Ghana | 2 m piece Â· 60.00 â†’ Ã— 1.5 to price a 3 m length | close |
+| 3-Gang 1-Way Light Switch | No. | 25.00 | [BINOKA 3 Gang 2 Way Switch with Neon Power Indication White](https://www.electricalsuppliesgh.com/products/binoka-3-gang-2-way-switch-with-neon-power-indication-white) | BINOKA | per piece Â· 25.00 | close |
 | 3-Gang 2-Way Light Switch | No. | 70.00 | [3 Gang 2 Way Switch White 10A/250V Midea](https://www.electricalsuppliesgh.com/products/3-gang-2-way-switch-white-10a-250v-midea) | Midea | per piece Â· 70.00 | exact |
 | 30W LED Floodlight | No. | 250.00 | [Midea LED Floodlight 30W, 220–240V, 5700K, 100°](https://www.electricalsuppliesgh.com/products/midea-led-floodlight-30w-220-240v-5700k-100) | Midea | per piece Â· 250.00 | exact |
 | 30x40mm PVC Trunking | length | 105.00 | [Grey Slotted Trunking 30 x 40mm 2m/pc](https://www.electricalsuppliesgh.com/products/grey-slotted-trunking-30-x-40mm-2m-pc) | Electrical Supplies Ghana | 2 m piece Â· 70.00 â†’ Ã— 1.5 to price a 3 m length | close |
@@ -81,6 +86,7 @@ the supplier sells a different quantity. Each row states what the supplier's pri
 | 63A Triple-Pole MCB | No. | 95.00 | [UNO 3-Pole 63A C-Curve Miniature Circuit Breaker (MCB) 6kA Three-Phase](https://www.electricalsuppliesgh.com/products/uno-3-pole-63a-c-curve-mcb-6ka-three-phase-din-rail) | UNO | per piece Â· 95.00 | exact |
 | 6A Double-Pole MCB | No. | 60.00 | [UNO 2-Pole 6A C-Curve Miniature Circuit Breaker (MCB) 6kA Thermal-Magn](https://www.electricalsuppliesgh.com/products/uno-2-pole-6a-c-curve-mcb-6ka-double-pole-240-415v) | UNO | per piece Â· 60.00 | exact |
 | 6A Single-Pole MCB | No. | 30.00 | [UNO 1-Pole 6A C-Curve Miniature Circuit Breaker (MCB) 6kA Thermal-Magn](https://www.electricalsuppliesgh.com/products/uno-1-pole-6a-c-curve-mcb-6ka-single-phase-din-rail) | UNO | per piece Â· 30.00 | exact |
+| 6mm² Copper Cable Lug | No. | 4.00 | [Cable Lug for 6 mm Conductor – 8 mm Mounting Hole, Tin-Plated Copper](https://www.electricalsuppliesgh.com/products/cable-lug-for-6-mm-conductor-8-mm-mounting-hole-tin-plated-copper) | Electrical Supplies Ghana | per piece Â· 4.00 | exact |
 | 6W LED Downlight | No. | 60.00 | [Midea DL30R 6W Recessed LED Downlight – 6500K Daylight White, Slim Ser](https://www.electricalsuppliesgh.com/products/midea-dl30r-6w-recessed-led-downlight-6500k-daylight-white-slim-series-03-220-240-vac-50-60hz) | Midea | per piece Â· 60.00 | exact |
 | 70mm² Copper Single-Core Cable | m | 273.40 | [1 × 70mm² Conduit Cable Single Core (Price Per Yard)](https://www.electricalsuppliesgh.com/products/1-70mm-conduit-cable-single-core) | Electrical Supplies Ghana | per yard Â· 250.00 â†’ 1 yard = 0.9144 m, so Ã— 1.0936 to price a metre | exact |
 | 8-Way SPN Distribution Board | No. | 85.00 | [UNO 8 Way Plastic Consumer Unit Empty](https://www.electricalsuppliesgh.com/products/uno-8-way-plastic-consumer-unit-empty) | UNO | per piece Â· 85.00 | exact |
@@ -103,7 +109,9 @@ the supplier sells a different quantity. Each row states what the supplier's pri
 - **13A Weatherproof Single Socket** â€” IP66 with cover, rated for outdoor use.
 - **18-Way SPN Distribution Board** â€” CHINT single-row plastic enclosure.
 - **18W LED Downlight** â€” surface-mounted rather than recessed.
+- **20mm Heavy-Gauge PVC Conduit** â€” listing does not state the pipe length; priced as one length.
 - **24-Way SPN Distribution Board** â€” CHINT single-row plastic enclosure.
+- **3-Gang 1-Way Light Switch** â€” supplied as a 2-way switch, which also works as a 1-way.
 - **600x600mm LED Panel Light** â€” 48 W panel nearest the 40 W item.
 - **Earth Rod Clamp** â€” U-bolt clamp supplied for earth rods.
 - **Intermediate Light Switch** â€” 1-gang intermediate switch.
@@ -134,7 +142,6 @@ These materials have no equivalent on the supplier site, so their price was left
 | 4-Core 10mm² XLPE/SWA/PVC Copper Cable | m | supplier stocks only 16â€“120 mmÂ² single core (per yard); no twin & earth, flex, SWA, Cat6 or small sizes |
 | 4-Core 16mm² XLPE/SWA/PVC Copper Cable | m | supplier stocks only 16â€“120 mmÂ² single core (per yard); no twin & earth, flex, SWA, Cat6 or small sizes |
 | Cat6 UTP Data Cable | m | supplier stocks only 16â€“120 mmÂ² single core (per yard); no twin & earth, flex, SWA, Cat6 or small sizes |
-| 20mm Heavy-Gauge PVC Conduit | length | no PVC conduit, bends, couplers, saddles or inspection boxes on the supplier site |
 | 25mm Heavy-Gauge PVC Conduit | length | no PVC conduit, bends, couplers, saddles or inspection boxes on the supplier site |
 | 32mm Heavy-Gauge PVC Conduit | length | no PVC conduit, bends, couplers, saddles or inspection boxes on the supplier site |
 | 20mm Flexible Conduit | m | no PVC conduit, bends, couplers, saddles or inspection boxes on the supplier site |
@@ -158,7 +165,6 @@ These materials have no equivalent on the supplier site, so their price was left
 | PVC Trunking Flat Bend | No. | no trunking corners, tees, joiners or 38Ã—25 sizes |
 | PVC Trunking Tee | No. | no trunking corners, tees, joiners or 38Ã—25 sizes |
 | PVC Trunking Joiner | No. | no trunking corners, tees, joiners or 38Ã—25 sizes |
-| 3-Gang 1-Way Light Switch | No. | no matching variant (3-gang switch, FCU, cooker outlet, bell push) |
 | 13A Switched Fused Connection Unit | No. | no matching variant (3-gang switch, FCU, cooker outlet, bell push) |
 | 45A Cooker Connection Outlet | No. | no matching variant (3-gang switch, FCU, cooker outlet, bell push) |
 | Doorbell Push Button | No. | no matching variant (3-gang switch, FCU, cooker outlet, bell push) |
@@ -183,12 +189,8 @@ These materials have no equivalent on the supplier site, so their price was left
 | 63A Double-Pole Isolator | No. | no 32/63 A DP or 4-pole isolators, no 25 A contactor |
 | 32A 4-Pole Isolator | No. | no 32/63 A DP or 4-pole isolators, no 25 A contactor |
 | 63A 4-Pole Isolator | No. | no 32/63 A DP or 4-pole isolators, no 25 A contactor |
-| 25A 3-Pole Contactor | No. | no 32/63 A DP or 4-pole isolators, no 25 A contactor |
 | 20S Brass SWA Cable Gland Kit | set | no brass SWA glands (only plastic PG glands); lugs start at 35 mmÂ² |
 | 25mm Brass SWA Cable Gland Kit | set | no brass SWA glands (only plastic PG glands); lugs start at 35 mmÂ² |
-| 6mm² Copper Cable Lug | No. | no brass SWA glands (only plastic PG glands); lugs start at 35 mmÂ² |
-| 10mm² Copper Cable Lug | No. | no brass SWA glands (only plastic PG glands); lugs start at 35 mmÂ² |
-| 16mm² Copper Cable Lug | No. | no brass SWA glands (only plastic PG glands); lugs start at 35 mmÂ² |
 | 1-Gang 35mm Flush Box | No. | no matching item |
 | 2-Gang 35mm Flush Box | No. | no matching item |
 | 15A Terminal Connector Strip | strip | no matching item |
