@@ -93,6 +93,9 @@ for (const entry of entries) {
 
 console.log(`photos: ${rows.length} | skipped: ${skipped.length} | ${(rows.reduce((n, r) => n + r.bytes, 0) / 1024 / 1024).toFixed(1)} MB`);
 
+const MEDIA_TYPES = { jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png", webp: "image/webp", avif: "image/avif", gif: "image/gif" };
+const contentTypeOf = (file) => MEDIA_TYPES[path.extname(file).slice(1).toLowerCase()] ?? "image/jpeg";
+
 if (upload) {
   // resolve wrangler once instead of paying npx startup per object
   let wranglerBin = null;
@@ -118,7 +121,7 @@ if (upload) {
   const workers = Array.from({ length: 4 }, async () => {
     while (queue.length) {
       const row = queue.shift();
-      const contentType = row.file.endsWith(".png") ? "image/png" : row.file.endsWith(".webp") ? "image/webp" : "image/jpeg";
+      const contentType = contentTypeOf(row.file);
       const command = `${wranglerCommand} r2 object put "${BUCKET}/${row.key}" --file="${row.file}" --content-type=${contentType} --remote`;
       let ok = false;
       for (let attempt = 1; attempt <= 3 && !ok; attempt += 1) {
