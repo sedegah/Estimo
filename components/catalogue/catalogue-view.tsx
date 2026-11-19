@@ -206,7 +206,7 @@ export async function CatalogueView({
   };
 
   return (
-    <>
+    <div className="catalogue-view">
       {showHeader ? (
         <header className="catalogue-head">
           <div className="catalogue-head-copy">
@@ -214,7 +214,6 @@ export async function CatalogueView({
             <h1>Check material prices</h1>
             <p>Search the catalogue for current prices before you start an estimate.</p>
           </div>
-          <span className="catalogue-currency"><i aria-hidden="true" />Prices in Ghana cedis (GHS)</span>
         </header>
       ) : null}
 
@@ -332,6 +331,6 @@ export async function CatalogueView({
       ) : null}
 
       <CatalogueSummaryBar />
-    </>
+    </div>
   );
 }

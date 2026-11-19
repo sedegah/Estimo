@@ -517,15 +517,14 @@
 }
 
 /* ── catalogue: card grid with photos, counts and quantity steppers ──────── */
-.catalogue-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:24px;margin:4px 0 4px}
+.catalogue-view{display:flex;flex-direction:column;gap:clamp(18px,2.2vw,26px)}
+.catalogue-head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:24px}
 .catalogue-head-copy{display:flex;flex-direction:column;gap:12px;max-width:640px}
 .catalogue-eyebrow{font-size:12px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:#5b6475}
 .catalogue-head h1{margin:0;font-size:clamp(2.3rem,4.4vw,3.4rem);line-height:1.02;letter-spacing:-.03em;font-weight:800;color:var(--navy)}
 .catalogue-head p{margin:0;font-size:17px;line-height:1.5;color:#4a5568}
-.catalogue-currency{display:inline-flex;align-items:center;gap:10px;font-size:14px;color:#4a5568;background:#fff;border:1px solid #e2e0d8;border-radius:999px;padding:10px 16px;white-space:nowrap}
-.catalogue-currency i{width:8px;height:8px;border-radius:50%;background:#1f8a5b}
 
-.catalogue-search{display:flex;flex-direction:column;gap:10px;margin:16px 0 0}
+.catalogue-search{display:flex;flex-direction:column;gap:10px}
 .catalogue-search label{font-size:14px;font-weight:600;color:var(--navy)}
 .catalogue-search-field{position:relative;display:flex;align-items:center}
 .catalogue-search-field svg{position:absolute;left:20px;color:#5b6475;pointer-events:none}
