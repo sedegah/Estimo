@@ -1,0 +1,59 @@
+{
+  "source": "Electrical Supplies Ghana",
+  "sourceUrl": "https://www.electricalsuppliesgh.com",
+  "fetched": "2026-11-19",
+  "note": "Curated match: each entry pins one catalogue material to one supplier product. 'match' is a unique substring of the supplier product title; the build resolves it to a handle and fails loudly if it is not unique. 'unit' is the catalogue unit the price must end up in, 'basis' is what the supplier's price buys.",
+  "entries": [
+    { "material": "mat-sws-sw-1g1w", "match": "UNO 1 Gang 1 Way Light Switch for Residential", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-sws-sw-1g2w", "match": "UNO 1 Gang 2 Way Light Switch for Residential and Commercial", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-sws-sw-2g1w", "match": "UNO 2 Gang 1 Way Light Switch", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-sws-sw-2g2w", "match": "UNO 2 Gang 2 Way Light Switch for Residential", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-sws-sw-int", "match": "UNO 1 Gang 3 Way Intermediate Light Switch", "unit": "No.", "basis": "per piece", "confidence": "exact", "note": "1-gang intermediate switch" },
+    { "material": "mat-sws-soc-13a-1g", "match": "UNO Single Socket 13A Switched Wall Outlet", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-sws-soc-13a-2g", "match": "UNO Double Socket 13A Twin Switched Wall Outlet", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-sws-soc-13a-2g-usb", "match": "Midea 13A Double Universal Socket with 2 Gang Switch and USB", "unit": "No.", "basis": "per piece", "confidence": "close", "note": "universal (multi-pin) socket rather than BS 1363 only" },
+    { "material": "mat-sws-soc-wp-13a-1g", "match": "IP66 Waterproof Outdoor Single Socket – 13A UK Plug", "unit": "No.", "basis": "per piece", "confidence": "close", "note": "IP66 with cover, rated for outdoor use" },
+    { "material": "mat-sws-soc-wp-13a-2g", "match": "IP66 Waterproof Outdoor Double Socket – 13A UK Sockets", "unit": "No.", "basis": "per piece", "confidence": "close", "note": "IP66 with cover, rated for outdoor use" },
+    { "material": "mat-sws-cook-45a-dp", "match": "Midea T2 Series 45A Cooker Socket White", "unit": "No.", "basis": "per piece", "confidence": "close" },
+    { "material": "mat-sws-blank-1g", "match": "Midea 3×3 Blank Plate - White", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-sws-tv-out", "match": "UNO Single TV Socket Coaxial Wall Outlet", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-sws-data-rj45", "match": "UNO Gang Data Socket RJ45 Network Wall Outlet", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+
+    { "material": "mat-pro-mcb-sp-6a", "match": "UNO 1-Pole 6A C-Curve Miniature Circuit Breaker", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-pro-mcb-sp-10a", "match": "UNO 1-Pole 10A C-Curve Miniature Circuit Breaker", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-pro-mcb-sp-16a", "match": "UNO 1-Pole 16A C-Curve Miniature Circuit Breaker", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-pro-mcb-sp-20a", "match": "UNO 1-Pole 20A C-Curve Miniature Circuit Breaker", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-pro-mcb-sp-25a", "match": "UNO 1-Pole 25A C-Curve Miniature Circuit Breaker", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-pro-mcb-sp-32a", "match": "UNO 1-Pole 32A C-Curve Miniature Circuit Breaker", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-pro-mcb-tp-32a", "match": "UNO 3-Pole 32A C-Curve Miniature Circuit Breaker (MCB) 6kA Three-Phase Protection", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-pro-mcb-tp-63a", "match": "UNO 3-Pole 63A C-Curve Miniature Circuit Breaker", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-pro-rccb-2p-63a-30", "match": "UNO 2-Pole RCCB 63A 30mA", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-pro-rccb-4p-63a-30", "match": "UNO 4-Pole RCCB 63A 30mA", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-pro-spd-t2-1p", "match": "VAL-MS-EE-T2-1+1-385 – Type 2 Surge Arrester for 1-Phase System", "unit": "No.", "basis": "per piece", "confidence": "close", "note": "Phoenix Contact 1-phase Type 2 SPD" },
+
+    { "material": "mat-db-spn-4w", "match": "UNO 4 Way Plastic Consumer Unit Empty", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-db-spn-6w", "match": "UNO 6 Way Plastic Consumer Unit Empty", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-db-spn-8w", "match": "UNO 8 Way Plastic Consumer Unit Empty", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-db-spn-12w", "match": "UNO 12 Way Plastic Consumer Unit Empty", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-db-spn-18w", "match": "Consumer Unit, Distribution Board – CHINT DB4-18S", "unit": "No.", "basis": "per piece", "confidence": "close", "note": "CHINT single-row plastic enclosure" },
+
+    { "material": "mat-lgt-down-12w", "match": "Midea MDL-DLM40R12W-03 12W LED Surface Mount Downlight", "unit": "No.", "basis": "per piece", "confidence": "close", "note": "surface-mounted rather than recessed" },
+    { "material": "mat-lgt-down-18w", "match": "Midea 18W LED Surface Downlight", "unit": "No.", "basis": "per piece", "confidence": "close", "note": "surface-mounted rather than recessed" },
+    { "material": "mat-lgt-batten-20w", "match": "Midea LED Linear Batten – 20W", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-lgt-panel-600-40w", "match": "UNO LED Panel Light Recessed Ceiling 600x600mm 48W", "unit": "No.", "basis": "per piece", "confidence": "close", "note": "48 W panel nearest the 40 W item" },
+    { "material": "mat-lgt-flood-100w", "match": "Midea LED Floodlight 100W", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-lgt-hibay-100w", "match": "SUIMING 100W LED High Bay Light", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+
+    { "material": "mat-ear-clamp", "match": "U‑Bolt Earth Clamp – Copper Bolt", "unit": "No.", "basis": "per piece", "confidence": "close", "note": "U-bolt clamp supplied for earth rods" },
+    { "material": "mat-iso-olr-9-13a", "match": "Thermal Overload Relay, Adjustable 9–13A", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+
+    { "material": "mat-cab-sc-cu-16", "match": "1 × 16mm² Conduit Cable Single Core (Price Per Yard)", "unit": "m", "basis": "per yard", "confidence": "exact", "convert": "yard-to-metre" },
+    { "material": "mat-cab-sc-cu-25", "match": "1 × 25mm² Conduit Cable Single Core (Price Per Yard)", "unit": "m", "basis": "per yard", "confidence": "exact", "convert": "yard-to-metre" },
+    { "material": "mat-cab-sc-cu-35", "match": "1 × 35mm² Conduit Cable Single Core (Price Per Yard)", "unit": "m", "basis": "per yard", "confidence": "exact", "convert": "yard-to-metre" },
+
+    { "material": "mat-trk-pvc-50x50", "match": "Grey Slotted Trunking 50 x 50mm 2m/pc", "unit": "length", "basis": "2 m piece", "confidence": "close", "convert": "piece-2m-to-3m-length" },
+    { "material": "mat-trk-pvc-25x16", "match": "SUIMING White PVC Wall Trunking — 25 × 16 mm × 2900 mm", "unit": "length", "basis": "2.9 m piece", "confidence": "close", "convert": "piece-2.9m-to-3m-length" },
+
+    { "material": "mat-acc-tape-pvc", "match": "Highpower PVC Electrical Insulation Tape", "unit": "roll", "basis": "per roll", "confidence": "exact" }
+  ]
+}

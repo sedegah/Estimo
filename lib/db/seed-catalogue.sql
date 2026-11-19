@@ -365,3 +365,108 @@ ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, un
 INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
 VALUES ('mat-acc-tape-pvc', 'ACC-TAPE-PVC', 'PVC Electrical Insulation Tape', 'General Accessories', 'roll', 'Flame-retardant PVC electrical tape', 'All', 'High', '["insulation tape"]', 1)
 ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-cab-sc-cu-50', 'CAB-SC-CU-50', '50mm² Copper Single-Core Cable', 'Cables & Wires', 'm', 'PVC insulated copper, 450/750V, 50mm²', 'All', 'Medium', '["50mm cable","single core"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-cab-sc-cu-70', 'CAB-SC-CU-70', '70mm² Copper Single-Core Cable', 'Cables & Wires', 'm', 'PVC insulated copper, 450/750V, 70mm²', 'All', 'Medium', '["70mm cable","single core"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-cab-sc-cu-95', 'CAB-SC-CU-95', '95mm² Copper Single-Core Cable', 'Cables & Wires', 'm', 'PVC insulated copper, 450/750V, 95mm²', 'All', 'Low', '["95mm cable","single core"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-cab-sc-cu-120', 'CAB-SC-CU-120', '120mm² Copper Single-Core Cable', 'Cables & Wires', 'm', 'PVC insulated copper, 450/750V, 120mm²', 'All', 'Low', '["120mm cable","single core"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-pro-mcb-dp-6a', 'PRO-MCB-DP-6A', '6A Double-Pole MCB', 'Circuit Protection', 'No.', 'DP MCB, 6A, 6kA', 'All', 'Medium', '["2 pole mcb","6a"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-pro-mcb-dp-10a', 'PRO-MCB-DP-10A', '10A Double-Pole MCB', 'Circuit Protection', 'No.', 'DP MCB, 10A, 6kA', 'All', 'Medium', '["2 pole mcb","10a"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-pro-mcb-dp-16a', 'PRO-MCB-DP-16A', '16A Double-Pole MCB', 'Circuit Protection', 'No.', 'DP MCB, 16A, 6kA', 'All', 'Medium', '["2 pole mcb","16a"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-pro-mcb-dp-20a', 'PRO-MCB-DP-20A', '20A Double-Pole MCB', 'Circuit Protection', 'No.', 'DP MCB, 20A, 6kA', 'All', 'Medium', '["2 pole mcb","20a"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-pro-mcb-dp-32a', 'PRO-MCB-DP-32A', '32A Double-Pole MCB', 'Circuit Protection', 'No.', 'DP MCB, 32A, 6kA', 'All', 'Medium', '["2 pole mcb","32a"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-pro-mcb-dp-63a', 'PRO-MCB-DP-63A', '63A Double-Pole MCB', 'Circuit Protection', 'No.', 'DP MCB, 63A, 6kA', 'All', 'Low', '["2 pole mcb","63a"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-pro-mcb-tp-10a', 'PRO-MCB-TP-10A', '10A Triple-Pole MCB', 'Circuit Protection', 'No.', 'TP MCB, 10A, 6kA', 'All', 'Low', '["3 pole mcb","10a"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-pro-mcb-tp-16a', 'PRO-MCB-TP-16A', '16A Triple-Pole MCB', 'Circuit Protection', 'No.', 'TP MCB, 16A, 6kA', 'All', 'Low', '["3 pole mcb","16a"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-pro-mcb-tp-20a', 'PRO-MCB-TP-20A', '20A Triple-Pole MCB', 'Circuit Protection', 'No.', 'TP MCB, 20A, 6kA', 'All', 'Low', '["3 pole mcb","20a"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-pro-mcb-tp-25a', 'PRO-MCB-TP-25A', '25A Triple-Pole MCB', 'Circuit Protection', 'No.', 'TP MCB, 25A, 6kA', 'All', 'Low', '["3 pole mcb","25a"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-pro-mcb-tp-125a', 'PRO-MCB-TP-125A', '125A Triple-Pole MCB', 'Circuit Protection', 'No.', 'TP MCB, 125A, 10kA', 'All', 'Low', '["3 pole mcb","125a"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-db-spn-2w', 'DB-SPN-2W', '2-Way SPN Distribution Board', 'Distribution Boards', 'No.', 'SPN DB, 2 ways', 'All', 'Medium', '["2 way consumer unit"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-db-spn-24w', 'DB-SPN-24W', '24-Way SPN Distribution Board', 'Distribution Boards', 'No.', 'SPN DB, 24 ways', 'All', 'Low', '["24 way consumer unit"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-trk-pvc-25x40', 'TRK-PVC-25X40', '25x40mm PVC Trunking', 'Trunking & Accessories', 'length', 'PVC trunking, 25x40mm, nominal 3m', 'Standard', 'Medium', '["25x40 trunking"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-trk-pvc-30x40', 'TRK-PVC-30X40', '30x40mm PVC Trunking', 'Trunking & Accessories', 'length', 'PVC trunking, 30x40mm, nominal 3m', 'Standard', 'Low', '["30x40 trunking"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-trk-pvc-40x60', 'TRK-PVC-40X60', '40x60mm PVC Trunking', 'Trunking & Accessories', 'length', 'PVC trunking, 40x60mm, nominal 3m', 'Standard', 'Medium', '["40x60 trunking"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-trk-pvc-40x100', 'TRK-PVC-40X100', '40x100mm PVC Trunking', 'Trunking & Accessories', 'length', 'PVC trunking, 40x100mm, nominal 3m', 'Standard', 'Low', '["40x100 trunking"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-trk-pvc-80x100', 'TRK-PVC-80X100', '80x100mm PVC Trunking', 'Trunking & Accessories', 'length', 'PVC trunking, 80x100mm, nominal 3m', 'Standard', 'Low', '["80x100 trunking"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-sws-sw-3g2w', 'SWS-SW-3G2W', '3-Gang 2-Way Light Switch', 'Switches & Sockets', 'No.', '10A/16A, 3-gang, 2-way', 'All', 'Medium', '["3 gang 2 way","three gang switch"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-lgt-down-4w', 'LGT-DOWN-4W', '4W LED Downlight', 'Lighting', 'No.', 'LED recessed downlight, approx. 4W', 'Value / Standard', 'Medium', '["4w downlight"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-lgt-down-6w', 'LGT-DOWN-6W', '6W LED Downlight', 'Lighting', 'No.', 'LED recessed downlight, approx. 6W', 'Value / Standard', 'Medium', '["6w downlight"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-lgt-down-8w', 'LGT-DOWN-8W', '8W LED Downlight', 'Lighting', 'No.', 'LED recessed downlight, approx. 8W', 'Value / Standard', 'Medium', '["8w downlight"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-lgt-down-surf-16w', 'LGT-DOWN-SURF-16W', '16W LED Surface Downlight', 'Lighting', 'No.', 'LED surface downlight, approx. 16W', 'Standard', 'Low', '["16w downlight","surface downlight"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-lgt-down-surf-24w', 'LGT-DOWN-SURF-24W', '24W LED Surface Downlight', 'Lighting', 'No.', 'LED surface downlight, approx. 24W', 'Standard', 'Low', '["24w downlight"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-lgt-led-bulb-5w', 'LGT-LED-BULB-5W', '5W LED Lamp', 'Lighting', 'No.', 'LED lamp, approx. 5W, 230V', 'Value / Standard', 'Medium', '["5w bulb"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-lgt-led-bulb-15w', 'LGT-LED-BULB-15W', '15W LED Lamp', 'Lighting', 'No.', 'LED lamp, approx. 15W, 230V', 'Value / Standard', 'Medium', '["15w bulb"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-lgt-flood-30w', 'LGT-FLOOD-30W', '30W LED Floodlight', 'Lighting', 'No.', 'LED floodlight, 30W, IP65', 'Standard', 'Medium', '["30w floodlight"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-lgt-flood-150w', 'LGT-FLOOD-150W', '150W LED Floodlight', 'Lighting', 'No.', 'LED floodlight, 150W, IP65', 'Standard / Premium', 'Medium', '["150w floodlight"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-lgt-hibay-150w', 'LGT-HIBAY-150W', '150W LED High-Bay Light', 'Lighting', 'No.', 'LED high-bay, approx. 150W, IP65', 'Standard / Premium', 'Low', '["150w high bay"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-lgt-panel-16w', 'LGT-PANEL-16W', '16W LED Panel Light', 'Lighting', 'No.', 'LED panel, approx. 16W', 'Standard', 'Low', '["16w panel light"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;
+INSERT INTO catalogue_items (id, code, name, category, unit, spec, tier, relevance, keywords, active)
+VALUES ('mat-lgt-panel-24w', 'LGT-PANEL-24W', '24W LED Panel Light', 'Lighting', 'No.', 'LED panel, approx. 24W', 'Standard', 'Low', '["24w panel light"]', 1)
+ON CONFLICT(id) DO UPDATE SET name=excluded.name, category=excluded.category, unit=excluded.unit, spec=excluded.spec, tier=excluded.tier, relevance=excluded.relevance, keywords=excluded.keywords;

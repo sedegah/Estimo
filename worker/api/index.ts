@@ -197,6 +197,8 @@ type CatalogueRow = {
   relevance: string;
   keywords: string | null;
   price_ghs: number | null;
+  price_brand: string | null;
+  price_source: string | null;
   price_updated_at: string | null;
 };
 
@@ -205,6 +207,8 @@ async function listCatalogue(env: Env): Promise<Response> {
     .prepare(
       `SELECT i.id, i.code, i.name, i.category, i.unit, i.spec, i.tier, i.relevance, i.keywords,
               (SELECT p.price_ghs FROM catalogue_prices p WHERE p.item_id = i.id ORDER BY p.effective_from DESC LIMIT 1) AS price_ghs,
+              (SELECT p.brand FROM catalogue_prices p WHERE p.item_id = i.id ORDER BY p.effective_from DESC LIMIT 1) AS price_brand,
+              (SELECT p.source FROM catalogue_prices p WHERE p.item_id = i.id ORDER BY p.effective_from DESC LIMIT 1) AS price_source,
               (SELECT p.effective_from FROM catalogue_prices p WHERE p.item_id = i.id ORDER BY p.effective_from DESC LIMIT 1) AS price_updated_at
        FROM catalogue_items i WHERE i.active = 1 ORDER BY i.name LIMIT 500`,
     )
@@ -279,10 +283,10 @@ async function addCataloguePrice(env: Env, actor: string, body: Record<string, u
   const id = crypto.randomUUID();
   await env.DB
     .prepare(
-      `INSERT INTO catalogue_prices (id, item_id, price_ghs, source, note, updated_by)
-       VALUES (?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO catalogue_prices (id, item_id, price_ghs, source, brand, note, updated_by)
+       VALUES (?, ?, ?, ?, ?, ?, ?)`,
     )
-    .bind(id, itemId, price, String(body.source ?? "admin"), String(body.note ?? ""), actor)
+    .bind(id, itemId, price, String(body.source ?? "admin"), String(body.brand ?? ""), String(body.note ?? ""), actor)
     .run();
 
   await audit(env, actor, "price.create", "catalogue_price", itemId, `${price}`);

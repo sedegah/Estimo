@@ -1,4 +1,4 @@
-// ESTIMO local material library: 122 core electrical materials bundled with the app (no database).
+// ESTIMO local material library: the core electrical materials bundled with the app (no database).
 import type { CatalogueMaterial } from "@/lib/types";
 
 export const CATALOGUE_CATEGORIES: { code: string; name: string }[] = [
@@ -2067,6 +2067,583 @@ export const CATALOGUE_MATERIALS: CatalogueMaterial[] = [
     "category": "General Accessories",
     "unitCode": "U-ROLL",
     "unit": "roll"
+  },
+  {
+    "id": "mat-cab-sc-cu-50",
+    "code": "CAB-SC-CU-50",
+    "name": "50mm² Copper Single-Core Cable",
+    "purpose": "Feeds sub-mains and large distribution circuits.",
+    "spec": "PVC insulated copper, 450/750V, 50mm²",
+    "tier": "All",
+    "relevance": "Medium",
+    "keywords": [
+      "50mm cable",
+      "single core"
+    ],
+    "categoryCode": "CAT-CAB",
+    "category": "Cables & Wires",
+    "unitCode": "U-M",
+    "unit": "m"
+  },
+  {
+    "id": "mat-cab-sc-cu-70",
+    "code": "CAB-SC-CU-70",
+    "name": "70mm² Copper Single-Core Cable",
+    "purpose": "Feeds heavy sub-mains and service connections.",
+    "spec": "PVC insulated copper, 450/750V, 70mm²",
+    "tier": "All",
+    "relevance": "Medium",
+    "keywords": [
+      "70mm cable",
+      "single core"
+    ],
+    "categoryCode": "CAT-CAB",
+    "category": "Cables & Wires",
+    "unitCode": "U-M",
+    "unit": "m"
+  },
+  {
+    "id": "mat-cab-sc-cu-95",
+    "code": "CAB-SC-CU-95",
+    "name": "95mm² Copper Single-Core Cable",
+    "purpose": "Feeds main service entries and plant feeders.",
+    "spec": "PVC insulated copper, 450/750V, 95mm²",
+    "tier": "All",
+    "relevance": "Low",
+    "keywords": [
+      "95mm cable",
+      "single core"
+    ],
+    "categoryCode": "CAT-CAB",
+    "category": "Cables & Wires",
+    "unitCode": "U-M",
+    "unit": "m"
+  },
+  {
+    "id": "mat-cab-sc-cu-120",
+    "code": "CAB-SC-CU-120",
+    "name": "120mm² Copper Single-Core Cable",
+    "purpose": "Primary service mains and generator connections.",
+    "spec": "PVC insulated copper, 450/750V, 120mm²",
+    "tier": "All",
+    "relevance": "Low",
+    "keywords": [
+      "120mm cable",
+      "single core"
+    ],
+    "categoryCode": "CAT-CAB",
+    "category": "Cables & Wires",
+    "unitCode": "U-M",
+    "unit": "m"
+  },
+  {
+    "id": "mat-pro-mcb-dp-6a",
+    "code": "PRO-MCB-DP-6A",
+    "name": "6A Double-Pole MCB",
+    "purpose": "Switches both live and neutral for a circuit.",
+    "spec": "DP MCB, 6A, 6kA",
+    "tier": "All",
+    "relevance": "Medium",
+    "keywords": [
+      "2 pole mcb",
+      "6a"
+    ],
+    "categoryCode": "CAT-PRO",
+    "category": "Circuit Protection",
+    "unitCode": "U-NO",
+    "unit": "No."
+  },
+  {
+    "id": "mat-pro-mcb-dp-10a",
+    "code": "PRO-MCB-DP-10A",
+    "name": "10A Double-Pole MCB",
+    "purpose": "Switches both live and neutral for a circuit.",
+    "spec": "DP MCB, 10A, 6kA",
+    "tier": "All",
+    "relevance": "Medium",
+    "keywords": [
+      "2 pole mcb",
+      "10a"
+    ],
+    "categoryCode": "CAT-PRO",
+    "category": "Circuit Protection",
+    "unitCode": "U-NO",
+    "unit": "No."
+  },
+  {
+    "id": "mat-pro-mcb-dp-16a",
+    "code": "PRO-MCB-DP-16A",
+    "name": "16A Double-Pole MCB",
+    "purpose": "Switches both live and neutral for a circuit.",
+    "spec": "DP MCB, 16A, 6kA",
+    "tier": "All",
+    "relevance": "Medium",
+    "keywords": [
+      "2 pole mcb",
+      "16a"
+    ],
+    "categoryCode": "CAT-PRO",
+    "category": "Circuit Protection",
+    "unitCode": "U-NO",
+    "unit": "No."
+  },
+  {
+    "id": "mat-pro-mcb-dp-20a",
+    "code": "PRO-MCB-DP-20A",
+    "name": "20A Double-Pole MCB",
+    "purpose": "Switches both live and neutral for a circuit.",
+    "spec": "DP MCB, 20A, 6kA",
+    "tier": "All",
+    "relevance": "Medium",
+    "keywords": [
+      "2 pole mcb",
+      "20a"
+    ],
+    "categoryCode": "CAT-PRO",
+    "category": "Circuit Protection",
+    "unitCode": "U-NO",
+    "unit": "No."
+  },
+  {
+    "id": "mat-pro-mcb-dp-32a",
+    "code": "PRO-MCB-DP-32A",
+    "name": "32A Double-Pole MCB",
+    "purpose": "Switches both live and neutral for a circuit.",
+    "spec": "DP MCB, 32A, 6kA",
+    "tier": "All",
+    "relevance": "Medium",
+    "keywords": [
+      "2 pole mcb",
+      "32a"
+    ],
+    "categoryCode": "CAT-PRO",
+    "category": "Circuit Protection",
+    "unitCode": "U-NO",
+    "unit": "No."
+  },
+  {
+    "id": "mat-pro-mcb-dp-63a",
+    "code": "PRO-MCB-DP-63A",
+    "name": "63A Double-Pole MCB",
+    "purpose": "Switches both live and neutral for a circuit.",
+    "spec": "DP MCB, 63A, 6kA",
+    "tier": "All",
+    "relevance": "Low",
+    "keywords": [
+      "2 pole mcb",
+      "63a"
+    ],
+    "categoryCode": "CAT-PRO",
+    "category": "Circuit Protection",
+    "unitCode": "U-NO",
+    "unit": "No."
+  },
+  {
+    "id": "mat-pro-mcb-tp-10a",
+    "code": "PRO-MCB-TP-10A",
+    "name": "10A Triple-Pole MCB",
+    "purpose": "Protects a three-phase circuit.",
+    "spec": "TP MCB, 10A, 6kA",
+    "tier": "All",
+    "relevance": "Low",
+    "keywords": [
+      "3 pole mcb",
+      "10a"
+    ],
+    "categoryCode": "CAT-PRO",
+    "category": "Circuit Protection",
+    "unitCode": "U-NO",
+    "unit": "No."
+  },
+  {
+    "id": "mat-pro-mcb-tp-16a",
+    "code": "PRO-MCB-TP-16A",
+    "name": "16A Triple-Pole MCB",
+    "purpose": "Protects a three-phase circuit.",
+    "spec": "TP MCB, 16A, 6kA",
+    "tier": "All",
+    "relevance": "Low",
+    "keywords": [
+      "3 pole mcb",
+      "16a"
+    ],
+    "categoryCode": "CAT-PRO",
+    "category": "Circuit Protection",
+    "unitCode": "U-NO",
+    "unit": "No."
+  },
+  {
+    "id": "mat-pro-mcb-tp-20a",
+    "code": "PRO-MCB-TP-20A",
+    "name": "20A Triple-Pole MCB",
+    "purpose": "Protects a three-phase circuit.",
+    "spec": "TP MCB, 20A, 6kA",
+    "tier": "All",
+    "relevance": "Low",
+    "keywords": [
+      "3 pole mcb",
+      "20a"
+    ],
+    "categoryCode": "CAT-PRO",
+    "category": "Circuit Protection",
+    "unitCode": "U-NO",
+    "unit": "No."
+  },
+  {
+    "id": "mat-pro-mcb-tp-25a",
+    "code": "PRO-MCB-TP-25A",
+    "name": "25A Triple-Pole MCB",
+    "purpose": "Protects a three-phase circuit.",
+    "spec": "TP MCB, 25A, 6kA",
+    "tier": "All",
+    "relevance": "Low",
+    "keywords": [
+      "3 pole mcb",
+      "25a"
+    ],
+    "categoryCode": "CAT-PRO",
+    "category": "Circuit Protection",
+    "unitCode": "U-NO",
+    "unit": "No."
+  },
+  {
+    "id": "mat-pro-mcb-tp-125a",
+    "code": "PRO-MCB-TP-125A",
+    "name": "125A Triple-Pole MCB",
+    "purpose": "Protects a high-current three-phase circuit.",
+    "spec": "TP MCB, 125A, 10kA",
+    "tier": "All",
+    "relevance": "Low",
+    "keywords": [
+      "3 pole mcb",
+      "125a"
+    ],
+    "categoryCode": "CAT-PRO",
+    "category": "Circuit Protection",
+    "unitCode": "U-NO",
+    "unit": "No."
+  },
+  {
+    "id": "mat-db-spn-2w",
+    "code": "DB-SPN-2W",
+    "name": "2-Way SPN Distribution Board",
+    "purpose": "Small enclosure for one or two final circuits.",
+    "spec": "SPN DB, 2 ways",
+    "tier": "All",
+    "relevance": "Medium",
+    "keywords": [
+      "2 way consumer unit"
+    ],
+    "categoryCode": "CAT-DB",
+    "category": "Distribution Boards",
+    "unitCode": "U-NO",
+    "unit": "No."
+  },
+  {
+    "id": "mat-db-spn-24w",
+    "code": "DB-SPN-24W",
+    "name": "24-Way SPN Distribution Board",
+    "purpose": "Large single-phase board for many final circuits.",
+    "spec": "SPN DB, 24 ways",
+    "tier": "All",
+    "relevance": "Low",
+    "keywords": [
+      "24 way consumer unit"
+    ],
+    "categoryCode": "CAT-DB",
+    "category": "Distribution Boards",
+    "unitCode": "U-NO",
+    "unit": "No."
+  },
+  {
+    "id": "mat-trk-pvc-25x40",
+    "code": "TRK-PVC-25X40",
+    "name": "25x40mm PVC Trunking",
+    "purpose": "Carries small cable bundles along walls.",
+    "spec": "PVC trunking, 25x40mm, nominal 3m",
+    "tier": "Standard",
+    "relevance": "Medium",
+    "keywords": [
+      "25x40 trunking"
+    ],
+    "categoryCode": "CAT-TRK",
+    "category": "Trunking & Accessories",
+    "unitCode": "U-LEN",
+    "unit": "length"
+  },
+  {
+    "id": "mat-trk-pvc-30x40",
+    "code": "TRK-PVC-30X40",
+    "name": "30x40mm PVC Trunking",
+    "purpose": "Carries small cable bundles along walls.",
+    "spec": "PVC trunking, 30x40mm, nominal 3m",
+    "tier": "Standard",
+    "relevance": "Low",
+    "keywords": [
+      "30x40 trunking"
+    ],
+    "categoryCode": "CAT-TRK",
+    "category": "Trunking & Accessories",
+    "unitCode": "U-LEN",
+    "unit": "length"
+  },
+  {
+    "id": "mat-trk-pvc-40x60",
+    "code": "TRK-PVC-40X60",
+    "name": "40x60mm PVC Trunking",
+    "purpose": "Carries medium cable bundles for commercial routes.",
+    "spec": "PVC trunking, 40x60mm, nominal 3m",
+    "tier": "Standard",
+    "relevance": "Medium",
+    "keywords": [
+      "40x60 trunking"
+    ],
+    "categoryCode": "CAT-TRK",
+    "category": "Trunking & Accessories",
+    "unitCode": "U-LEN",
+    "unit": "length"
+  },
+  {
+    "id": "mat-trk-pvc-40x100",
+    "code": "TRK-PVC-40X100",
+    "name": "40x100mm PVC Trunking",
+    "purpose": "Carries larger bundles in plant and riser routes.",
+    "spec": "PVC trunking, 40x100mm, nominal 3m",
+    "tier": "Standard",
+    "relevance": "Low",
+    "keywords": [
+      "40x100 trunking"
+    ],
+    "categoryCode": "CAT-TRK",
+    "category": "Trunking & Accessories",
+    "unitCode": "U-LEN",
+    "unit": "length"
+  },
+  {
+    "id": "mat-trk-pvc-80x100",
+    "code": "TRK-PVC-80X100",
+    "name": "80x100mm PVC Trunking",
+    "purpose": "Carries heavy bundles in plant and riser routes.",
+    "spec": "PVC trunking, 80x100mm, nominal 3m",
+    "tier": "Standard",
+    "relevance": "Low",
+    "keywords": [
+      "80x100 trunking"
+    ],
+    "categoryCode": "CAT-TRK",
+    "category": "Trunking & Accessories",
+    "unitCode": "U-LEN",
+    "unit": "length"
+  },
+  {
+    "id": "mat-sws-sw-3g2w",
+    "code": "SWS-SW-3G2W",
+    "name": "3-Gang 2-Way Light Switch",
+    "purpose": "Controls three lighting groups from one or two positions.",
+    "spec": "10A/16A, 3-gang, 2-way",
+    "tier": "All",
+    "relevance": "Medium",
+    "keywords": [
+      "3 gang 2 way",
+      "three gang switch"
+    ],
+    "categoryCode": "CAT-SWS",
+    "category": "Switches & Sockets",
+    "unitCode": "U-NO",
+    "unit": "No."
+  },
+  {
+    "id": "mat-lgt-down-4w",
+    "code": "LGT-DOWN-4W",
+    "name": "4W LED Downlight",
+    "purpose": "Slim ceiling light for corridors and cabinets.",
+    "spec": "LED recessed downlight, approx. 4W",
+    "tier": "Value / Standard",
+    "relevance": "Medium",
+    "keywords": [
+      "4w downlight"
+    ],
+    "categoryCode": "CAT-LGT",
+    "category": "Lighting",
+    "unitCode": "U-NO",
+    "unit": "No."
+  },
+  {
+    "id": "mat-lgt-down-6w",
+    "code": "LGT-DOWN-6W",
+    "name": "6W LED Downlight",
+    "purpose": "Recessed ceiling light for kitchens and hallways.",
+    "spec": "LED recessed downlight, approx. 6W",
+    "tier": "Value / Standard",
+    "relevance": "Medium",
+    "keywords": [
+      "6w downlight"
+    ],
+    "categoryCode": "CAT-LGT",
+    "category": "Lighting",
+    "unitCode": "U-NO",
+    "unit": "No."
+  },
+  {
+    "id": "mat-lgt-down-8w",
+    "code": "LGT-DOWN-8W",
+    "name": "8W LED Downlight",
+    "purpose": "Recessed ceiling light for rooms and corridors.",
+    "spec": "LED recessed downlight, approx. 8W",
+    "tier": "Value / Standard",
+    "relevance": "Medium",
+    "keywords": [
+      "8w downlight"
+    ],
+    "categoryCode": "CAT-LGT",
+    "category": "Lighting",
+    "unitCode": "U-NO",
+    "unit": "No."
+  },
+  {
+    "id": "mat-lgt-down-surf-16w",
+    "code": "LGT-DOWN-SURF-16W",
+    "name": "16W LED Surface Downlight",
+    "purpose": "Surface ceiling light where no ceiling void exists.",
+    "spec": "LED surface downlight, approx. 16W",
+    "tier": "Standard",
+    "relevance": "Low",
+    "keywords": [
+      "16w downlight",
+      "surface downlight"
+    ],
+    "categoryCode": "CAT-LGT",
+    "category": "Lighting",
+    "unitCode": "U-NO",
+    "unit": "No."
+  },
+  {
+    "id": "mat-lgt-down-surf-24w",
+    "code": "LGT-DOWN-SURF-24W",
+    "name": "24W LED Surface Downlight",
+    "purpose": "Higher-output surface ceiling light.",
+    "spec": "LED surface downlight, approx. 24W",
+    "tier": "Standard",
+    "relevance": "Low",
+    "keywords": [
+      "24w downlight"
+    ],
+    "categoryCode": "CAT-LGT",
+    "category": "Lighting",
+    "unitCode": "U-NO",
+    "unit": "No."
+  },
+  {
+    "id": "mat-lgt-led-bulb-5w",
+    "code": "LGT-LED-BULB-5W",
+    "name": "5W LED Lamp",
+    "purpose": "Low-output lamp for fittings and cupboards.",
+    "spec": "LED lamp, approx. 5W, 230V",
+    "tier": "Value / Standard",
+    "relevance": "Medium",
+    "keywords": [
+      "5w bulb"
+    ],
+    "categoryCode": "CAT-LGT",
+    "category": "Lighting",
+    "unitCode": "U-NO",
+    "unit": "No."
+  },
+  {
+    "id": "mat-lgt-led-bulb-15w",
+    "code": "LGT-LED-BULB-15W",
+    "name": "15W LED Lamp",
+    "purpose": "General-purpose lamp for batten and pendant fittings.",
+    "spec": "LED lamp, approx. 15W, 230V",
+    "tier": "Value / Standard",
+    "relevance": "Medium",
+    "keywords": [
+      "15w bulb"
+    ],
+    "categoryCode": "CAT-LGT",
+    "category": "Lighting",
+    "unitCode": "U-NO",
+    "unit": "No."
+  },
+  {
+    "id": "mat-lgt-flood-30w",
+    "code": "LGT-FLOOD-30W",
+    "name": "30W LED Floodlight",
+    "purpose": "Small exterior light for gates and walkways.",
+    "spec": "LED floodlight, 30W, IP65",
+    "tier": "Standard",
+    "relevance": "Medium",
+    "keywords": [
+      "30w floodlight"
+    ],
+    "categoryCode": "CAT-LGT",
+    "category": "Lighting",
+    "unitCode": "U-NO",
+    "unit": "No."
+  },
+  {
+    "id": "mat-lgt-flood-150w",
+    "code": "LGT-FLOOD-150W",
+    "name": "150W LED Floodlight",
+    "purpose": "High-output exterior light for yards and car parks.",
+    "spec": "LED floodlight, 150W, IP65",
+    "tier": "Standard / Premium",
+    "relevance": "Medium",
+    "keywords": [
+      "150w floodlight"
+    ],
+    "categoryCode": "CAT-LGT",
+    "category": "Lighting",
+    "unitCode": "U-NO",
+    "unit": "No."
+  },
+  {
+    "id": "mat-lgt-hibay-150w",
+    "code": "LGT-HIBAY-150W",
+    "name": "150W LED High-Bay Light",
+    "purpose": "High-bay lighting for warehouses and workshops.",
+    "spec": "LED high-bay, approx. 150W, IP65",
+    "tier": "Standard / Premium",
+    "relevance": "Low",
+    "keywords": [
+      "150w high bay"
+    ],
+    "categoryCode": "CAT-LGT",
+    "category": "Lighting",
+    "unitCode": "U-NO",
+    "unit": "No."
+  },
+  {
+    "id": "mat-lgt-panel-16w",
+    "code": "LGT-PANEL-16W",
+    "name": "16W LED Panel Light",
+    "purpose": "Slim panel light for ceilings and soffits.",
+    "spec": "LED panel, approx. 16W",
+    "tier": "Standard",
+    "relevance": "Low",
+    "keywords": [
+      "16w panel light"
+    ],
+    "categoryCode": "CAT-LGT",
+    "category": "Lighting",
+    "unitCode": "U-NO",
+    "unit": "No."
+  },
+  {
+    "id": "mat-lgt-panel-24w",
+    "code": "LGT-PANEL-24W",
+    "name": "24W LED Panel Light",
+    "purpose": "Slim panel light for offices and shops.",
+    "spec": "LED panel, approx. 24W",
+    "tier": "Standard",
+    "relevance": "Low",
+    "keywords": [
+      "24w panel light"
+    ],
+    "categoryCode": "CAT-LGT",
+    "category": "Lighting",
+    "unitCode": "U-NO",
+    "unit": "No."
   }
 ];
 
