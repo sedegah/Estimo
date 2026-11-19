@@ -1,3 +1,5 @@
+import { cache } from "react";
+
 const API_URL = process.env.NEXT_PUBLIC_ESTIMO_API_URL ?? "https://estimo-api.sedegahkimathi.workers.dev";
 const IMAGES_URL = process.env.NEXT_PUBLIC_ESTIMO_IMAGES_URL ?? `${API_URL}/images`;
 
@@ -24,11 +26,15 @@ type ApiItem = {
   image_key?: string | null;
 };
 
-/** Prices and material photos, both published from the admin console into D1/R2. */
-export async function getCatalogueData(): Promise<CatalogueData> {
+/**
+ * Prices and material photos, both published from the admin console into D1/R2.
+ * Cached for a minute and de-duplicated per request, so a page render only asks
+ * the worker once and repeat visits do not wait on it.
+ */
+export const getCatalogueData = cache(async (): Promise<CatalogueData> => {
   const empty: CatalogueData = { prices: {}, images: {} };
   try {
-    const response = await fetch(`${API_URL}/catalogue`, { cache: "no-store" });
+    const response = await fetch(`${API_URL}/catalogue`, { next: { revalidate: 60 } });
     if (!response.ok) return empty;
     const body = (await response.json()) as { items?: ApiItem[] };
     const data: CatalogueData = { prices: {}, images: {} };
@@ -46,7 +52,7 @@ export async function getCatalogueData(): Promise<CatalogueData> {
   } catch {
     return empty;
   }
-}
+});
 
 /** Just the numbers, for callers that only need the amount. */
 export async function getLivePrices(): Promise<Record<string, number>> {

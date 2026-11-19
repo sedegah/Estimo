@@ -87,12 +87,12 @@ async function ownerKey(userId: string, pepper: string): Promise<string> {
   return Array.from(new Uint8Array(digest)).map((byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
-function json(body: unknown, status = 200): Response {
+function json(body: unknown, status = 200, cacheControl = "no-store"): Response {
   return new Response(JSON.stringify(body), {
     status,
     headers: {
       "Content-Type": "application/json",
-      "Cache-Control": "no-store",
+      "Cache-Control": cacheControl,
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Headers": "authorization, content-type",
       "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
@@ -215,7 +215,7 @@ async function listCatalogue(env: Env): Promise<Response> {
        FROM catalogue_items i WHERE i.active = 1 ORDER BY i.name LIMIT 500`,
     )
     .all<CatalogueRow>();
-  return json({ ok: true, items: results ?? [] });
+  return json({ ok: true, items: results ?? [] }, 200, "public, max-age=60, stale-while-revalidate=300");
 }
 
 const IMAGE_TYPES: Record<string, string> = {

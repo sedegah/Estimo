@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useMemo, useState } from "react";
 import {
   FITTINGS,
@@ -22,6 +22,7 @@ const number = (value: string | null, fallback: number) => {
 };
 
 function EstimateContent() {
+  const router = useRouter();
   const searchParams = useSearchParams();
   const template = searchParams.get("template") || "HOME-2B";
   const type = projectType(template);
@@ -59,6 +60,8 @@ function EstimateContent() {
     });
     void pushCreate(saved);
     setSaved(true);
+    // saving is a step, not a stop: open the saved estimate
+    router.push(`/projects/${saved.id}`);
   };
 
   const pdfHref = () => {
