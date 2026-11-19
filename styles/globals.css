@@ -162,6 +162,8 @@ select.input { appearance: auto; }
 .material-hero h1{margin:6px 0 10px;font-size:clamp(2rem,4vw,3.2rem);line-height:1.04;letter-spacing:-.035em;color:var(--navy)}
 .material-purpose{margin:0 0 16px;max-width:640px;font-size:15.5px;line-height:1.6;color:#5f6b7a}
 .material-photo{margin:0;display:grid;place-items:center;gap:10px;aspect-ratio:4/3;padding:18px;border:1px dashed #cfd5dd;border-radius:16px;background:#fafbfc;color:#9aa4b1;text-align:center}
+.material-photo.has-image{padding:0;border:1px solid #e7e9e2;background:#fff;overflow:hidden}
+.material-photo.has-image img{width:100%;height:100%;object-fit:contain;display:block}
 .material-photo figcaption{display:grid;gap:2px}
 .material-photo strong{font-size:.82rem;font-weight:700;color:#6b7684}
 .material-photo span{font-size:.72rem;color:#9aa4b1}

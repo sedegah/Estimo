@@ -29,3 +29,8 @@ export function writeBasket(items: BasketItem[]): void {
 export function basketUnitCount(items: BasketItem[]): number {
   return items.reduce((sum, item) => sum + item.quantity, 0);
 }
+
+/** How many distinct materials sit in the basket (the badge count, not units). */
+export function basketMaterialCount(items: BasketItem[]): number {
+  return items.length;
+}

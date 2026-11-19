@@ -82,9 +82,11 @@ function wranglerExecute(file) {
 }
 
 const files = [
-  ["migration 0006 (brand column)", path.join(root, "lib", "db", "migrations", "0006_catalogue_price_brand.sql")],
+  ["migration 0006 (price brand)", path.join(root, "lib", "db", "migrations", "0006_catalogue_price_brand.sql")],
+  ["migration 0007 (material photo)", path.join(root, "lib", "db", "migrations", "0007_catalogue_item_image.sql")],
   ["catalogue items", path.join(root, "lib", "db", "seed-catalogue.sql")],
   ["supplier prices", path.join(root, "lib", "db", "seed-prices-electrical-supplies.sql")],
+  ["material photos", path.join(root, "lib", "db", "seed-catalogue-images.sql")],
 ];
 
 console.log(useApi ? "using CLOUDFLARE_API_TOKEN from .env" : "using the local wrangler login");

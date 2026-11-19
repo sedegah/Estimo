@@ -1,12 +1,15 @@
 "use client";
 
+import { useUser } from "@clerk/nextjs";
 import { EstimateBasketLink } from "./estimate-basket-link";
 
 /**
- * The header always shows the estimate basket, signed in or not.
- * (It used to swap to a saved-estimate count once Clerk loaded, which made the
- * cart flash in and out on every page load.)
+ * The cart belongs to guests: it holds the estimate they are building before they
+ * have an account. Signed-in users have saved estimates instead, so it is hidden.
  */
 export function ClerkEstimateCount() {
-  return <EstimateBasketLink />;
+  const { isLoaded, isSignedIn } = useUser();
+
+  if (!isLoaded) return null;
+  return isSignedIn ? null : <EstimateBasketLink />;
 }

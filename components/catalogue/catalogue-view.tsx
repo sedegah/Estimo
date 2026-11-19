@@ -2,7 +2,7 @@ import Link from "next/link";
 import { AddToEstimateButton } from "@/components/estimate/add-to-estimate";
 import { CATALOGUE_MATERIALS } from "@/lib/data/catalogue";
 import type { CatalogueMaterial } from "@/lib/types";
-import { getCataloguePrices } from "@/lib/api/catalogue-prices";
+import { getCatalogueData, materialImageUrl } from "@/lib/api/catalogue-prices";
 import { formatPrice } from "@/lib/format";
 
 const FILTERS: { id: string; label: string; categories: string[] }[] = [
@@ -90,7 +90,9 @@ const filterHref = (id: string, term: string) => {
 
 /** Material search + results table. Used by the public catalogue and the in-app catalogue. */
 export async function CatalogueView({ q = "", cat = "all", page = 1 }: { q?: string; cat?: string; page?: number }) {
-  const prices = await getCataloguePrices();
+  const catalogue = await getCatalogueData();
+  const prices = catalogue.prices;
+  const thumb = (material: CatalogueMaterial) => materialImageUrl(catalogue.images[material.id]);
   const priceLabel = (material: CatalogueMaterial) => {
     const entry = prices[material.id];
     return entry ? formatPrice(entry.price, material.unit) : "Pending";
@@ -160,7 +162,15 @@ export async function CatalogueView({ q = "", cat = "all", page = 1 }: { q?: str
             {results.map((material) => (
               <tr key={material.id}>
                 <td>
-                  <Link className="table-link" href={`/catalogue/${material.id}`}>{material.name}</Link>
+                  <div className="material-name-cell">
+                    <span className={thumb(material) ? "material-thumb" : "material-thumb is-empty"}>
+                      {thumb(material) ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={thumb(material)!} alt="" loading="lazy" decoding="async" />
+                      ) : null}
+                    </span>
+                    <Link className="table-link" href={`/catalogue/${material.id}`}>{material.name}</Link>
+                  </div>
                 </td>
                 <td className="price-cell">{priceLabel(material)}</td>
                 <td className="muted-cell">{prices[material.id]?.brand ?? "—"}</td>
@@ -197,11 +207,19 @@ export async function CatalogueView({ q = "", cat = "all", page = 1 }: { q?: str
         {results.map((material) => (
           <li className="catalogue-line" key={material.id}>
             <div className="catalogue-line-main">
-              <Link className="catalogue-line-name" href={`/catalogue/${material.id}`}>{material.name}</Link>
-              <span className="catalogue-line-meta">
-                {priceLabel(material)}
-                {prices[material.id]?.brand ? ` · ${prices[material.id].brand}` : ""}
+              <span className={thumb(material) ? "material-thumb" : "material-thumb is-empty"}>
+                {thumb(material) ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={thumb(material)!} alt="" loading="lazy" decoding="async" />
+                ) : null}
               </span>
+              <div className="catalogue-line-copy">
+                <Link className="catalogue-line-name" href={`/catalogue/${material.id}`}>{material.name}</Link>
+                <span className="catalogue-line-meta">
+                  {priceLabel(material)}
+                  {prices[material.id]?.brand ? ` · ${prices[material.id].brand}` : ""}
+                </span>
+              </div>
             </div>
             <AddToEstimateButton
               variant="outline"
