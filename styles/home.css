@@ -76,17 +76,6 @@
 
 .home-cta-outline:hover { background: rgba(255, 255, 255, .06); }
 
-.home-pro { margin: 28px 0 0; }
-
-.home-pro a {
-  color: #c3cee2;
-  font-weight: 500;
-  border-bottom: 1px solid #6d82a8;
-  padding-bottom: 3px;
-}
-
-.home-pro a:hover { color: #fff; }
-
 .home-plan { flex: 1 1 460px; min-width: 0; }
 .home-plan-svg { display: block; width: 100%; height: auto; }
 
