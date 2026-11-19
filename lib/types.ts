@@ -32,6 +32,8 @@ export type SavedEstimateItem = {
   name: string;
   quantity: number;
   unit: string;
+  /** Unit price at the time it was added, when one was published. */
+  priceGhs?: number | null;
 };
 
 export type SavedEstimate = {
