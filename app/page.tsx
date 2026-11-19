@@ -49,7 +49,7 @@ export default function Home() {
             <p className="home-eyebrow">Electrical estimates, made visible</p>
             <h1>
               Picture it lit.
-              <br />
+              <br />{" "}
               Then price it.
             </h1>
             <p className="home-lead">

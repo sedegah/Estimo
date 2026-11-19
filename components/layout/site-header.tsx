@@ -30,12 +30,14 @@ export function SiteHeader() {
           <Link className={isActive("/") ? "is-active" : ""} href="/">Home</Link>
           <Link className={isActive("/catalogue") ? "is-active" : ""} href="/catalogue">Catalogue</Link>
           {clerkEnabled ? <ClerkEstimateCount /> : <EstimateBasketLink />}
+        </nav>
+        <div className="topbar-auth">
           {clerkEnabled ? (
             <ClerkHeaderAuth />
           ) : (
             <Link className="nav-signin" href="/dashboard">Dashboard</Link>
           )}
-        </nav>
+        </div>
       </div>
     </header>
   );

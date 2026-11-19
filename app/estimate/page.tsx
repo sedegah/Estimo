@@ -74,7 +74,7 @@ function EstimateContent() {
   };
 
   return (
-    <main className="container page-shell">
+    <main className="container page-shell estimate-page">
       <header className="estimate-head">
         <div>
           <h1 className="page-title">Your estimate</h1>
@@ -97,7 +97,7 @@ function EstimateContent() {
         <p>Materials and labour. Prices come from the Catalogue and can change before you buy.</p>
       </section>
 
-      <section className="table-card">
+      <section className="table-card estimate-table">
         <table className="data-table">
           <thead>
             <tr>
@@ -125,6 +125,22 @@ function EstimateContent() {
           </tbody>
         </table>
       </section>
+
+      <ul className="estimate-lines">
+        {lines.map((line) => (
+          <li className="estimate-line" key={line.label}>
+            <span className="estimate-line-name">{line.label}</span>
+            <span className="estimate-line-amount">{formatGhs(line.amount, 0)}</span>
+            <span className="estimate-line-meta">
+              {line.quantity} · {formatGhs(line.unitPrice, 0)} each
+            </span>
+          </li>
+        ))}
+        <li className="estimate-line is-total">
+          <span className="estimate-line-name">Total</span>
+          <span className="estimate-line-amount">{formatGhs(total, 0)}</span>
+        </li>
+      </ul>
 
       <p className="page-note">
         Illustrative preliminary estimate for calibration. It is not a quotation and not a verified market price;

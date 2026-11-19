@@ -150,7 +150,7 @@ export async function CatalogueView({ q = "", cat = "all", page = 1 }: { q?: str
         ))}
       </div>
 
-      <section className="table-card">
+      <section className="table-card catalogue-table">
         <table className="data-table">
           <thead>
             <tr>
@@ -196,6 +196,40 @@ export async function CatalogueView({ q = "", cat = "all", page = 1 }: { q?: str
           </tbody>
         </table>
       </section>
+
+      <ul className="catalogue-lines">
+        {results.map((material) => (
+          <li className="catalogue-line" key={material.id}>
+            <div className="catalogue-line-main">
+              <Link className="catalogue-line-name" href={`/catalogue/${material.id}`}>{material.name}</Link>
+              <span className="catalogue-line-meta">
+                {unitLabel(material)} · {typeof livePrices[material.id] === "number"
+                  ? `GHS ${livePrices[material.id].toLocaleString("en-GH")}`
+                  : "Price pending"}
+              </span>
+            </div>
+            <AddToEstimateButton
+              variant="outline"
+              label="Add"
+              item={{
+                materialId: material.id,
+                name: material.name,
+                category: material.category,
+                unit: material.unit,
+                priceGhs: livePrices[material.id] ?? null,
+                brandName: null,
+                supplierName: null,
+                verifiedAt: null,
+              }}
+            />
+          </li>
+        ))}
+        {!results.length ? (
+          <li className="catalogue-line catalogue-line-empty">
+            No materials match that search. Try a simpler term such as <b>cable</b>, <b>socket</b> or <b>conduit</b>.
+          </li>
+        ) : null}
+      </ul>
 
       <nav className="pager" aria-label="Catalogue pages">
         {currentPage > 1 ? <Link className="pager-btn" href={pageHref(currentPage - 1)}>Previous</Link> : <span className="pager-btn is-disabled">Previous</span>}
