@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { AddToEstimateButton } from "@/components/estimate/add-to-estimate";
 import { materialById } from "@/lib/data/catalogue";
 import { getCataloguePrices } from "@/lib/api/catalogue-prices";
-import { formatPrice, materialUnitLabel } from "@/lib/format";
+import { formatPrice } from "@/lib/format";
 
 export default async function MaterialPage({ params }: { params: Promise<{ materialId: string }> }) {
   const { materialId } = await params;
@@ -11,34 +11,38 @@ export default async function MaterialPage({ params }: { params: Promise<{ mater
   if (!material) notFound();
 
   const price = (await getCataloguePrices())[material.id];
+  const brand = price?.brand && price.brand !== price.source ? price.brand : null;
 
   return (
-    <main className="container page-shell product-intelligence-page">
+    <main className="container page-shell material-page">
       <div className="breadcrumb">
         <Link href="/catalogue">Catalogue</Link>
-        <span>›</span>
+        <span aria-hidden="true">›</span>
         <span>{material.name}</span>
       </div>
 
-      <section className="product-intel-hero">
-        <div>
+      <section className="material-hero">
+        <div className="material-hero-copy">
           <span className="eyebrow">ESTIMO Material Library</span>
           <h1>{material.name}</h1>
-          <p>{material.purpose || "Purpose not yet documented."}</p>
+          <p className="material-purpose">{material.purpose || "Purpose not yet documented."}</p>
           <div className="product-meta">
             <span>{material.code}</span>
             <span>{material.category}</span>
             <span>Base unit {material.unit}</span>
           </div>
         </div>
-        <div className="intelligence-guard">
-          <strong>{price ? formatPrice(price.price, material.unit) : "No price yet"}</strong>
-          <p>
-            {price
-              ? `Please note that this is the ${price.source ?? "published"} list price${price.brand ? ` for ${price.brand}` : ""}, not a quotation. Prices change without notice.`
-              : "No verified price is published for this material yet. ESTIMO never presents an unverified figure as a trusted price."}
-          </p>
-        </div>
+
+        <figure className="material-photo">
+          <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="14" rx="2.5" />
+            <path d="m4.5 16 4.2-4.2a2 2 0 0 1 2.8 0l2.1 2.1M14 12.5l1.6-1.6a2 2 0 0 1 2.8 0L21 13.5" strokeLinecap="round" />
+          </svg>
+          <figcaption>
+            <strong>Product photo</strong>
+            <span>Not supplied yet</span>
+          </figcaption>
+        </figure>
       </section>
 
       <section className="card config-section">
@@ -75,23 +79,30 @@ export default async function MaterialPage({ params }: { params: Promise<{ mater
         </div>
       </section>
 
-      <section className="card config-section">
-        <h2>Current price</h2>
+      <section className="card material-price-card">
+        <span className="eyebrow">Current price</span>
         {price ? (
           <>
             <p className="material-price">{formatPrice(price.price, material.unit)}</p>
-            <p className="settings-note">
-              {price.brand ? `${price.brand} · ` : ""}
+            <p className="material-price-meta">
+              {brand ? `${brand} · ` : ""}
               {price.source ?? "published price"}
-              {price.updatedAt ? ` · recorded ${price.updatedAt.slice(0, 10)}` : ""} · {materialUnitLabel(material.unit)}
+              {price.updatedAt ? ` · recorded ${price.updatedAt.slice(0, 10)}` : ""}
+            </p>
+            <p className="material-price-note">
+              A list price from the supplier, not a quotation. It can change without notice.
             </p>
           </>
         ) : (
-          <p className="settings-note">
-            No price is published for this material yet, so it is added to the estimate without one. The unit and
-            specification still travel with it.
-          </p>
+          <>
+            <p className="material-price material-price-missing">No price yet</p>
+            <p className="material-price-note">
+              This material still goes into an estimate with its unit and specification; it simply carries no amount
+              until a price is published.
+            </p>
+          </>
         )}
+
         <div className="material-result-actions">
           <AddToEstimateButton
             item={{
