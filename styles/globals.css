@@ -234,8 +234,18 @@ select.input { appearance: auto; }
 .basket-login-cta small,.basket-save-form small{color:#64748b}
 
 
-/* home: nav sits on the hero gradient so the two blend seamlessly */
-.topbar.is-hero { position: absolute; top: 0; left: 0; right: 0; background: transparent; z-index: 20; }
+/* home: the nav floats on the hero gradient so there is no seam between bar and page */
+.topbar.is-hero {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: transparent;
+  background-image: none;
+  border-bottom: 0;
+  box-shadow: none;
+  z-index: 20;
+}
 .topbar.is-hero .nav-signin { border-color: #6d82a8; }
 
 /* scrollbars stay functional but invisible */
