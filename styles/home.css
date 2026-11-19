@@ -1,11 +1,14 @@
-﻿/* ESTIMO home — lit floor-plan hero, then the project lists. */
+/* ESTIMO home — lit floor-plan hero, then the project lists. */
 
 .home-page { padding-bottom: 46px; }
 
 .home-hero {
   box-sizing: border-box;
+  margin: 0;
   padding: 128px clamp(20px, 6vw, 96px) 64px;
-  background: radial-gradient(900px 600px at 78% 45%, #1d3a6b 0%, #0b2142 62%);
+  background-color: #0b2142;
+  background-image: radial-gradient(900px 600px at 78% 45%, #1d3a6b 0%, #0b2142 62%);
+  background-repeat: no-repeat;
   color: #fff;
   display: flex;
   align-items: center;
@@ -267,12 +270,31 @@
   .home-bottom-cta { width: 100%; }
 }
 
+/* the wiring is live: dashes run from the board to each load, and a pulse chases each run */
 @media (prefers-reduced-motion: no-preference) {
-  .home-plan-svg circle[fill^="url"] { animation: plan-glow 6s ease-in-out infinite alternate; }
-  .home-plan-svg circle[fill^="url"]:nth-of-type(2) { animation-delay: 1.2s; }
-  .home-plan-svg circle[fill^="url"]:nth-of-type(3) { animation-delay: 2.4s; }
-  .home-plan-svg circle[fill^="url"]:nth-of-type(4) { animation-delay: 3.1s; }
-  .home-plan-svg circle[fill^="url"]:nth-of-type(5) { animation-delay: 3.8s; }
+  .home-plan-svg .plan-run,
+  .home-plan-svg .plan-run-halo { animation: plan-current .6s linear infinite; }
+
+  .home-plan-svg .plan-source-glow { animation: plan-source 2.4s ease-in-out infinite; }
+
+  .home-plan-svg .plan-orb { animation: plan-glow 6s ease-in-out infinite alternate; }
+  .home-plan-svg .plan-orb:nth-of-type(2) { animation-delay: 1.2s; }
+  .home-plan-svg .plan-orb:nth-of-type(3) { animation-delay: 2.4s; }
+  .home-plan-svg .plan-orb:nth-of-type(4) { animation-delay: 3.1s; }
+  .home-plan-svg .plan-orb:nth-of-type(5) { animation-delay: 3.8s; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .home-plan-svg .plan-pulse { display: none; }
+}
+
+@keyframes plan-current {
+  to { stroke-dashoffset: -22; }
+}
+
+@keyframes plan-source {
+  0%, 100% { opacity: .35; }
+  50% { opacity: .9; }
 }
 
 @keyframes plan-glow {
