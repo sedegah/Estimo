@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { PlanThumb } from "@/components/estimates/plan-thumb";
+import { MaterialThumb } from "@/components/estimates/material-thumb";
 import { computeEstimate, defaultCounts, estimateLines, projectType, totalSpaces } from "@/lib/estimate-model";
 import { estimateType, isEstimated, statusLabel } from "@/lib/estimates-view";
 import { formatDate, formatGhs, formatGhsOrNull } from "@/lib/format";
@@ -57,7 +58,7 @@ export default function DashboardPage() {
         <div className="app-grid">
           {recent.map((project) => (
             <Link className="project-tile" href={`/projects/${project.id}`} key={project.id}>
-              <PlanThumb variant={project.name.length} />
+              {project.kind === "materials" ? <MaterialThumb /> : <PlanThumb variant={project.name.length} />}
               <span className="project-tile-body">
                 <strong>{project.name}</strong>
                 <span className="project-tile-type">{estimateType(project)}</span>
