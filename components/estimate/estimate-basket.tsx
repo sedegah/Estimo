@@ -46,7 +46,7 @@ export function EstimateBasket() {
       kind: "materials",
       detail: `${items.length} material${items.length === 1 ? "" : "s"} · ${totalUnits} units`,
       totalGhs: pricedSubtotal > 0 ? pricedSubtotal : null,
-      items: items.map((item) => ({ name: item.name, quantity: item.quantity, unit: item.unit })),
+      items: items.map((item) => ({ name: item.name, quantity: item.quantity, unit: item.unit, priceGhs: item.priceGhs })),
     });
     setSavedName(saved.name);
   };

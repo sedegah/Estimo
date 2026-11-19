@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { PlanThumb } from "@/components/estimates/plan-thumb";
+import { MaterialThumb } from "@/components/estimates/material-thumb";
 import { estimateType, isEstimated, statusLabel } from "@/lib/estimates-view";
 import { formatDate, formatGhsOrNull } from "@/lib/format";
 import { BASKET_EVENT, basketUnitCount, readBasket, writeBasket } from "@/lib/storage/basket";
@@ -65,12 +66,13 @@ export default function ProjectsPage() {
     const items = readBasket();
     if (!items.length) return;
     const units = items.reduce((sum, item) => sum + item.quantity, 0);
+    const priced = items.reduce((sum, item) => (item.priceGhs == null ? sum : sum + item.priceGhs * item.quantity), 0);
     saveEstimate({
       name: "Material estimate",
       kind: "materials",
       detail: `${items.length} materials · ${units} units`,
-      totalGhs: null,
-      items: items.map((item) => ({ name: item.name, quantity: item.quantity, unit: item.unit })),
+      totalGhs: priced > 0 ? priced : null,
+      items: items.map((item) => ({ name: item.name, quantity: item.quantity, unit: item.unit, priceGhs: item.priceGhs })),
     });
     writeBasket([]);
   };
@@ -127,7 +129,7 @@ export default function ProjectsPage() {
           {visible.map((project) => (
             <article className="project-tile" key={project.id}>
               <Link className="project-tile-link" href={`/projects/${project.id}`}>
-                <PlanThumb variant={project.name.length} />
+                {project.kind === "materials" ? <MaterialThumb /> : <PlanThumb variant={project.name.length} />}
                 <div className="project-tile-body">
                   <strong>{project.name}</strong>
                   <span className="project-tile-type">{estimateType(project)}</span>
