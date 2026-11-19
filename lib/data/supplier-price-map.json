@@ -18,6 +18,7 @@
     { "material": "mat-sws-blank-1g", "match": "Midea 3×3 Blank Plate - White", "unit": "No.", "basis": "per piece", "confidence": "exact" },
     { "material": "mat-sws-tv-out", "match": "UNO Single TV Socket Coaxial Wall Outlet", "unit": "No.", "basis": "per piece", "confidence": "exact" },
     { "material": "mat-sws-data-rj45", "match": "UNO Gang Data Socket RJ45 Network Wall Outlet", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-sws-sw-3g1w", "match": "BINOKA 3 Gang 2 Way Switch with Neon Power Indication White", "unit": "No.", "basis": "per piece", "confidence": "close", "note": "supplied as a 2-way switch, which also works as a 1-way" },
 
     { "material": "mat-pro-mcb-sp-6a", "match": "UNO 1-Pole 6A C-Curve Miniature Circuit Breaker", "unit": "No.", "basis": "per piece", "confidence": "exact" },
     { "material": "mat-pro-mcb-sp-10a", "match": "UNO 1-Pole 10A C-Curve Miniature Circuit Breaker", "unit": "No.", "basis": "per piece", "confidence": "exact" },
@@ -46,6 +47,11 @@
 
     { "material": "mat-ear-clamp", "match": "U‑Bolt Earth Clamp – Copper Bolt", "unit": "No.", "basis": "per piece", "confidence": "close", "note": "U-bolt clamp supplied for earth rods" },
     { "material": "mat-iso-olr-9-13a", "match": "Thermal Overload Relay, Adjustable 9–13A", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-iso-contactor-25a", "match": "UNO 25A AC Contactor for Three-Phase Motor Control", "unit": "No.", "basis": "per piece", "confidence": "close" },
+    { "material": "mat-term-lug-cu-6", "match": "Cable Lug for 6 mm Conductor", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-term-lug-cu-10", "match": "Cable Lug for 10 mm Conductor", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-term-lug-cu-16", "match": "Cable Lug for 16 mm Conductor", "unit": "No.", "basis": "per piece", "confidence": "exact" },
+    { "material": "mat-con-pvc-20", "match": "SUIMING 20 mm PVC Conduit Pipe — White", "unit": "length", "basis": "per length", "confidence": "close", "note": "listing does not state the pipe length; priced as one length" },
 
     { "material": "mat-cab-sc-cu-16", "match": "1 × 16mm² Conduit Cable Single Core (Price Per Yard)", "unit": "m", "basis": "per yard", "confidence": "exact", "convert": "yard-to-metre" },
     { "material": "mat-cab-sc-cu-25", "match": "1 × 25mm² Conduit Cable Single Core (Price Per Yard)", "unit": "m", "basis": "per yard", "confidence": "exact", "convert": "yard-to-metre" },

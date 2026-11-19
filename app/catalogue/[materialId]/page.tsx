@@ -2,11 +2,15 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AddToEstimateButton } from "@/components/estimate/add-to-estimate";
 import { materialById } from "@/lib/data/catalogue";
+import { getCataloguePrices } from "@/lib/api/catalogue-prices";
+import { formatPrice, materialUnitLabel } from "@/lib/format";
 
 export default async function MaterialPage({ params }: { params: Promise<{ materialId: string }> }) {
   const { materialId } = await params;
   const material = materialById(materialId);
   if (!material) notFound();
+
+  const price = (await getCataloguePrices())[material.id];
 
   return (
     <main className="container page-shell product-intelligence-page">
@@ -28,10 +32,11 @@ export default async function MaterialPage({ params }: { params: Promise<{ mater
           </div>
         </div>
         <div className="intelligence-guard">
-          <strong>Material facts, not guesses</strong>
+          <strong>{price ? formatPrice(price.price, material.unit) : "No price yet"}</strong>
           <p>
-            This build ships the material library locally. Supplier prices stay visibly missing until a verified price
-            source is connected - ESTIMO never presents an unverified figure as a trusted price.
+            {price
+              ? `Please note that this is the ${price.source ?? "published"} list price${price.brand ? ` for ${price.brand}` : ""}, not a quotation. Prices change without notice.`
+              : "No verified price is published for this material yet. ESTIMO never presents an unverified figure as a trusted price."}
           </p>
         </div>
       </section>
@@ -71,11 +76,22 @@ export default async function MaterialPage({ params }: { params: Promise<{ mater
       </section>
 
       <section className="card config-section">
-        <h2>Verified current prices</h2>
-        <p>
-          No supplier price feed is connected in this build, so no comparable prices are shown. The material can still
-          be added to your estimate and carries its unit and specification.
-        </p>
+        <h2>Current price</h2>
+        {price ? (
+          <>
+            <p className="material-price">{formatPrice(price.price, material.unit)}</p>
+            <p className="settings-note">
+              {price.brand ? `${price.brand} · ` : ""}
+              {price.source ?? "published price"}
+              {price.updatedAt ? ` · recorded ${price.updatedAt.slice(0, 10)}` : ""} · {materialUnitLabel(material.unit)}
+            </p>
+          </>
+        ) : (
+          <p className="settings-note">
+            No price is published for this material yet, so it is added to the estimate without one. The unit and
+            specification still travel with it.
+          </p>
+        )}
         <div className="material-result-actions">
           <AddToEstimateButton
             item={{
@@ -83,10 +99,10 @@ export default async function MaterialPage({ params }: { params: Promise<{ mater
               name: material.name,
               category: material.category,
               unit: material.unit,
-              priceGhs: null,
-              brandName: null,
-              supplierName: null,
-              verifiedAt: null,
+              priceGhs: price?.price ?? null,
+              brandName: price?.brand ?? null,
+              supplierName: price?.source ?? null,
+              verifiedAt: price?.updatedAt ?? null,
             }}
           />
           <Link className="btn btn-secondary" href="/estimate-basket">Open my estimate</Link>
