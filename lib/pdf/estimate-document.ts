@@ -33,7 +33,9 @@ type Input = {
 
 type DrawOptions = NonNullable<Parameters<PDFPage["drawText"]>[1]> & { x: number };
 
-/** The system typeface (Bricolage Grotesque), read from /public/fonts. */
+/** The system typeface (Bricolage Grotesque), read from /public/fonts.
+ * These .ttf files are static instances of the site's variable WOFF2: wght 400
+ * and 700 at opsz 14, so the PDF is set in the same face as the app. */
 function loadFontFile(fileName: string): Uint8Array {
   return new Uint8Array(fs.readFileSync(path.join(process.cwd(), "public", "fonts", fileName)));
 }

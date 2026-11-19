@@ -15,6 +15,9 @@ const LINE = rgb(0xe2 / 255, 0xe4 / 255, 0xdc / 255);
 
 const money = (value: number) => `GHS ${value.toLocaleString("en-GH")}`;
 
+/** Brand and typeface files are read from the admin app's own public folder. */
+const asset = (...parts: string[]) => new Uint8Array(fs.readFileSync(path.join(process.cwd(), "public", ...parts)));
+
 export async function POST(request: Request) {
   const body = (await request.json().catch(() => ({}))) as Body;
   const plan = Array.isArray(body.plan) ? body.plan : [];
@@ -35,8 +38,10 @@ export async function POST(request: Request) {
 
   const pdf = await PDFDocument.create();
   pdf.registerFontkit(fontkit);
-  const regular = await pdf.embedFont(new Uint8Array(fs.readFileSync(path.join(process.cwd(), "public", "fonts", "bricolage-regular.ttf"))), { subset: false });
-  const bold = await pdf.embedFont(new Uint8Array(fs.readFileSync(path.join(process.cwd(), "public", "fonts", "bricolage-bold.ttf"))), { subset: false });
+  const regular = await pdf.embedFont(asset("fonts", "bricolage-regular.ttf"), { subset: false });
+  const bold = await pdf.embedFont(asset("fonts", "bricolage-bold.ttf"), { subset: false });
+  const wordmark = await pdf.embedPng(asset("brand", "estimo-logo-horizontal-dark.png"));
+  const footerMark = await pdf.embedPng(asset("brand", "estimo-logo-horizontal-mono-navy.png"));
 
   pdf.setTitle(`${body.name ?? "ESTIMO estimate"} - ESTIMO`);
   const page = pdf.addPage([595.28, 841.89]);
@@ -45,9 +50,17 @@ export async function POST(request: Request) {
 
   page.drawRectangle({ x: 0, y: height - 150, width, height: 150, color: NAVY });
   page.drawRectangle({ x: 0, y: height - 150, width, height: 4, color: AMBER });
-  page.drawText("estimo", { x: margin, y: height - 62, size: 26, font: bold, color: rgb(1, 1, 1) });
+
+  const wordmarkHeight = 25;
+  const wordmarkWidth = (wordmark.width / wordmark.height) * wordmarkHeight;
+  page.drawImage(wordmark, { x: margin, y: height - 66, width: wordmarkWidth, height: wordmarkHeight });
+
   page.drawText("ELECTRICAL ESTIMATE", { x: margin, y: height - 92, size: 9, font: bold, color: AMBER });
-  page.drawText(body.name ?? "Family house", { x: margin, y: height - 122, size: 22, font: bold, color: rgb(1, 1, 1) });
+
+  const title = body.name ?? "Family house";
+  let titleSize = 22;
+  while (titleSize > 12 && bold.widthOfTextAtSize(title, titleSize) > width - margin * 2) titleSize -= 1;
+  page.drawText(title, { x: margin, y: height - 122, size: titleSize, font: bold, color: rgb(1, 1, 1) });
   page.drawText(body.preset ?? "", { x: margin, y: height - 140, size: 10, font: regular, color: rgb(0.76, 0.81, 0.89) });
 
   let y = height - 200;
@@ -76,7 +89,10 @@ export async function POST(request: Request) {
   page.drawText("Planning figure based on current rate assumptions, not a quotation.", {
     x: margin, y: 80, size: 8.5, font: regular, color: MUTED,
   });
-  page.drawText("ESTIMO · Ghana electrical estimates", { x: margin, y: 58, size: 8, font: bold, color: NAVY });
+  const footerMarkHeight = 10;
+  const footerMarkWidth = (footerMark.width / footerMark.height) * footerMarkHeight;
+  page.drawImage(footerMark, { x: margin, y: 55, width: footerMarkWidth, height: footerMarkHeight });
+  page.drawText("Ghana electrical estimates", { x: margin + footerMarkWidth + 10, y: 57, size: 8, font: bold, color: NAVY });
 
   const bytes = await pdf.save();
   return new Response(Buffer.from(bytes), {
