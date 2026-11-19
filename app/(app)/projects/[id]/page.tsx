@@ -140,6 +140,83 @@ export default function ProjectPage() {
     );
   }
 
+  // A material list is what it says: the items that were added, with their quantities.
+  // It must never be dressed up as a home estimate.
+  if (project.kind === "materials") {
+    const lines = project.items ?? [];
+    const priced = lines.reduce((sum, line) => (line.priceGhs == null ? sum : sum + line.priceGhs * line.quantity), 0);
+    const unpriced = lines.filter((line) => line.priceGhs == null).length;
+    const money = (value: number) => `GHS ${value.toLocaleString("en-GH", { maximumFractionDigits: 2 })}`;
+
+    return (
+      <>
+        <header className="app-head">
+          <div>
+            <p className="app-eyebrow">Material list</p>
+            <h1 className="app-title">{project.name}</h1>
+            <p className="app-sub">
+              {lines.length} material{lines.length === 1 ? "" : "s"} · saved {formatDate(project.createdAt)}
+            </p>
+          </div>
+          <div className="settings-actions">
+            <Link className="btn-outline" href="/projects">Back</Link>
+            <Link className="btn-outline" href="/catalogue">Add more materials</Link>
+            <button
+              className="link-button"
+              type="button"
+              onClick={() => {
+                void pushDelete(project.id);
+                deleteSavedEstimate(project.id);
+                router.push("/projects");
+              }}
+            >
+              Delete list
+            </button>
+          </div>
+        </header>
+
+        <section className="table-card">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Material</th>
+                <th>Quantity</th>
+                <th>Base unit</th>
+                <th className="align-right">Unit price</th>
+                <th className="align-right">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {lines.map((line, index) => (
+                <tr key={`${line.name}-${index}`}>
+                  <td>{line.name}</td>
+                  <td className="muted-cell">{line.quantity}</td>
+                  <td className="muted-cell">{line.unit}</td>
+                  <td className="align-right muted-cell">{line.priceGhs == null ? "Pending" : money(line.priceGhs)}</td>
+                  <td className="align-right">{line.priceGhs == null ? "—" : money(line.priceGhs * line.quantity)}</td>
+                </tr>
+              ))}
+              <tr className="total-row">
+                <td>List total</td>
+                <td />
+                <td />
+                <td />
+                <td className="align-right">{priced > 0 ? money(priced) : "Pending"}</td>
+              </tr>
+            </tbody>
+          </table>
+        </section>
+
+        <p className="settings-note">
+          {unpriced
+            ? `${unpriced} item${unpriced === 1 ? "" : "s"} still awaiting a price, so the total is partial. `
+            : ""}
+          Quantities are what you added to the estimate. Prices are supplier list prices, not a quotation.
+        </p>
+      </>
+    );
+  }
+
   return (
     <>
       <header className="app-head">
