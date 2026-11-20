@@ -227,6 +227,45 @@ const IMAGE_TYPES: Record<string, string> = {
   gif: "image/gif",
 };
 
+/** Type a browser may upload, and the extension we store it under. */
+const UPLOAD_TYPES: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+  "image/avif": "avif",
+};
+
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+
+/** Stores a material photo in R2 and points the catalogue item at it. */
+async function uploadCatalogueImage(env: Env, actor: string, request: Request): Promise<Response> {
+  if (!env.IMAGES) return json({ ok: false, error: "image storage is not configured" }, 500);
+
+  const form = await request.formData().catch(() => null);
+  if (!form) return json({ ok: false, error: "expected a multipart form with itemId and file" }, 400);
+
+  const itemId = String(form.get("itemId") ?? "").trim();
+  const file = form.get("file");
+  if (!itemId || !(file instanceof File)) return json({ ok: false, error: "itemId and file are required" }, 400);
+
+  const extension = UPLOAD_TYPES[file.type];
+  if (!extension) return json({ ok: false, error: "use a JPG, PNG, WebP or AVIF image" }, 415);
+  if (file.size > MAX_IMAGE_BYTES) return json({ ok: false, error: "images must be 5 MB or smaller" }, 413);
+
+  const item = await env.DB.prepare("SELECT id FROM catalogue_items WHERE id = ?").bind(itemId).first();
+  if (!item) return json({ ok: false, error: "unknown material" }, 404);
+
+  const key = `materials/${itemId}.${extension}`;
+  await env.IMAGES.put(key, await file.arrayBuffer(), { httpMetadata: { contentType: file.type } });
+  await env.DB
+    .prepare("UPDATE catalogue_items SET image_key = ?, updated_at = datetime('now') WHERE id = ?")
+    .bind(key, itemId)
+    .run();
+
+  await audit(env, actor, "catalogue.image", "catalogue_item", itemId, key);
+  return json({ ok: true, imageKey: key }, 201);
+}
+
 /** Streams a material photo out of R2. Keys are public and content-addressed by material. */
 async function serveImage(env: Env, key: string): Promise<Response> {
   if (!env.IMAGES || !/^materials\/[a-z0-9._-]+\.(jpg|jpeg|png|webp|avif|gif)$/i.test(key)) {
@@ -262,7 +301,7 @@ async function createCatalogueItem(env: Env, actor: string, body: Record<string,
   if (!name) return json({ ok: false, error: "name is required" }, 400);
   const id = String(body.id ?? "") || `mat-${crypto.randomUUID()}`;
   const code = String(body.code ?? id).trim();
-  const keywords = Array.isArray(body.keywords) ? JSON.stringify(body.keywords) : "[]";
+  const keywords = Array.isArray(body.keywords) ? JSON.stringify(body.keywords) : String(body.keywords ?? "[]");
 
   await env.DB
     .prepare(
@@ -408,6 +447,9 @@ export default {
       }
       if (url.pathname === "/admin/catalogue/prices" && request.method === "POST") {
         return addCataloguePrice(env, owner, (await request.json().catch(() => ({}))) as Record<string, unknown>);
+      }
+      if (url.pathname === "/admin/catalogue/images" && request.method === "POST") {
+        return uploadCatalogueImage(env, owner, request);
       }
       if (url.pathname === "/admin/templates" && request.method === "GET") return listTemplates(env);
       if (url.pathname === "/admin/templates" && request.method === "POST") {

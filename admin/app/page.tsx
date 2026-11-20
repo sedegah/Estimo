@@ -3,8 +3,9 @@
 import { SignIn, useClerk, useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { addItem, listCatalogue, setPrice, setUnit, type CatalogueItem } from "@/lib/api";
+import { listCatalogue, setPrice, setUnit, type CatalogueItem } from "@/lib/api";
 import { LoadingScreen } from "./loading-screen";
+import { AuthScreen } from "./auth-screen";
 
 /** Prices accept digits and one decimal separator only; commas become periods. */
 function cleanPrice(value: string): string {
@@ -15,68 +16,6 @@ function cleanPrice(value: string): string {
 type Tab = "prices" | "materials" | "builder" | "settings";
 const PAGE_SIZE = 20;
 
-function AuthScreen() {
-  return (
-    <div className="auth-split">
-      <section className="auth-visual">
-        <div className="auth-logo">estimo<span>.</span> <em>admin</em></div>
-
-        <svg viewBox="0 0 400 260" className="auth-plan" role="img" aria-label="Floor plan with lit rooms">
-          <defs>
-            <radialGradient id="authGlow">
-              <stop offset="0" stopColor="#F5B800" stopOpacity=".5" />
-              <stop offset="1" stopColor="#F5B800" stopOpacity="0" />
-            </radialGradient>
-          </defs>
-          <circle cx="110" cy="80" r="90" fill="url(#authGlow)" />
-          <circle cx="300" cy="70" r="75" fill="url(#authGlow)" />
-          <circle cx="120" cy="200" r="80" fill="url(#authGlow)" />
-          <circle cx="300" cy="200" r="60" fill="url(#authGlow)" />
-          <g fill="none" stroke="#fff" strokeWidth="5">
-            <rect x="10" y="10" width="380" height="240" />
-            <path d="M210 10V90M210 120V250M10 130H110M150 130H390" />
-          </g>
-          <path d="M60 130V200H120M110 130V80M210 90H300V70" fill="none" stroke="#F5B800" strokeWidth="2.5" strokeDasharray="3 7" strokeLinecap="round" />
-          <g fill="#0B2142" stroke="#F5B800" strokeWidth="2">
-            {[[110, 80], [300, 70], [120, 200], [300, 200]].map(([cx, cy]) => (
-              <g key={`${cx}-${cy}`}>
-                <circle cx={cx} cy={cy} r="9" />
-                <path d={`M${cx - 6} ${cy - 6}L${cx + 6} ${cy + 6}M${cx + 6} ${cy - 6}L${cx - 6} ${cy + 6}`} strokeLinecap="round" />
-              </g>
-            ))}
-          </g>
-          <rect x="30" y="116" width="40" height="28" rx="4" fill="#0B2142" stroke="#F5B800" strokeWidth="2" />
-          <path d="M38 124V136M46 124V136M54 124V136M62 124V136" stroke="#F5B800" strokeWidth="3" />
-        </svg>
-
-        <div className="auth-copy">
-          <h1>Update prices once.<br />Every estimate follows.</h1>
-          <p>Manage materials, prices and project templates for the Estimo app.</p>
-        </div>
-        <span className="auth-foot">Authorised staff only</span>
-      </section>
-
-      <section className="auth-form-side">
-        <div className="auth-clerk">
-          <SignIn
-            routing="hash"
-            appearance={{
-              variables: {
-                colorPrimary: "#F5B800",
-                borderRadius: "10px",
-                fontFamily: "Bricolage Grotesque, -apple-system, Segoe UI, Arial, sans-serif",
-              },
-              elements: {
-                card: { boxShadow: "none", border: "1px solid #e2e4dc", background: "#fff" },
-                formButtonPrimary: { background: "#F5B800", color: "#0B2142", fontWeight: "700" },
-              },
-            }}
-          />
-        </div>
-      </section>
-    </div>
-  );
-}
 function useDebounced<T>(value: T, delay = 250): T {
   const [settled, setSettled] = useState(value);
   useEffect(() => {
@@ -87,6 +26,7 @@ function useDebounced<T>(value: T, delay = 250): T {
 }
 export default function AdminPage() {
   const { isLoaded, isSignedIn, user } = useUser();
+  const router = useRouter();
   const { signOut } = useClerk();
   const [tab, setTab] = useState<Tab>("prices");
   const [items, setItems] = useState<CatalogueItem[] | null>(null);
@@ -95,7 +35,6 @@ export default function AdminPage() {
   const [query, setQuery] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
-  const [form, setForm] = useState({ name: "", category: "", unit: "", spec: "" });
   const [chip, setChip] = useState("All");
   const [page, setPage] = useState(1);
   const csvRef = useRef<HTMLInputElement>(null);
@@ -199,6 +138,7 @@ export default function AdminPage() {
           <p className="admin-rail-label">Manage</p>
           <button type="button" className={tab === "prices" ? "admin-rail-link is-active" : "admin-rail-link"} onClick={() => setTab("prices")}>Prices</button>
           <button type="button" className={tab === "materials" ? "admin-rail-link is-active" : "admin-rail-link"} onClick={() => setTab("materials")}>Materials</button>
+          <a className="admin-rail-link" href="/materials/new">Add material</a>
           <a className="admin-rail-link" href="/builder">Estimate builder</a>
           <button type="button" className={tab === "settings" ? "admin-rail-link is-active" : "admin-rail-link"} onClick={() => setTab("settings")}>Settings</button>
         </aside>
@@ -230,7 +170,7 @@ export default function AdminPage() {
                   <button className="admin-btn" type="button" onClick={() => csvRef.current?.click()}>Import CSV</button>
                   <input ref={csvRef} type="file" accept=".csv,text/csv" hidden onChange={(event) => { const file = event.target.files?.[0]; if (file) void importCsv(file); event.target.value = ""; }} />
                   <button className="admin-btn" type="button" onClick={exportCsv}>Export</button>
-                  <button className="admin-btn admin-btn-primary" type="button" onClick={() => { setTab("materials"); setMessage(""); }}>Add item</button>
+                  <button className="admin-btn admin-btn-primary" type="button" onClick={() => router.push("/materials/new")}>Add item</button>
                 </div>
               </div>
               <div className="admin-chips">
@@ -324,28 +264,14 @@ export default function AdminPage() {
               <span className="admin-note">{items ? `${visibleMaterials.length} of ${items.length}` : ""}</span>
             </div>
             <div className="admin-panel" style={{ padding: 18, marginTop: 12 }}>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(12rem, 1fr))", gap: 12 }}>
-                  <input className="admin-search" placeholder="Name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
-                  <input className="admin-search" placeholder="Category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} />
-                  <input className="admin-search" placeholder="Unit (each, roll, metre)" value={form.unit} onChange={(e) => setForm({ ...form, unit: e.target.value })} />
-                  <input className="admin-search" placeholder="Specification" value={form.spec} onChange={(e) => setForm({ ...form, spec: e.target.value })} />
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
+                  <p className="admin-note" style={{ margin: 0 }}>
+                    Materials are created on their own page, so a photo, specification and price can be added in one go.
+                  </p>
+                  <button className="admin-btn admin-btn-amber" type="button" onClick={() => router.push("/materials/new")}>
+                    Add a material
+                  </button>
                 </div>
-                <button
-                  className="admin-btn admin-btn-amber"
-                  style={{ marginTop: 12 }}
-                  type="button"
-                  onClick={() => void addItem(form).then(async (result) => {
-                    if (result.ok) {
-                      setMessage("Material added.");
-                      setForm({ name: "", category: "", unit: "", spec: "" });
-                      await load();
-                    } else {
-                      setError(result.error ?? "Could not add");
-                    }
-                  })}
-                >
-                  Add material
-                </button>
               </div>
               <div className="admin-panel" style={{ marginTop: 14 }}>
                 <table className="admin-table">

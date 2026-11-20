@@ -5,16 +5,17 @@
 
 Unicode true
 !include "MUI2.nsh"
+!include "LogicLib.nsh"
 !include "FileFunc.nsh"
 
 !define APP_NAME "ESTIMO Admin"
 !define APP_EXE "ESTIMO Admin.exe"
-!define APP_VERSION "1.1.6"
+!define APP_VERSION "1.2.0"
 !define PUBLISHER "ESTIMO"
 !define APP_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\ESTIMOAdmin"
 
 !define SOURCE_DIR "C:\\Users\\kimat\\Desktop\\ESTIMO\\desktop\\release\\win-unpacked"
-!define OUTPUT_FILE "C:\\Users\\kimat\\Desktop\\ESTIMO\\desktop\\release\\ESTIMO-Admin-Setup-1.1.6.exe"
+!define OUTPUT_FILE "C:\\Users\\kimat\\Desktop\\ESTIMO\\desktop\\release\\ESTIMO-Admin-Setup-1.2.0.exe"
 !define LICENSE_FILE "C:\\Users\\kimat\\Desktop\\ESTIMO\\desktop\\build\\LICENSE.txt"
 !define ICON_FILE "C:\\Users\\kimat\\Desktop\\ESTIMO\\desktop\\build\\icon.ico"
 !define HEADER_BMP "C:\\Users\\kimat\\Desktop\\ESTIMO\\desktop\\build\\installerHeader.bmp"
@@ -22,8 +23,10 @@ Unicode true
 
 Name "${APP_NAME}"
 OutFile "${OUTPUT_FILE}"
-InstallDir "$LOCALAPPDATA\Programs\ESTIMO Admin"
+!define DEFAULT_INSTDIR "$LOCALAPPDATA\Programs\ESTIMO Admin"
+InstallDir "${DEFAULT_INSTDIR}"
 InstallDirRegKey HKCU "${APP_KEY}" "InstallLocation"
+; per-user install: no elevation, no UAC prompt, ever
 RequestExecutionLevel user
 BrandingText "ESTIMO"
 SetCompressor /SOLID lzma
@@ -44,9 +47,8 @@ VIAddVersionKey "LegalCopyright" "${PUBLISHER}"
 !define MUI_WELCOMEFINISHPAGE_BITMAP "${SIDEBAR_BMP}"
 !define MUI_UNWELCOMEFINISHPAGE_BITMAP "${SIDEBAR_BMP}"
 !define MUI_WELCOMEPAGE_TITLE "ESTIMO Admin"
-!define MUI_WELCOMEPAGE_TEXT "This wizard installs the ESTIMO Admin console: the app that maintains material prices and the catalogue used by every ESTIMO estimate.$\r$\n$\r$\nYou can change the installation folder on the next pages. Nothing else on your computer is modified."
+!define MUI_WELCOMEPAGE_TEXT "This wizard installs the ESTIMO Admin console: the app that maintains material prices and the catalogue used by every ESTIMO estimate.$\r$\n$\r$\nIt installs for this Windows user only, in your own profile, so no administrator rights are needed. Nothing else on your computer is modified."
 !define MUI_LICENSEPAGE_TEXT_TOP "Please read the following before installing ESTIMO Admin."
-!define MUI_DIRECTORYPAGE_TEXT_TOP "ESTIMO Admin will be installed in the folder below. Choose another folder if you prefer."
 !define MUI_FINISHPAGE_TITLE "ESTIMO Admin is ready"
 !define MUI_FINISHPAGE_TEXT "The console is installed. Sign in with your ESTIMO admin account to edit prices and materials.$\r$\n$\r$\nPublished prices appear on the ESTIMO website within a minute."
 !define MUI_FINISHPAGE_RUN "$INSTDIR\${APP_EXE}"
@@ -56,7 +58,6 @@ VIAddVersionKey "LegalCopyright" "${PUBLISHER}"
 
 !insertmacro MUI_PAGE_WELCOME
 !insertmacro MUI_PAGE_LICENSE "${LICENSE_FILE}"
-!insertmacro MUI_PAGE_DIRECTORY
 !insertmacro MUI_PAGE_INSTFILES
 !insertmacro MUI_PAGE_FINISH
 
@@ -69,6 +70,7 @@ VIAddVersionKey "LegalCopyright" "${PUBLISHER}"
 
 Section "ESTIMO Admin" SecMain
   SectionIn RO
+  SetShellVarContext current
   SetOutPath "$INSTDIR"
   File /r "${SOURCE_DIR}\*.*"
 
@@ -94,6 +96,7 @@ Section "ESTIMO Admin" SecMain
 SectionEnd
 
 Section "Uninstall"
+  SetShellVarContext current
   Delete "$DESKTOP\ESTIMO Admin.lnk"
   Delete "$SMPROGRAMS\ESTIMO\ESTIMO Admin.lnk"
   RMDir "$SMPROGRAMS\ESTIMO"
