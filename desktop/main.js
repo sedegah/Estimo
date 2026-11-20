@@ -1,113 +1,59 @@
 // ESTIMO Admin desktop app.
 //
-// Runs the admin console as a local Next server (127.0.0.1, random port) and opens
-// the window on it, so Clerk gets a real http origin. The interface itself is kept
-// current from the repository's releases: a push builds a new admin bundle, and the
-// app swaps to it on the next launch - no new installer, nothing served online.
+// The console itself lives on a private Cloudflare Worker, so every deploy is
+// visible here after a reload (Ctrl+R) - no reinstall for interface changes.
+// This shell only provides the window, the menu and an offline retry screen.
 
-const path = require("node:path");
-const http = require("node:http");
-const net = require("node:net");
-const fs = require("node:fs");
-const { spawn } = require("node:child_process");
-const { app, BrowserWindow, Menu, dialog, shell } = require("electron");
+const { app, BrowserWindow, Menu, shell, dialog } = require("electron");
 const { checkForUpdates } = require("./updater");
-const { activeBundleRoot, checkForInterfaceUpdate } = require("./admin-bundle");
 
-/** Everything that goes wrong lands in %APPDATA%\estimo-admin-desktop\logs\main.log. */
-function logLine(message) {
-  try {
-    const dir = path.join(app.getPath("userData"), "logs");
-    fs.mkdirSync(dir, { recursive: true });
-    fs.appendFileSync(path.join(dir, "main.log"), `${new Date().toISOString()} ${message}\n`);
-  } catch {}
-}
+const CONSOLE_URL = process.env.ESTIMO_CONSOLE_URL || "https://estimo-console-k7m2q9.sedegahkimathi.workers.dev";
 
-process.on("uncaughtException", (error) => {
-  logLine(`uncaught: ${error?.stack ?? error}`);
-  dialog.showErrorBox("ESTIMO Admin error", String(error?.message ?? error));
-});
-process.on("unhandledRejection", (error) => logLine(`unhandled: ${error?.stack ?? error}`));
+const OFFLINE_PAGE = `data:text/html;charset=utf-8,${encodeURIComponent(`<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<title>ESTIMO Admin - offline</title>
+<style>
+  :root { color-scheme: dark; }
+  body {
+    margin: 0; min-height: 100vh; display: grid; place-items: center;
+    background: #0b2142; color: #e8ecf4;
+    font-family: -apple-system, "Segoe UI", Arial, sans-serif;
+  }
+  main { text-align: center; max-width: 30rem; padding: 2rem; }
+  .mark { width: 64px; height: 64px; border-radius: 16px; background: #f5b800; color: #0b2142;
+    display: grid; place-items: center; font-weight: 800; font-size: 28px; margin: 0 auto 18px; }
+  h1 { font-size: 22px; margin: 0 0 8px; }
+  p { color: #a9b6cc; line-height: 1.6; margin: 0 0 20px; }
+  button { font: inherit; font-weight: 700; padding: 11px 22px; border-radius: 10px;
+    border: 0; background: #f5b800; color: #0b2142; cursor: pointer; }
+  code { background: #12294f; padding: 2px 6px; border-radius: 5px; font-size: 12.5px; }
+</style>
+</head>
+<body>
+  <main>
+    <div class="mark">E</div>
+    <h1>ESTIMO Admin is offline</h1>
+    <p>The console runs on the ESTIMO server and could not be reached. Check your connection, then try again.</p>
+    <button onclick="location.replace(${JSON.stringify(CONSOLE_URL)})">Try again</button>
+    <p style="margin-top:18px;font-size:12.5px">If this keeps happening: <code>${CONSOLE_URL}</code></p>
+  </main>
+</body>
+</html>`)}`;
 
-let serverProcess = null;
-let serverPort = 0;
 let mainWindow = null;
 
-function freePort() {
-  return new Promise((resolve, reject) => {
-    const server = net.createServer();
-    server.on("error", reject);
-    server.listen(0, "127.0.0.1", () => {
-      const { port } = server.address();
-      server.close(() => resolve(port));
-    });
-  });
+function loadConsole(window = mainWindow) {
+  if (window) window.loadURL(CONSOLE_URL);
 }
 
-function waitForServer(port, attempts = 160) {
-  return new Promise((resolve, reject) => {
-    let remaining = attempts;
-    const probe = () => {
-      const request = http.get({ host: "127.0.0.1", port, path: "/", timeout: 1000 }, (response) => {
-        response.resume();
-        resolve(true);
-      });
-      request.on("error", () => {
-        remaining -= 1;
-        if (remaining <= 0) reject(new Error("The admin interface did not start"));
-        else setTimeout(probe, 250);
-      });
-      request.on("timeout", () => request.destroy());
-    };
-    probe();
-  });
-}
-
-async function startServer() {
-  const root = activeBundleRoot();
-  const entry = path.join(root, "server.js");
-  logLine(`starting server from ${root} (server.js exists: ${fs.existsSync(entry)})`);
-  serverPort = await freePort();
-
-  serverProcess = spawn(process.execPath, [entry], {
-    cwd: root,
-    env: {
-      ...process.env,
-      ELECTRON_RUN_AS_NODE: "1",
-      NODE_ENV: "production",
-      PORT: String(serverPort),
-      HOSTNAME: "127.0.0.1",
-      NEXT_TELEMETRY_DISABLED: "1",
-      NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY:
-        process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "pk_test_YmVsb3ZlZC1nb3BoZXItNjYzMS5jbGVyay5hY2NvdW50cy5kZXYk",
-    },
-    stdio: "ignore",
-    windowsHide: true,
-  });
-
-  serverProcess.on("exit", () => {
-    serverProcess = null;
-  });
-
-  await waitForServer(serverPort);
-  logLine(`server ready on port ${serverPort}`);
-  return `http://127.0.0.1:${serverPort}`;
-}
-
-function stopServer() {
-  if (!serverProcess) return;
-  try {
-    serverProcess.kill();
-  } catch {}
-  serverProcess = null;
-}
-
-function createWindow(baseUrl) {
+function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1440,
     height: 920,
-    minWidth: 1080,
-    minHeight: 700,
+    minWidth: 1024,
+    minHeight: 680,
     backgroundColor: "#0B2142",
     title: "ESTIMO Admin",
     autoHideMenuBar: true,
@@ -118,87 +64,63 @@ function createWindow(baseUrl) {
     },
   });
 
-  mainWindow.loadURL(baseUrl);
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
 
-  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
-    if (!url.startsWith(`http://127.0.0.1:${serverPort}`)) shell.openExternal(url);
-    return { action: "deny" };
+  // A failed load shows the retry screen instead of Chromium's error page.
+  mainWindow.webContents.on("did-fail-load", (event, code, description, url, isMainFrame) => {
+    if (!isMainFrame || code === -3) return; // -3 = aborted (a redirect, not a failure)
+    mainWindow.loadURL(OFFLINE_PAGE);
   });
 
-  return mainWindow;
-}
-
-/** Downloads a newer interface bundle and, when there is one, restarts on it. */
-async function refreshInterface({ silent = true } = {}) {
-  const result = await checkForInterfaceUpdate({ silent });
-  if (result.status === "updated") {
-    stopServer();
-    const baseUrl = await startServer();
-    mainWindow?.loadURL(baseUrl);
-    if (!silent) {
-      dialog.showMessageBox({
-        type: "info",
-        message: "Interface updated",
-        detail: `ESTIMO Admin is now running interface ${result.version}.`,
-      });
+  // External links (docs, mailto) open in the browser, never inside the app.
+  mainWindow.webContents.setWindowOpenHandler(({ url }) => {
+    shell.openExternal(url);
+    return { action: "deny" };
+  });
+  mainWindow.webContents.on("will-navigate", (event, url) => {
+    if (!url.startsWith(CONSOLE_URL) && !url.startsWith("data:")) {
+      event.preventDefault();
+      shell.openExternal(url);
     }
-    return result;
-  }
-  if (!silent) {
-    dialog.showMessageBox({
-      type: "info",
-      message: "Interface is up to date",
-      detail: result.status === "no-releases" ? "No interface build has been published yet." : "You are running the newest published interface.",
-    });
-  }
-  return result;
+  });
+
+  loadConsole();
+  return mainWindow;
 }
 
 const template = [
   {
     label: "ESTIMO",
-    submenu: [{ role: "reload" }, { role: "toggleDevTools" }, { type: "separator" }, { role: "quit" }],
+    submenu: [
+      { label: "Reload", accelerator: "CmdOrCtrl+R", click: () => loadConsole() },
+      { label: "Force reload", accelerator: "CmdOrCtrl+Shift+R", click: () => mainWindow?.webContents.reloadIgnoringCache() },
+      { role: "toggleDevTools" },
+      { type: "separator" },
+      { role: "quit" },
+    ],
   },
   {
-    label: "Admin",
+    label: "Console",
     submenu: [
-      { label: "Prices and materials", click: () => mainWindow?.loadURL(`http://127.0.0.1:${serverPort}/`) },
-      { label: "Estimate builder", click: () => mainWindow?.loadURL(`http://127.0.0.1:${serverPort}/builder`) },
+      { label: "Open in browser", click: () => shell.openExternal(CONSOLE_URL) },
       { type: "separator" },
-      { label: "Check for interface update…", click: () => void refreshInterface({ silent: false }) },
-      { label: "Check for app update…", click: () => checkForUpdates({ silent: false }) },
+      { label: "Check for desktop update…", click: () => checkForUpdates({ silent: false }) },
     ],
   },
 ];
 
-app.whenReady().then(async () => {
-  logLine(`ready (packaged: ${app.isPackaged}, version ${app.getVersion()})`);
-  try {
-    Menu.setApplicationMenu(Menu.buildFromTemplate(template));
-    const baseUrl = await startServer();
-    createWindow(baseUrl);
-
-    setTimeout(() => {
-      void refreshInterface({ silent: true });
-      void checkForUpdates({ silent: true });
-    }, 5000);
-  } catch (error) {
-    dialog.showErrorBox("ESTIMO Admin could not start", String(error));
-    app.quit();
-  }
+app.whenReady().then(() => {
+  Menu.setApplicationMenu(Menu.buildFromTemplate(template));
+  createWindow();
+  setTimeout(() => void checkForUpdates({ silent: true }), 6000);
 
   app.on("activate", () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow(`http://127.0.0.1:${serverPort}`);
+    if (BrowserWindow.getAllWindows().length === 0) createWindow();
   });
 });
 
 app.on("window-all-closed", () => {
   if (process.platform !== "darwin") app.quit();
-});
-
-app.on("before-quit", () => {
-  stopServer();
 });
