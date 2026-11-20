@@ -8,8 +8,10 @@ import "../styles/pages.css";
 import "../styles/auth.css";
 import "../styles/shell.css";
 import "../styles/brand.css";
+import "../styles/footer.css";
 
 import { SiteHeader } from "@/components/layout/site-header";
+import { SiteFooter } from "@/components/layout/site-footer";
 import { SessionGuard } from "@/components/auth/session-guard";
 
 export const metadata: Metadata = {
@@ -22,6 +24,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     <div className="shell">
       <SiteHeader />
       {children}
+      <SiteFooter year={new Date().getFullYear()} />
     </div>
   );
 
