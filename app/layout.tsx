@@ -9,9 +9,12 @@ import "../styles/auth.css";
 import "../styles/shell.css";
 import "../styles/brand.css";
 import "../styles/footer.css";
+import "../styles/legal.css";
+import "../styles/cookie-notice.css";
 
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
+import { CookieNotice } from "@/components/layout/cookie-notice";
 import { SessionGuard } from "@/components/auth/session-guard";
 
 export const metadata: Metadata = {
@@ -25,6 +28,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <SiteHeader />
       {children}
       <SiteFooter year={new Date().getFullYear()} />
+      <CookieNotice />
     </div>
   );
 

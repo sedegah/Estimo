@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { openCookieNotice } from "@/lib/cookie-notice";
 import { EstimoLogo } from "./estimo-logo";
 
 const AUTH_ROUTES = ["/signin", "/signup", "/sso-callback"];
@@ -76,6 +77,11 @@ export function SiteFooter({ year }: { year: number }) {
       <div className="footer-base">
         <div className="footer-base-inner">
           <p>© {year} ESTIMO · Electrical estimating for Ghana</p>
+          <nav className="footer-legal" aria-label="Legal and cookie settings">
+            <Link href="/privacy">Privacy</Link>
+            <span aria-hidden="true">·</span>
+            <button type="button" onClick={openCookieNotice}>Cookies</button>
+          </nav>
           <p className="footer-fine">Prices are planning figures, not a quotation.</p>
         </div>
       </div>

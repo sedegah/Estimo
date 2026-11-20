@@ -152,6 +152,36 @@
 
 .footer-base .footer-fine { color: #7f92ad; }
 
+.footer-legal {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  color: #8fa0b8;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.footer-legal a,
+.footer-legal button {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #c3cee2;
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.footer-legal a:hover,
+.footer-legal button:hover {
+  color: #fff;
+  text-decoration: underline;
+  text-decoration-color: var(--yellow);
+  text-underline-offset: 3px;
+}
+
 .site-footer a:focus-visible {
   border-radius: 4px;
   outline: 2px solid var(--yellow);
