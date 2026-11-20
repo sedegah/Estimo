@@ -2,12 +2,12 @@
 
 import { SignIn, useClerk, useUser } from "@clerk/nextjs";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 import { listCatalogue, setPrice, setUnit, type CatalogueItem } from "@/lib/api";
 import { LoadingScreen } from "./loading-screen";
 
 type Tab = "prices" | "materials" | "settings";
-const PAGE_STEP = 6;
+const PAGE_SIZE = 25;
 
 /** Prices accept digits and one decimal separator; commas become periods. */
 function cleanPrice(value: string): string {
@@ -47,6 +47,38 @@ const ICONS = {
   back: "M19 12H5 M11 18l-6-6 6-6",
 };
 
+/** Page numbers with a window around the current page. */
+function Pager({ page, pageCount, onChange }: { page: number; pageCount: number; onChange: (next: number) => void }) {
+  if (pageCount <= 1) return null;
+
+  const window = 1;
+  const candidates = new Set<number>([1, pageCount]);
+  for (let index = page - window; index <= page + window; index += 1) {
+    if (index >= 1 && index <= pageCount) candidates.add(index);
+  }
+  const pages = Array.from(candidates).sort((a, b) => a - b);
+
+  return (
+    <div className="pager">
+      <button className="pager-btn" type="button" disabled={page <= 1} onClick={() => onChange(page - 1)} aria-label="Previous page">Prev</button>
+      {pages.map((entry, index) => (
+        <Fragment key={entry}>
+          {index > 0 && entry - pages[index - 1] > 1 ? <span className="pager-gap">…</span> : null}
+          <button
+            type="button"
+            className={entry === page ? "pager-btn is-active" : "pager-btn"}
+            onClick={() => onChange(entry)}
+            aria-current={entry === page ? "page" : undefined}
+          >
+            {entry}
+          </button>
+        </Fragment>
+      ))}
+      <button className="pager-btn" type="button" disabled={page >= pageCount} onClick={() => onChange(page + 1)} aria-label="Next page">Next</button>
+    </div>
+  );
+}
+
 export default function AdminPage() {
   const { isLoaded, isSignedIn, user } = useUser();
   const { signOut } = useClerk();
@@ -57,7 +89,7 @@ export default function AdminPage() {
   const [units, setUnits] = useState<Record<string, string>>({});
   const [query, setQuery] = useState("");
   const [chip, setChip] = useState("All");
-  const [pageSize, setPageSize] = useState(PAGE_STEP);
+  const [page, setPage] = useState(1);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [lastPublished, setLastPublished] = useState<string | null>(null);
@@ -76,7 +108,7 @@ export default function AdminPage() {
   }, [isLoaded, isSignedIn]);
 
   useEffect(() => {
-    setPageSize(PAGE_STEP);
+    setPage(1);
   }, [debouncedQuery, chip, tab]);
 
   // links from other pages land here as /?tab=settings
@@ -100,7 +132,10 @@ export default function AdminPage() {
     [searched, chip],
   );
 
-  const paged = visible.slice(0, pageSize);
+  const pageCount = Math.max(1, Math.ceil(visible.length / PAGE_SIZE));
+  const safePage = Math.min(page, pageCount);
+  const start = (safePage - 1) * PAGE_SIZE;
+  const paged = visible.slice(start, start + PAGE_SIZE);
   const draftCount = Object.values(drafts).filter((value) => value.trim() !== "").length;
 
   const publish = async () => {
@@ -308,10 +343,8 @@ export default function AdminPage() {
                 </tbody>
               </table>
               <div className="table-foot">
-                <span>Showing {paged.length} of {visible.length} items</span>
-                {paged.length < visible.length ? (
-                  <button className="btn btn-sm" type="button" onClick={() => setPageSize((size) => size + PAGE_STEP)}>Show more</button>
-                ) : null}
+                <span>Showing {visible.length ? start + 1 : 0}–{start + paged.length} of {visible.length} items</span>
+                <Pager page={safePage} pageCount={pageCount} onChange={setPage} />
               </div>
             </section>
           ) : null}
@@ -358,10 +391,8 @@ export default function AdminPage() {
                 </tbody>
               </table>
               <div className="table-foot">
-                <span>Showing {paged.length} of {visible.length} materials</span>
-                {paged.length < visible.length ? (
-                  <button className="btn btn-sm" type="button" onClick={() => setPageSize((size) => size + PAGE_STEP)}>Show more</button>
-                ) : null}
+                <span>Showing {visible.length ? start + 1 : 0}–{start + paged.length} of {visible.length} materials</span>
+                <Pager page={safePage} pageCount={pageCount} onChange={setPage} />
               </div>
             </section>
           ) : null}
