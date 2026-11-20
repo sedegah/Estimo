@@ -340,6 +340,28 @@ async function updateCatalogueItem(env: Env, actor: string, id: string, body: Re
   return json({ ok: true });
 }
 
+/** Removes a material, its price history and its photo. */
+async function deleteCatalogueItem(env: Env, actor: string, id: string): Promise<Response> {
+  const item = await env.DB
+    .prepare("SELECT id, image_key FROM catalogue_items WHERE id = ?")
+    .bind(id)
+    .first<{ id: string; image_key: string | null }>();
+  if (!item) return json({ ok: false, error: "not_found" }, 404);
+
+  if (item.image_key && env.IMAGES) {
+    try {
+      await env.IMAGES.delete(item.image_key);
+    } catch {
+      // a missing object is no reason to keep the material
+    }
+  }
+
+  await env.DB.prepare("DELETE FROM catalogue_prices WHERE item_id = ?").bind(id).run();
+  await env.DB.prepare("DELETE FROM catalogue_items WHERE id = ?").bind(id).run();
+
+  await audit(env, actor, "catalogue.delete", "catalogue_item", id, item.image_key ?? "");
+  return json({ ok: true });
+}
 async function addCataloguePrice(env: Env, actor: string, body: Record<string, unknown>): Promise<Response> {
   const itemId = String(body.itemId ?? "");
   const price = Number(body.priceGhs);
@@ -444,6 +466,9 @@ export default {
       const itemMatch = url.pathname.match(/^\/admin\/catalogue\/items\/([^/]+)$/);
       if (itemMatch && request.method === "PATCH") {
         return updateCatalogueItem(env, owner, itemMatch[1], (await request.json().catch(() => ({}))) as Record<string, unknown>);
+      }
+      if (itemMatch && request.method === "DELETE") {
+        return deleteCatalogueItem(env, owner, itemMatch[1]);
       }
       if (url.pathname === "/admin/catalogue/prices" && request.method === "POST") {
         return addCataloguePrice(env, owner, (await request.json().catch(() => ({}))) as Record<string, unknown>);
