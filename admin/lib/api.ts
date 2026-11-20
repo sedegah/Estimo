@@ -37,6 +37,12 @@ async function call(path: string, init: RequestInit = {}) {
   }
 }
 
+/** Public URL for a material photo stored in R2. */
+export function materialImageUrl(key?: string | null): string {
+  if (!key) return "";
+  const base = process.env.NEXT_PUBLIC_ESTIMO_IMAGES_URL ?? `${API_URL}/images`;
+  return `${base}/${key}`;
+}
 export async function listCatalogue(): Promise<CatalogueItem[] | null> {
   const response = await call("/catalogue");
   if (!response?.ok) return null;
