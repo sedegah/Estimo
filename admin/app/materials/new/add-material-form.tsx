@@ -1,9 +1,10 @@
 "use client";
 
-import { SignIn, useUser } from "@clerk/nextjs";
+import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { AuthScreen } from "../../auth-screen";
 import { LoadingScreen } from "../../loading-screen";
 import { addItem, listCatalogue, setPrice, uploadMaterialImage } from "@/lib/api";
 
@@ -148,13 +149,7 @@ export function AddMaterialForm() {
   };
 
   if (!isLoaded) return <LoadingScreen />;
-  if (!isSignedIn) {
-    return (
-      <div className="auth-wrap">
-        <SignIn routing="hash" />
-      </div>
-    );
-  }
+  if (!isSignedIn) return <AuthScreen />;
 
   return (
     <div className="shell">
