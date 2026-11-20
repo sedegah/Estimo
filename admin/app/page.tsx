@@ -3,7 +3,7 @@
 import { SignIn, useClerk, useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { listCatalogue, setPrice, setUnit, type CatalogueItem } from "@/lib/api";
+import { deleteItem, listCatalogue, setPrice, setUnit, type CatalogueItem } from "@/lib/api";
 import { LoadingScreen } from "./loading-screen";
 
 type Tab = "prices" | "materials" | "settings";
@@ -95,6 +95,7 @@ export default function AdminPage() {
   const [lastPublished, setLastPublished] = useState<string | null>(null);
   const [settings, setSettings] = useState({ currency: "GHS", tier: "All", relevance: "Medium" });
   const [settingsSaved, setSettingsSaved] = useState("");
+  const [deleting, setDeleting] = useState<string | null>(null);
   const debouncedQuery = useDebounced(query);
 
   const load = async () => {
@@ -160,6 +161,32 @@ export default function AdminPage() {
       setItems((current) => (current ?? []).map((item) => (item.id === id ? { ...item, unit } : item)));
     } else {
       setError(result.error ?? "Could not save the unit.");
+    }
+  };
+
+  const removeMaterial = async (item: CatalogueItem) => {
+    const confirmed = window.confirm(
+      `Delete "${item.name}"?\n\nIts price history and photo are removed too. This cannot be undone.`,
+    );
+    if (!confirmed) return;
+
+    setDeleting(item.id);
+    setError("");
+    try {
+      const result = await deleteItem(item.id);
+      if (!result.ok) {
+        setError(result.error ?? "The material could not be deleted.");
+        return;
+      }
+      setItems((current) => (current ?? []).filter((entry) => entry.id !== item.id));
+      setDrafts((current) => {
+        const next = { ...current };
+        delete next[item.id];
+        return next;
+      });
+      setMessage(`Deleted “${item.name}”.`);
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -358,6 +385,7 @@ export default function AdminPage() {
                     <th>Category</th>
                     <th>Unit</th>
                     <th className="col-check" />
+                    <th className="col-actions" />
                   </tr>
                 </thead>
                 <tbody>
@@ -386,6 +414,16 @@ export default function AdminPage() {
                         </div>
                       </td>
                       <td className="col-check" />
+                      <td className="col-actions">
+                        <button
+                          className="btn btn-sm btn-danger"
+                          type="button"
+                          disabled={deleting === item.id}
+                          onClick={() => void removeMaterial(item)}
+                        >
+                          {deleting === item.id ? "Deleting…" : "Delete"}
+                        </button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>

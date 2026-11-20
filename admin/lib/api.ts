@@ -100,6 +100,12 @@ export async function saveTemplate(payload: {
   const response = await call("/admin/templates", { method: "POST", body: JSON.stringify(payload) });
   return response ? ((await response.json()) as { ok: boolean; id?: string; error?: string }) : { ok: false, error: "Not signed in" };
 }
+/** Deletes a material, its price history and its photo. */
+export async function deleteItem(id: string) {
+  const response = await call(`/admin/catalogue/items/${id}`, { method: "DELETE" });
+  return response ? ((await response.json()) as { ok: boolean; error?: string }) : { ok: false, error: "Not signed in" };
+}
+
 export async function setUnit(id: string, unit: string) {
   const response = await call(`/admin/catalogue/items/${id}`, { method: "PATCH", body: JSON.stringify({ unit }) });
   return response ? ((await response.json()) as { ok: boolean; error?: string }) : { ok: false, error: "Not signed in" };
