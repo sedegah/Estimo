@@ -134,12 +134,6 @@ export function CookieNotice() {
         unless you sign in to save them.
       </p>
 
-      <ul className="cookie-popup-chips" aria-label="Cookie summary">
-        <li>Sign-in only</li>
-        <li>No ads</li>
-        <li>No analytics</li>
-      </ul>
-
       <div className="cookie-popup-actions">
         <button className="cookie-popup-accept" type="button" onClick={dismiss}>
           Got it
