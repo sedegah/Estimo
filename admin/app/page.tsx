@@ -3,7 +3,7 @@
 import { SignIn, useClerk, useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { Fragment, useEffect, useMemo, useState } from "react";
-import { deleteItem, listCatalogue, setPrice, setUnit, type CatalogueItem } from "@/lib/api";
+import { deleteItem, listCatalogue, materialImageUrl, setPrice, setUnit, type CatalogueItem } from "@/lib/api";
 import { LoadingScreen } from "./loading-screen";
 
 type Tab = "prices" | "materials" | "settings";
@@ -381,6 +381,7 @@ export default function AdminPage() {
               <table className="table">
                 <thead>
                   <tr>
+                    <th className="col-thumb" />
                     <th>Material</th>
                     <th>Category</th>
                     <th>Unit</th>
@@ -391,6 +392,21 @@ export default function AdminPage() {
                 <tbody>
                   {paged.map((item) => (
                     <tr key={item.id}>
+                      <td className="col-thumb">
+                        {item.image_key ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            className="thumb"
+                            src={materialImageUrl(item.image_key)}
+                            alt=""
+                            loading="lazy"
+                          />
+                        ) : (
+                          <span className="thumb thumb-empty" aria-hidden="true">
+                            {item.category?.slice(0, 1).toUpperCase() ?? "·"}
+                          </span>
+                        )}
+                      </td>
                       <td>
                         <div className="item-name">{item.name}</div>
                         <div className="item-sub">{item.spec || item.code || "—"}</div>
