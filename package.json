@@ -15,7 +15,9 @@
     "worker:api:dev": "npx -y wrangler@latest dev --config worker/api/wrangler.toml",
     "worker:api:deploy": "npx -y wrangler@latest deploy --config worker/api/wrangler.toml",
     "prices:build": "node tools/apply-supplier-prices.mjs",
-    "prices:apply": "node tools/apply-catalogue-prices.mjs"
+    "prices:apply": "node tools/apply-catalogue-prices.mjs",
+    "console:build": "npm --prefix admin run build",
+    "console:deploy": "npm --prefix admin run deploy"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.10.0",
