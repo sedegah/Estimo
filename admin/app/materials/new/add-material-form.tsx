@@ -160,8 +160,8 @@ export function AddMaterialForm() {
     <div className="shell">
       <header className="topbar">
         <div className="brand">
-          <span className="brand-mark">e</span>
-          <span className="brand-name">estimo</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="brand-logo" src="/brand/estimo-logo-horizontal-dark.png" alt="ESTIMO" />
           <span className="brand-role">admin</span>
         </div>
         <div className="topbar-right">
@@ -176,6 +176,7 @@ export function AddMaterialForm() {
           <Link className="rail-item" href="/">Materials</Link>
           <span className="rail-item is-active">Add material</span>
           <a className="rail-item" href="/builder">Estimate builder</a>
+          <Link className="rail-item" href="/?tab=settings">Settings</Link>
         </aside>
 
         <main className="main">
