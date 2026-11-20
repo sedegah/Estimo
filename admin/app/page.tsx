@@ -2,7 +2,7 @@
 
 import { SignIn, useClerk, useUser } from "@clerk/nextjs";
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { listCatalogue, setPrice, setUnit, type CatalogueItem } from "@/lib/api";
 import { LoadingScreen } from "./loading-screen";
 
@@ -63,7 +63,6 @@ export default function AdminPage() {
   const [lastPublished, setLastPublished] = useState<string | null>(null);
   const [settings, setSettings] = useState({ currency: "GHS", tier: "All", relevance: "Medium" });
   const [settingsSaved, setSettingsSaved] = useState("");
-  const csvRef = useRef<HTMLInputElement>(null);
   const debouncedQuery = useDebounced(query);
 
   const load = async () => {
@@ -79,6 +78,12 @@ export default function AdminPage() {
   useEffect(() => {
     setPageSize(PAGE_STEP);
   }, [debouncedQuery, chip, tab]);
+
+  // links from other pages land here as /?tab=settings
+  useEffect(() => {
+    const requested = new URLSearchParams(window.location.search).get("tab");
+    if (requested === "prices" || requested === "materials" || requested === "settings") setTab(requested);
+  }, []);
 
   const categories = useMemo(
     () => Array.from(new Set((items ?? []).map((item) => item.category).filter(Boolean))).slice(0, 8),
@@ -97,37 +102,6 @@ export default function AdminPage() {
 
   const paged = visible.slice(0, pageSize);
   const draftCount = Object.values(drafts).filter((value) => value.trim() !== "").length;
-
-  const exportCsv = () => {
-    const rows = [["id", "name", "category", "unit", "price_ghs"], ...(items ?? []).map((item) => [item.id, item.name, item.category, item.unit, item.price_ghs ?? ""])];
-    const csv = rows.map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(",")).join("\n");
-    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "estimo-prices.csv";
-    link.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const importCsv = async (file: File) => {
-    const text = await file.text();
-    const lines = text.split(/\r?\n/).filter((line) => line.trim() !== "");
-    const next: Record<string, string> = {};
-    let matched = 0;
-    for (const line of lines) {
-      const cells = line.split(",").map((cell) => cell.replace(/^"|"$/g, "").trim());
-      if (cells.length < 2) continue;
-      const [first, second] = cells;
-      if (/price/i.test(first)) continue;
-      const item = (items ?? []).find((entry) => entry.id === first || entry.name.toLowerCase() === first.toLowerCase());
-      if (item && second && Number.isFinite(Number(second))) {
-        next[item.id] = String(Number(second));
-        matched += 1;
-      }
-    }
-    setDrafts((current) => ({ ...current, ...next }));
-    setMessage(matched ? `Imported ${matched} price${matched === 1 ? "" : "s"} as drafts. Review, then publish.` : "No matching rows found.");
-  };
 
   const publish = async () => {
     let saved = 0;
@@ -190,8 +164,8 @@ export default function AdminPage() {
     <div className="shell">
       <header className="topbar">
         <div className="brand">
-          <span className="brand-mark">e</span>
-          <span className="brand-name">estimo</span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="brand-logo" src="/brand/estimo-logo-horizontal-dark.png" alt="ESTIMO" />
           <span className="brand-role">admin</span>
         </div>
         <div className="topbar-right">
@@ -262,22 +236,6 @@ export default function AdminPage() {
                   />
                 </div>
                 <span className="toolbar-count">{visible.length} {tab === "prices" ? "items" : "materials"}</span>
-                <div className="toolbar-actions">
-                  {tab === "prices" ? (
-                    <>
-                      <button className="btn btn-sm" type="button" onClick={() => csvRef.current?.click()}>
-                        <Icon path={ICONS.upload} /> Import CSV
-                      </button>
-                      <input ref={csvRef} type="file" accept=".csv,text/csv" hidden onChange={(event) => { const file = event.target.files?.[0]; if (file) void importCsv(file); event.target.value = ""; }} />
-                      <button className="btn btn-sm" type="button" onClick={exportCsv}>
-                        <Icon path={ICONS.download} /> Export
-                      </button>
-                      <Link className="btn btn-navy btn-sm" href="/materials/new">
-                        <Icon path={ICONS.plus} /> Add item
-                      </Link>
-                    </>
-                  ) : null}
-                </div>
               </div>
 
               <div className="chips">
