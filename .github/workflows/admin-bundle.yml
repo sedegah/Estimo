@@ -1,0 +1,63 @@
+name: Publish admin bundle
+
+# Every push that changes the admin console builds the standalone server and
+# attaches it to a rolling "admin-bundle" release. The desktop app downloads that
+# bundle on launch, so the interface updates without shipping a new installer.
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - "admin/**"
+      - ".github/workflows/admin-bundle.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  bundle:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: admin/package-lock.json
+
+      - name: Install
+        working-directory: admin
+        run: npm ci
+
+      - name: Build
+        working-directory: admin
+        env:
+          NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY: ${{ secrets.ADMIN_CLERK_PUBLISHABLE_KEY }}
+          CLERK_SECRET_KEY: ${{ secrets.ADMIN_CLERK_SECRET_KEY }}
+          NEXT_PUBLIC_ESTIMO_API_URL: ${{ vars.ESTIMO_API_URL || 'https://estimo-api.sedegahkimathi.workers.dev' }}
+        run: npm run build
+
+      - name: Assemble bundle
+        shell: pwsh
+        run: |
+          $out = "bundle"
+          New-Item -ItemType Directory -Force -Path $out | Out-Null
+          Copy-Item "admin/.next/standalone/*" $out -Recurse -Force
+          New-Item -ItemType Directory -Force -Path "$out/.next" | Out-Null
+          Copy-Item "admin/.next/static" "$out/.next/static" -Recurse -Force
+          if (Test-Path "admin/public") { Copy-Item "admin/public" "$out/public" -Recurse -Force }
+          $version = "{0}-{1}" -f (Get-Date -Format "yyyyMMdd"), "${{ github.sha }}".Substring(0, 7)
+          @{ version = $version; builtAt = (Get-Date).ToString("o"); commit = "${{ github.sha }}" } |
+            ConvertTo-Json | Set-Content "$out/bundle.json"
+          Compress-Archive -Path "$out/*" -DestinationPath "admin-bundle.zip" -Force
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: admin-bundle
+          name: Admin interface bundle
+          body: "Interface bundle built from ${{ github.sha }}."
+          files: admin-bundle.zip
+          make_latest: false

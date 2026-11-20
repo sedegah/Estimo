@@ -21,3 +21,6 @@ docs/PRODUCTION.md
 .cache/supplier-images/
 
 *.exe
+
+desktop/certs/
+*.blockmap

@@ -71,7 +71,12 @@ async function latestRelease() {
     if (!response.ok) throw new Error(`Feed responded ${response.status}`);
     return { tag_name: "", assets: [], localFeed: await response.json() };
   }
-  return requestJson(`https://api.github.com/repos/${OWNER}/${REPO}/releases/latest`);
+  // Interface bundles share the releases page, so find the newest release that
+  // actually carries an installer instead of trusting "latest".
+  const releases = await requestJson(`https://api.github.com/repos/${OWNER}/${REPO}/releases?per_page=30`);
+  const installer = (releases || []).find((release) =>
+    (release.assets || []).some((asset) => /ESTIMO-Admin-Setup-.*\.exe$/i.test(asset.name)));
+  return installer ?? null;
 }
 
 function download(url, destination) {

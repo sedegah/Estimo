@@ -138,7 +138,6 @@ export default function AdminPage() {
           <p className="admin-rail-label">Manage</p>
           <button type="button" className={tab === "prices" ? "admin-rail-link is-active" : "admin-rail-link"} onClick={() => setTab("prices")}>Prices</button>
           <button type="button" className={tab === "materials" ? "admin-rail-link is-active" : "admin-rail-link"} onClick={() => setTab("materials")}>Materials</button>
-          <a className="admin-rail-link" href="/materials/new">Add material</a>
           <a className="admin-rail-link" href="/builder">Estimate builder</a>
           <button type="button" className={tab === "settings" ? "admin-rail-link is-active" : "admin-rail-link"} onClick={() => setTab("settings")}>Settings</button>
         </aside>

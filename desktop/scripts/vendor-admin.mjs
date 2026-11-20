@@ -1,7 +1,9 @@
 // Copies the built admin server and its static assets into vendor/admin so
-// electron-builder can ship them as resources.
+// electron-builder can ship them as resources, and stamps the bundle with a
+// version the desktop app compares against published bundles.
 import fs from "node:fs";
 import path from "node:path";
+import { execSync } from "node:child_process";
 
 const desktop = process.cwd();
 const admin = path.resolve(desktop, "..", "admin");
@@ -26,4 +28,20 @@ if (fs.existsSync(publicSource)) {
   fs.cpSync(publicSource, path.join(target, "public"), { recursive: true });
 }
 
-console.log(`vendored admin server -> ${target}`);
+function gitVersion() {
+  try {
+    const commit = execSync("git rev-parse --short HEAD", { cwd: admin, encoding: "utf8" }).trim();
+    const date = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    return `${date}-${commit}`;
+  } catch {
+    return new Date().toISOString().replace(/[-:TZ.]/g, "").slice(0, 14);
+  }
+}
+
+const version = process.env.ADMIN_BUNDLE_VERSION || gitVersion();
+fs.writeFileSync(
+  path.join(target, "bundle.json"),
+  JSON.stringify({ version, builtAt: new Date().toISOString() }, null, 2),
+);
+
+console.log(`vendored admin server -> ${target} (bundle ${version})`);
