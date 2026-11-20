@@ -68,6 +68,17 @@ def sidebar(filename: str, line: str) -> None:
     image.save(OUT / filename)
 
 
+def wizard_small() -> None:
+    """Inno Setup's small wizard image: the ESTIMO mark on navy."""
+    size = 55
+    image = Image.new("RGB", (size, size), NAVY)
+    mark = Image.open(BRAND / "estimo-mark-light.png").convert("RGBA")
+    target = 38
+    mark = mark.resize((target, round(mark.height * target / mark.width)), Image.LANCZOS)
+    image.paste(mark, ((size - mark.width) // 2, (size - mark.height) // 2), mark)
+    image.save(OUT / "wizardSmall.bmp")
+
+
 def icon() -> None:
     source = Image.open(BRAND / "estimo-favicon-512.png").convert("RGBA")
     sizes = [(s, s) for s in (16, 24, 32, 48, 64, 128, 256)]
@@ -79,8 +90,9 @@ if __name__ == "__main__":
     header()
     sidebar("installerSidebar.bmp", "ESTIMO Admin")
     sidebar("uninstallerSidebar.bmp", "Goodbye")
+    wizard_small()
     icon()
-    for name in ("installerHeader.bmp", "installerSidebar.bmp", "uninstallerSidebar.bmp", "icon.ico"):
+    for name in ("installerHeader.bmp", "installerSidebar.bmp", "uninstallerSidebar.bmp", "wizardSmall.bmp", "icon.ico"):
         path = OUT / name
         with Image.open(path) as image:
             print(f"{name}: {image.size[0]}x{image.size[1]} ({path.stat().st_size} bytes)")

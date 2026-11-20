@@ -6,6 +6,10 @@ const nextConfig: NextConfig = {
   output: "standalone",
   outputFileTracingRoot: path.join(__dirname),
   poweredByHeader: false,
+  // The PDF route reads the brand fonts and wordmarks from /public at runtime.
+  outputFileTracingIncludes: {
+    "/api/estimate-pdf": ["./public/fonts/**", "./public/brand/**"],
+  },
 };
 
 export default nextConfig;
