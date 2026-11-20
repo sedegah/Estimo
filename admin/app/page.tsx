@@ -4,6 +4,7 @@ import { SignIn, useClerk, useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { Fragment, useEffect, useMemo, useState } from "react";
 import { deleteItem, listCatalogue, materialImageUrl, setPrice, setUnit, type CatalogueItem } from "@/lib/api";
+import { AuthScreen } from "./auth-screen";
 import { LoadingScreen } from "./loading-screen";
 
 type Tab = "prices" | "materials" | "settings";
@@ -206,13 +207,7 @@ export default function AdminPage() {
   }, []);
 
   if (!isLoaded) return <LoadingScreen />;
-  if (!isSignedIn) {
-    return (
-      <div className="auth-wrap">
-        <SignIn routing="hash" />
-      </div>
-    );
-  }
+  if (!isSignedIn) return <AuthScreen />;
 
   const title = tab === "prices" ? "Prices" : tab === "materials" ? "Materials" : "Settings";
   const subtitle =
