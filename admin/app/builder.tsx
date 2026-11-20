@@ -10,10 +10,10 @@ type Placed = { id: string; type: Exclude<Tool, "erase">; x: number; y: number; 
 
 const RATES = { light: 180, socket: 95, board: 850, run: 320 } as const;
 
-const LABELS: Record<Tool, string> = {
+const TOOL_LABELS: Record<Tool, string> = {
   light: "Light point",
   socket: "Socket",
-  board: "Distribution board",
+  board: "Board",
   run: "Circuit run",
   erase: "Erase",
 };
@@ -57,6 +57,7 @@ const ROOMS: Record<string, ReturnType<typeof roomGrid>> = {
   "COMM-OFF-S": roomGrid(3, 1, ["Open office", "Meeting", "Lobby"]),
   "IND-WORK": roomGrid(2, 1, ["Workshop", "Store"]),
 };
+
 const buildPreset = (code: string): Placed[] => {
   const preset = PRESETS.find((entry) => entry.code === code) ?? PRESETS[2];
   const lights = Array.from({ length: preset.lights }, (_, index) => ({
@@ -79,6 +80,49 @@ const buildPreset = (code: string): Placed[] => {
   }));
   return [...lights, ...sockets, ...boards];
 };
+
+const money = (value: number) =>
+  `GHS ${value.toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+function ToolIcon({ tool }: { tool: Tool }) {
+  if (tool === "light") {
+    return (
+      <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+        <circle cx="10" cy="10" r="7.5" />
+        <path d="M5.5 5.5 14.5 14.5M14.5 5.5 5.5 14.5" />
+      </svg>
+    );
+  }
+  if (tool === "socket") {
+    return (
+      <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+        <rect x="3" y="3" width="14" height="14" rx="2.5" />
+        <path d="M8 7v2M12 7v2M7 12h6" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  if (tool === "board") {
+    return (
+      <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+        <rect x="3" y="4" width="14" height="12" rx="2" />
+        <path d="M7 7v6M10 7v6M13 7v6" strokeLinecap="round" />
+      </svg>
+    );
+  }
+  if (tool === "run") {
+    return (
+      <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+        <path d="M3 10h14" strokeDasharray="2 4" />
+      </svg>
+    );
+  }
+  return (
+    <svg viewBox="0 0 20 20" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" aria-hidden="true">
+      <path d="M4 14 14 4M7 4h7v7" />
+    </svg>
+  );
+}
+
 export function BuilderView() {
   const [tool, setTool] = useState<Tool>("light");
   const [runAxis, setRunAxis] = useState<"h" | "v">("h");
@@ -112,9 +156,8 @@ export function BuilderView() {
 
   const place = (event: React.PointerEvent<SVGSVGElement>) => {
     const at = point(event);
-    if (!at) return;
+    if (!at || dragId) return;
 
-    if (dragId) return;
     if (tool === "erase") {
       setPlaced((current) => {
         let nearestId: string | null = null;
@@ -131,6 +174,7 @@ export function BuilderView() {
       setSaved(false);
       return;
     }
+
     setPlaced((current) => [
       ...current,
       { id: `${Date.now()}-${Math.random().toString(16).slice(2)}`, type: tool, ...at, ...(tool === "run" ? { axis: runAxis } : {}) },
@@ -143,164 +187,244 @@ export function BuilderView() {
     setSaved(false);
   };
 
+  const dragHandlers = (id: string) => ({
+    onPointerDown: (event: React.PointerEvent) => {
+      event.stopPropagation();
+      if (tool === "erase") {
+        remove(id);
+        return;
+      }
+      setDragId(id);
+      (event.currentTarget as Element).setPointerCapture?.(event.pointerId);
+    },
+  });
+
+  const save = async () => {
+    setSaving(true);
+    const result = await saveTemplate({ name: `${preset} plan`, preset, plan: placed, totals: { counts, total } });
+    setSaving(false);
+    setSaved(result.ok);
+    setNote(result.ok ? "Saved" : result.error ?? "Could not save");
+  };
+
+  const download = async () => {
+    const response = await fetch("/api/estimate-pdf", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name: preset, preset, plan: placed, rates: RATES }),
+    });
+    if (!response.ok) {
+      setNote("Could not build the PDF");
+      return;
+    }
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "estimo-estimate.pdf";
+    link.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const activePreset = PRESETS.find((entry) => entry.code === preset) ?? PRESETS[2];
+
   return (
-    <div className="eb">
-      <nav className="eb-nav">
-        <Link className="eb-logo" href="/" aria-label="Back to dashboard">estimo<span>.</span></Link>
-
-        <div className="eb-nav-center">
-          <select className="eb-preset" value={preset} onChange={(event) => { setPreset(event.target.value); setPlaced(buildPreset(event.target.value)); setSaved(false); }} aria-label="Project template">
-            {PRESETS.map((entry) => (<option key={entry.code} value={entry.code}>{entry.label}</option>))}
-          </select>
+    <div className="shell">
+      <header className="topbar">
+        <div className="brand">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img className="brand-logo" src="/brand/estimo-logo-horizontal-dark.png" alt="ESTIMO" />
+          <span className="brand-role">admin</span>
         </div>
-        <button className="eb-save" type="button" disabled={saving} onClick={async () => {
-          setSaving(true);
-          const label = LABELS[tool === "erase" ? "light" : tool];
-          void label;
-          const result = await saveTemplate({ name: `${preset} plan`, preset, plan: placed, totals: { counts, total } });
-          setSaving(false);
-          setSaved(result.ok);
-          setNote(result.ok ? "Saved" : result.error ?? "Could not save");
-        }}>{saving ? "Saving..." : saved ? "Saved" : "Save project"}</button>
-      </nav>
+        <div className="topbar-right">
+          <Link className="btn btn-outline-light btn-sm" href="/">Back to console</Link>
+        </div>
+      </header>
 
-      <div className="eb-body">
-        <aside className="eb-tools">
-          <p className="eb-tools-label">Add to plan</p>
-          {(["light", "socket", "board", "run"] as const).map((value) => (
-            <button
-              key={value}
-              type="button"
-              className={tool === value ? "eb-tool is-active" : "eb-tool"}
-              onClick={() => setTool(value)}
-            >
-              {value === "light" ? (
-                <svg width="22" height="22" viewBox="0 0 20 20" aria-hidden="true"><g fill="none" stroke="#C48F00" strokeWidth="2" strokeLinecap="round"><circle cx="10" cy="10" r="8" /><path d="M5 5L15 15M15 5L5 15" /></g></svg>
-              ) : null}
-              {value === "socket" ? (
-                <svg width="22" height="22" viewBox="0 0 16 16" aria-hidden="true"><rect x="2" y="2" width="12" height="12" fill="#F5B800" stroke="#0B2142" strokeWidth="1.5" /></svg>
-              ) : null}
-              {value === "board" ? (
-                <svg width="26" height="20" viewBox="0 0 64 44" aria-hidden="true"><rect x="2" y="2" width="60" height="40" rx="5" fill="#0B2142" stroke="#F5B800" strokeWidth="4" /><path d="M16 14V30M28 14V30M40 14V30M52 14V30" stroke="#F5B800" strokeWidth="6" /></svg>
-              ) : null}
-              {value === "run" ? (
-                <svg width="26" height="6" viewBox="0 0 24 6" aria-hidden="true"><path d="M1 3H23" stroke="#C48F00" strokeWidth="3" strokeDasharray="3 6" strokeLinecap="round" /></svg>
-              ) : null}
-              {LABELS[value]}
-            </button>
-          ))}
-          {tool === "run" ? (
-            <div className="eb-axis">
-              <button type="button" className={runAxis === "h" ? "eb-axis-btn is-active" : "eb-axis-btn"} onClick={() => setRunAxis("h")}>Horizontal</button>
-              <button type="button" className={runAxis === "v" ? "eb-axis-btn is-active" : "eb-axis-btn"} onClick={() => setRunAxis("v")}>Vertical</button>
+      <div className="body">
+        <aside className="rail">
+          <p className="rail-label">Manage</p>
+          <Link className="rail-item" href="/">Prices</Link>
+          <Link className="rail-item" href="/">Materials</Link>
+          <Link className="rail-item" href="/materials/new">Add material</Link>
+          <span className="rail-item is-active">Estimate builder</span>
+          <Link className="rail-item" href="/?tab=settings">Settings</Link>
+        </aside>
+
+        <main className="main">
+          <header className="head">
+            <div>
+              <h1>Estimate builder</h1>
+              <p>Lay out the points for a project, then save it as a template or download the priced estimate.</p>
             </div>
-          ) : null}
-          <button type="button" className={tool === "erase" ? "eb-tool is-active" : "eb-tool"} onClick={() => setTool("erase")}>
-            Erase
-          </button>
-          <p className="eb-hint">Pick a tool, then tap the plan to place it. With Erase on, tap a placed item to remove it.</p>
-        </aside>
+            <div className="head-actions">
+              <select
+                className="builder-preset"
+                value={preset}
+                onChange={(event) => {
+                  setPreset(event.target.value);
+                  setPlaced(buildPreset(event.target.value));
+                  setSaved(false);
+                  setNote("");
+                }}
+                aria-label="Project template"
+              >
+                {PRESETS.map((entry) => (
+                  <option key={entry.code} value={entry.code}>{entry.label}</option>
+                ))}
+              </select>
+              <button className="btn" type="button" disabled={saving} onClick={() => void save()}>
+                {saving ? "Saving…" : saved ? "Saved" : "Save template"}
+              </button>
+              <button className="btn btn-amber" type="button" onClick={() => void download()}>Download estimate</button>
+            </div>
+          </header>
 
-        <section className="eb-canvas">
-          <svg
-            ref={svgRef}
-            viewBox="0 0 620 430"
-            role="img"
-            aria-label="Editable floor plan"
-            className="eb-plan"
-            onPointerDown={place}
-            onPointerMove={(event) => {
-              if (!dragId) return;
-              const at = point(event);
-              if (!at) return;
-              setPlaced((current) => current.map((item) => (item.id === dragId ? { ...item, x: at.x, y: at.y } : item)));
-              setSaved(false);
-            }}
-            onPointerUp={() => setDragId(null)}
-            onPointerLeave={() => setDragId(null)}
-          >
-            {rooms.map((room) => (
-              <g key={room.label}>
-                <rect x={room.x} y={room.y} width={room.w} height={room.h} fill="none" stroke="#fff" strokeWidth="7" />
-                <text x={room.x + 26} y={room.y + 34} fontSize="14" fill="#C3CEE2">{room.label}</text>
-              </g>
-            ))}
+          {note ? <p className="banner banner-ok">{note}</p> : null}
 
-            {placed.map((item) => {
-              if (item.type === "light") {
-                return (
-                  <g key={item.id} onPointerDown={(event) => { event.stopPropagation(); if (tool === "erase") { remove(item.id); return; } setDragId(item.id); (event.currentTarget as Element).setPointerCapture?.(event.pointerId); }}>
-                    <circle cx={item.x} cy={item.y} r="11" fill="#0B2142" stroke="#F5B800" strokeWidth="2.5" />
-                    <path d={`M${item.x - 6} ${item.y - 6}L${item.x + 6} ${item.y + 6}M${item.x + 6} ${item.y - 6}L${item.x - 6} ${item.y + 6}`} stroke="#F5B800" strokeWidth="2.2" />
+          <div className="builder">
+            <section className="panel builder-tools">
+              <div className="panel-head"><h2>Add to plan</h2></div>
+              <div className="panel-body builder-tool-list">
+                {(["light", "socket", "board", "run"] as const).map((value) => (
+                  <button
+                    key={value}
+                    type="button"
+                    className={tool === value ? "tool-btn is-active" : "tool-btn"}
+                    onClick={() => setTool(value)}
+                  >
+                    <ToolIcon tool={value} />
+                    {TOOL_LABELS[value]}
+                  </button>
+                ))}
+
+                {tool === "run" ? (
+                  <div className="builder-axis">
+                    <button type="button" className={runAxis === "h" ? "is-active" : ""} onClick={() => setRunAxis("h")}>Horizontal</button>
+                    <button type="button" className={runAxis === "v" ? "is-active" : ""} onClick={() => setRunAxis("v")}>Vertical</button>
+                  </div>
+                ) : null}
+
+                <button type="button" className={tool === "erase" ? "tool-btn is-active" : "tool-btn"} onClick={() => setTool("erase")}>
+                  <ToolIcon tool="erase" />
+                  Erase
+                </button>
+
+                <p className="builder-hint">
+                  Pick a tool, then click the plan to place it. Drag any marker to move it; with Erase on, click a marker to remove it.
+                </p>
+              </div>
+            </section>
+
+            <section className="panel builder-canvas">
+              <div className="builder-canvas-head">
+                <div>
+                  <strong>{activePreset.label}</strong>
+                  <span>{rooms.length} space{rooms.length === 1 ? "" : "s"}</span>
+                </div>
+                <span className="builder-count">{placed.length} items placed</span>
+              </div>
+              <svg
+                ref={svgRef}
+                viewBox="0 0 620 430"
+                role="img"
+                aria-label="Editable floor plan"
+                className="builder-plan"
+                onPointerDown={place}
+                onPointerMove={(event) => {
+                  if (!dragId) return;
+                  const at = point(event);
+                  if (!at) return;
+                  setPlaced((current) => current.map((item) => (item.id === dragId ? { ...item, x: at.x, y: at.y } : item)));
+                  setSaved(false);
+                }}
+                onPointerUp={() => setDragId(null)}
+                onPointerLeave={() => setDragId(null)}
+              >
+                {rooms.map((room) => (
+                  <g key={room.label}>
+                    <rect x={room.x} y={room.y} width={room.w} height={room.h} fill="none" stroke="#ffffff" strokeWidth="6" strokeLinejoin="round" />
+                    <text x={room.x + 24} y={room.y + room.h - 16} fontSize="14" fill="#9fb0cc">{room.label}</text>
                   </g>
-                );
-              }
-              if (item.type === "socket") {
-                return (
-                  <rect
-                    key={item.id}
-                    x={item.x - 7}
-                    y={item.y - 7}
-                    width="14"
-                    height="14"
-                    fill="#F5B800"
-                    stroke="#0B2142"
-                    strokeWidth="2"
-                    onPointerDown={(event) => { event.stopPropagation(); if (tool === "erase") { remove(item.id); return; } setDragId(item.id); (event.currentTarget as Element).setPointerCapture?.(event.pointerId); }}
-                  />
-                );
-              }
-              if (item.type === "board") {
-                return (
-                  <g key={item.id} onPointerDown={(event) => { event.stopPropagation(); if (tool === "erase") { remove(item.id); return; } setDragId(item.id); (event.currentTarget as Element).setPointerCapture?.(event.pointerId); }}>
-                    <rect x={item.x - 20} y={item.y - 14} width="40" height="28" rx="4" fill="#F5B800" stroke="#0B2142" strokeWidth="2" />
-                    <text x={item.x} y={item.y + 4} textAnchor="middle" fontSize="11" fontFamily="Arial" fontWeight="700" fill="#0B2142">DB</text>
-                  </g>
-                );
-              }
-              const runPath = item.axis === "v" ? `M${item.x} ${item.y - 26}V${item.y + 26}` : `M${item.x - 26} ${item.y}H${item.x + 26}`;
-              return (
-                <path
-                  key={item.id}
-                  d={runPath}
-                  stroke="#F5B800"
-                  strokeWidth="3"
-                  strokeDasharray="3 8"
-                  strokeLinecap="round"
-                  onPointerDown={(event) => { event.stopPropagation(); if (tool === "erase") { remove(item.id); return; } setDragId(item.id); (event.currentTarget as Element).setPointerCapture?.(event.pointerId); }}
-                />
-              );
-            })}
-          </svg>
-        </section>
+                ))}
 
-        <aside className="eb-summary">
-          <h1>Your estimate</h1>
-          <ul>
-            <li><span>Light points</span><span>{counts.light}</span></li>
-            <li><span>Sockets</span><span>{counts.socket}</span></li>
-            <li><span>Distribution board</span><span>{counts.board}</span></li>
-            <li><span>Circuit runs</span><span>{counts.run * 6} m</span></li>
-          </ul>
-          <p className="eb-first">First estimate</p>
-          <p className="eb-total">GHS {total.toLocaleString("en-GH")}</p>
-          <button className="eb-download" type="button" onClick={async () => {
-            const response = await fetch("/api/estimate-pdf", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ name: preset, preset, plan: placed, rates: RATES }),
-            });
-            if (!response.ok) { setNote("Could not build the PDF"); return; }
-            const blob = await response.blob();
-            const url = URL.createObjectURL(blob);
-            const link = document.createElement("a");
-            link.href = url;
-            link.download = "estimo-estimate.pdf";
-            link.click();
-            URL.revokeObjectURL(url);
-          }}>Download estimate</button>
-          {note ? <p className="eb-note">{note}</p> : null}
-        </aside>
+                {placed.map((item) => {
+                  if (item.type === "light") {
+                    return (
+                      <g key={item.id} {...dragHandlers(item.id)}>
+                        <circle cx={item.x} cy={item.y} r="11" fill="#0b1f3f" stroke="#f5b301" strokeWidth="2.5" />
+                        <path d={`M${item.x - 6} ${item.y - 6}L${item.x + 6} ${item.y + 6}M${item.x + 6} ${item.y - 6}L${item.x - 6} ${item.y + 6}`} stroke="#f5b301" strokeWidth="2.2" />
+                      </g>
+                    );
+                  }
+                  if (item.type === "socket") {
+                    return (
+                      <rect
+                        key={item.id}
+                        x={item.x - 7}
+                        y={item.y - 7}
+                        width="14"
+                        height="14"
+                        fill="#f5b301"
+                        stroke="#0b1f3f"
+                        strokeWidth="2"
+                        {...dragHandlers(item.id)}
+                      />
+                    );
+                  }
+                  if (item.type === "board") {
+                    return (
+                      <g key={item.id} {...dragHandlers(item.id)}>
+                        <rect x={item.x - 20} y={item.y - 14} width="40" height="28" rx="4" fill="#f5b301" stroke="#0b1f3f" strokeWidth="2" />
+                        <text x={item.x} y={item.y + 4} textAnchor="middle" fontSize="11" fontWeight="700" fill="#0b1f3f">DB</text>
+                      </g>
+                    );
+                  }
+                  const runPath = item.axis === "v" ? `M${item.x} ${item.y - 26}V${item.y + 26}` : `M${item.x - 26} ${item.y}H${item.x + 26}`;
+                  return (
+                    <path
+                      key={item.id}
+                      d={runPath}
+                      stroke="#f5b301"
+                      strokeWidth="3"
+                      strokeDasharray="3 8"
+                      strokeLinecap="round"
+                      {...dragHandlers(item.id)}
+                    />
+                  );
+                })}
+              </svg>
+            </section>
+
+            <section className="panel builder-summary">
+              <div className="panel-head"><h2>Your estimate</h2></div>
+              <div className="panel-body">
+                <ul className="summary-list">
+                  <li><span>Light points</span><b>{counts.light}</b></li>
+                  <li><span>Sockets</span><b>{counts.socket}</b></li>
+                  <li><span>Distribution boards</span><b>{counts.board}</b></li>
+                  <li><span>Circuit runs</span><b>{counts.run * 6} m</b></li>
+                </ul>
+
+                <div className="summary-rates">
+                  {(["light", "socket", "board", "run"] as const).map((key) => (
+                    <div key={key}>
+                      <span>{TOOL_LABELS[key]}</span>
+                      <small>{money(RATES[key])}</small>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="summary-total">
+                  <span>First estimate</span>
+                  <strong>{money(total)}</strong>
+                </div>
+
+                <p className="form-note">Rates are the planning defaults; the estimate PDF lists every point and run.</p>
+              </div>
+            </section>
+          </div>
+        </main>
       </div>
     </div>
   );
