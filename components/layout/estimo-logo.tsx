@@ -8,20 +8,28 @@ const HORIZONTAL: Record<LogoVariant, string> = {
   light: "/brand/estimo-logo-horizontal-light.svg",
 };
 
+// Intrinsic ratios of the SVG artwork, used so the browser reserves space
+// before the file loads (no layout shift).
+const HORIZONTAL_RATIO = 282 / 64;
+const STACKED_RATIO = 260 / 166;
+
 export function EstimoLogo({ variant = "dark", height = 28 }: { variant?: LogoVariant; height?: number }) {
+  const width = Math.round(height * HORIZONTAL_RATIO);
   return (
     <img
       src={HORIZONTAL[variant]}
       alt="ESTIMO"
+      width={width}
       height={height}
-      style={{ height, width: "auto", display: "block" }}
+      style={{ height, width, display: "block" }}
     />
   );
 }
 
 export function EstimoStackedLogo({ variant = "light", height = 120 }: { variant?: LogoVariant; height?: number }) {
   const src = variant === "dark" ? "/brand/estimo-logo-stacked-dark.svg" : "/brand/estimo-logo-stacked-light.svg";
-  return <img src={src} alt="ESTIMO" height={height} style={{ height, width: "auto", display: "block" }} />;
+  const width = Math.round(height * STACKED_RATIO);
+  return <img src={src} alt="ESTIMO" width={width} height={height} style={{ height, width, display: "block" }} />;
 }
 
 export function EstimoAppIcon({ size = 96 }: { size?: number }) {

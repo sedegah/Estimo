@@ -38,7 +38,15 @@ export default async function MaterialPage({ params }: { params: Promise<{ mater
         <figure className={imageUrl ? "material-photo has-image" : "material-photo"}>
           {imageUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={imageUrl} alt={`${material.name}${brand ? ` by ${brand}` : ""}`} loading="eager" />
+            <img
+              src={imageUrl}
+              alt={`${material.name}${brand ? ` by ${brand}` : ""}`}
+              width={640}
+              height={480}
+              loading="eager"
+              fetchPriority="high"
+              decoding="async"
+            />
           ) : (
             <>
               <svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden="true">

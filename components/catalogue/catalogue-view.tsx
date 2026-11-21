@@ -269,7 +269,14 @@ export async function CatalogueView({
                   <div className="catalogue-card-media">
                     {photo ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={photo} alt={material.name} loading="lazy" decoding="async" />
+                      <img
+                        src={photo}
+                        alt={material.name}
+                        width={480}
+                        height={360}
+                        loading="lazy"
+                        decoding="async"
+                      />
                     ) : (
                       <CategoryGlyph categoryCode={material.categoryCode} />
                     )}
