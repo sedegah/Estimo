@@ -233,26 +233,7 @@
   }
   .app-rail-brand { padding: 0; }
   .app-rail-brand img { height: 22px; }
-  .app-rail-footer {
-    margin: 0;
-    padding: 0;
-    border: 0;
-  }
-  .app-rail-signout {
-    width: 40px;
-    height: 36px;
-    padding: 0;
-    border: 1px solid rgba(255, 255, 255, .22);
-    border-radius: 9px;
-    color: #e7edf6;
-    font-size: 0;
-    background: transparent;
-  }
-  .app-rail-signout::before {
-    content: "\2192";
-    font-size: 16px;
-    font-weight: 700;
-  }
+
 
   /* tab bar pinned to the bottom of the screen */
   .app-rail-nav {
@@ -350,22 +331,6 @@ button.chip:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px;
 
 /* ── responsive: tablet and mobile ───────────────────────────────────────── */
 @media (max-width: 900px) {
-  .app-shell { flex-direction: column; }
-  .app-rail {
-    position: static;
-    width: 100%;
-    height: auto;
-    flex: 0 0 auto;
-    flex-direction: row;
-    align-items: center;
-    gap: 16px;
-    padding: 12px 16px;
-    overflow-x: auto;
-  }
-  .app-rail-nav { display: flex; gap: 4px; overflow-x: auto; }
-  .app-rail-link { padding: 8px 10px; font-size: 13px; }
-  .app-rail-footer { margin: 0 0 0 auto; padding: 0; border: 0; }
-  .app-rail-signout { width: auto; padding: 8px 12px; text-align: center; }
   .app-head .btn-amber { width: 100%; }
   .app-cols { grid-template-columns: minmax(0, 1fr); }
 }
@@ -384,6 +349,7 @@ button.chip:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
+    width: 100%;
   }
   .app-rail-footer {
     margin: 0 0 0 auto;
