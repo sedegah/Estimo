@@ -377,3 +377,33 @@ button.chip:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px;
   .app-sub { font-size: 13.5px; }
   .project-tile-actions { padding: 0 14px 12px; }
 }
+/* mobile top bar: sign out sits at the far right, as a plain button */
+@media (max-width: 860px) {
+  .app-rail-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .app-rail-footer {
+    margin: 0 0 0 auto;
+    padding: 0;
+    border: 0;
+  }
+  .app-rail-signout {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: auto;
+    height: 34px;
+    padding: 0 13px;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    border-radius: 9px;
+    background: transparent;
+    color: #e7edf6;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+  }
+  .app-rail-signout::before { content: none; }
+}
