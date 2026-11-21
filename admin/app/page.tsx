@@ -119,6 +119,14 @@ export default function AdminPage() {
     if (requested === "prices" || requested === "materials" || requested === "settings") setTab(requested);
   }, []);
 
+  /** Keeps the open tab in the address bar, so a reload lands on the same page. */
+  const selectTab = (next: Tab) => {
+    setTab(next);
+    try {
+      window.history.replaceState(null, "", next === "prices" ? window.location.pathname : `${window.location.pathname}?tab=${next}`);
+    } catch {}
+  };
+
   const categories = useMemo(
     () => Array.from(new Set((items ?? []).map((item) => item.category).filter(Boolean))).slice(0, 8),
     [items],
@@ -234,10 +242,10 @@ export default function AdminPage() {
       <div className="body">
         <aside className="rail">
           <p className="rail-label">Manage</p>
-          <button type="button" className={tab === "prices" ? "rail-item is-active" : "rail-item"} onClick={() => setTab("prices")}>
+          <button type="button" className={tab === "prices" ? "rail-item is-active" : "rail-item"} onClick={() => selectTab("prices")}>
             <Icon path={ICONS.prices} /> Prices
           </button>
-          <button type="button" className={tab === "materials" ? "rail-item is-active" : "rail-item"} onClick={() => setTab("materials")}>
+          <button type="button" className={tab === "materials" ? "rail-item is-active" : "rail-item"} onClick={() => selectTab("materials")}>
             <Icon path={ICONS.materials} /> Materials
           </button>
           <Link className="rail-item" href="/materials/new">
@@ -246,7 +254,7 @@ export default function AdminPage() {
           <a className="rail-item" href="/builder">
             <Icon path={ICONS.builder} /> Estimate builder
           </a>
-          <button type="button" className={tab === "settings" ? "rail-item is-active" : "rail-item"} onClick={() => setTab("settings")}>
+          <button type="button" className={tab === "settings" ? "rail-item is-active" : "rail-item"} onClick={() => selectTab("settings")}>
             <Icon path={ICONS.settings} /> Settings
           </button>
         </aside>
