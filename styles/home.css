@@ -304,3 +304,32 @@
   from { opacity: .75; }
   to { opacity: 1; }
 }
+/* the whole project row is the tap target on a phone */
+@media (max-width: 640px) {
+  .mega-row {
+    position: relative;
+    padding: 16px 0;
+    transition: background-color .15s ease;
+  }
+
+  .mega-row:active {
+    background: rgba(11, 31, 63, 0.05);
+  }
+
+  .mega-row-cta {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    min-height: 24px;
+    font-size: 15px;
+  }
+
+  /* invisible overlay: tapping anywhere on the row follows the link */
+  .mega-row-cta::after {
+    content: "";
+    position: absolute;
+    inset: -16px 0;
+    z-index: 2;
+  }
+}
