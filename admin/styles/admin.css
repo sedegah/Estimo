@@ -426,6 +426,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .pager-btn.is-active { background: var(--navy); border-color: var(--navy); color: #fff; }
 .pager-btn:disabled { opacity: 0.45; cursor: not-allowed; }
 .pager-gap { color: var(--muted-2); padding: 0 2px; }
+.pager-pos { color: var(--muted); font-size: 13px; padding: 0 6px; white-space: nowrap; }
 
 /* ---------- destructive actions ---------- */
 .col-actions { width: 104px; text-align: right; white-space: nowrap; }

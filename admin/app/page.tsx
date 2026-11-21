@@ -2,7 +2,7 @@
 
 import { SignIn, useClerk, useUser } from "@clerk/nextjs";
 import Link from "next/link";
-import { Fragment, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { deleteItem, listCatalogue, materialImageUrl, setPrice, setUnit, type CatalogueItem } from "@/lib/api";
 import { AuthScreen } from "./auth-screen";
 import { LoadingScreen } from "./loading-screen";
@@ -48,33 +48,14 @@ const ICONS = {
   back: "M19 12H5 M11 18l-6-6 6-6",
 };
 
-/** Page numbers with a window around the current page. */
+/** Compact pager: previous, the page you are on, next. */
 function Pager({ page, pageCount, onChange }: { page: number; pageCount: number; onChange: (next: number) => void }) {
   if (pageCount <= 1) return null;
-
-  const window = 1;
-  const candidates = new Set<number>([1, pageCount]);
-  for (let index = page - window; index <= page + window; index += 1) {
-    if (index >= 1 && index <= pageCount) candidates.add(index);
-  }
-  const pages = Array.from(candidates).sort((a, b) => a - b);
 
   return (
     <div className="pager">
       <button className="pager-btn" type="button" disabled={page <= 1} onClick={() => onChange(page - 1)} aria-label="Previous page">Prev</button>
-      {pages.map((entry, index) => (
-        <Fragment key={entry}>
-          {index > 0 && entry - pages[index - 1] > 1 ? <span className="pager-gap">…</span> : null}
-          <button
-            type="button"
-            className={entry === page ? "pager-btn is-active" : "pager-btn"}
-            onClick={() => onChange(entry)}
-            aria-current={entry === page ? "page" : undefined}
-          >
-            {entry}
-          </button>
-        </Fragment>
-      ))}
+      <span className="pager-pos">Page {page} of {pageCount}</span>
       <button className="pager-btn" type="button" disabled={page >= pageCount} onClick={() => onChange(page + 1)} aria-label="Next page">Next</button>
     </div>
   );

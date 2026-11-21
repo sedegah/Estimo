@@ -57,19 +57,11 @@ export function SiteFooter({ year }: { year: number }) {
             <h2>Estimate</h2>
             <Link href="/quick-estimate?template=HOME-2B">Start an estimate</Link>
             <Link href="/catalogue">Material catalogue</Link>
-            <Link href="/estimate-basket">Estimate basket</Link>
-          </div>
-          <div className="footer-col">
-            <h2>Catalogue</h2>
-            <Link href="/catalogue?cat=cables">Cables and wires</Link>
-            <Link href="/catalogue?cat=lighting">Lighting</Link>
-            <Link href="/catalogue?cat=breakers">Breakers and boards</Link>
           </div>
           <div className="footer-col">
             <h2>Your work</h2>
             <Link href="/dashboard">Dashboard</Link>
             <Link href="/projects">Saved projects</Link>
-            <Link href="/signin">Sign in</Link>
           </div>
         </nav>
       </div>
