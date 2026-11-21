@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { SignIn } from "@clerk/nextjs";
+import { AuthExtra } from "@/components/auth/auth-extra";
 import { AuthPanel } from "@/components/auth/auth-panel";
 import { clerkEnabled } from "@/lib/env";
 
@@ -40,6 +41,7 @@ export default function SignInPage() {
           )}
         </div>
       </main>
+      <AuthExtra />
     </div>
   );
 }
