@@ -20,6 +20,15 @@ import { ClerkBoundary } from "@/components/layout/clerk-boundary";
 export const metadata: Metadata = {
   title: "ESTIMO - Estimate Smarter. Build Better.",
   description: "Ghana-focused electrical estimating and material intelligence.",
+  // Static files from the brand pack, so no metadata image route is involved.
+  icons: {
+    icon: [
+      { url: "/brand/estimo-favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/brand/estimo-favicon-16.png", sizes: "16x16", type: "image/png" },
+    ],
+    apple: [{ url: "/brand/estimo-favicon-180.png", sizes: "180x180", type: "image/png" }],
+    shortcut: "/brand/estimo-favicon-32.png",
+  },
 };
 
 /**
