@@ -157,7 +157,12 @@ export default function AdminPage() {
     }
     setDrafts({});
     setMessage(`Published ${saved} price${saved === 1 ? "" : "s"} to the app.`);
-    setLastPublished(new Date().toLocaleDateString("en-GB"));
+    const stamp = new Date().toLocaleString("en-GB", { dateStyle: "medium", timeStyle: "short" });
+    setLastPublished(stamp);
+    try {
+      localStorage.setItem("estimo-admin-last-published", stamp);
+      localStorage.removeItem("estimo-admin-drafts");
+    } catch {}
     await load();
   };
 
@@ -211,8 +216,21 @@ export default function AdminPage() {
     try {
       const stored = localStorage.getItem("estimo-admin-settings");
       if (stored) setSettings((current) => ({ ...current, ...JSON.parse(stored) }));
+
+      const storedDrafts = localStorage.getItem("estimo-admin-drafts");
+      if (storedDrafts) setDrafts(JSON.parse(storedDrafts) as Record<string, string>);
+
+      const storedStamp = localStorage.getItem("estimo-admin-last-published");
+      if (storedStamp) setLastPublished(storedStamp);
     } catch {}
   }, []);
+
+  // unpublished edits survive a reload, like the drafts they are
+  useEffect(() => {
+    try {
+      if (Object.keys(drafts).length) localStorage.setItem("estimo-admin-drafts", JSON.stringify(drafts));
+    } catch {}
+  }, [drafts]);
 
   if (!isLoaded) return <LoadingScreen />;
   if (!isSignedIn) return <AuthScreen />;
@@ -272,7 +290,7 @@ export default function AdminPage() {
                   <span>Last published: {lastPublished ?? "—"}</span>
                 </div>
                 <div className="publish-actions">
-                  <button className="btn btn-sm" type="button" disabled={!draftCount} onClick={() => setDrafts({})}>Discard</button>
+                  <button className="btn btn-sm" type="button" disabled={!draftCount} onClick={() => { setDrafts({}); try { localStorage.removeItem("estimo-admin-drafts"); } catch {} }}>Discard</button>
                   <button className="btn btn-amber btn-sm" type="button" disabled={!draftCount} onClick={() => void publish()}>Publish to app</button>
                 </div>
               </div>
