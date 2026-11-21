@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { ClerkHeaderAuth } from "./clerk-header-auth";
+import { HeaderAuth } from "./header-auth";
 import { EstimateBasketLink } from "@/components/estimate/estimate-basket-link";
-import { clerkEnabled } from "@/lib/env";
 import { EstimoLogo } from "./estimo-logo";
 
-export function SiteHeader() {
+export function SiteHeader({ signedIn = false }: { signedIn?: boolean }) {
   const pathname = usePathname();
 
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
@@ -31,14 +30,9 @@ export function SiteHeader() {
           <EstimateBasketLink />
         </nav>
         <div className="topbar-auth">
-          {clerkEnabled ? (
-            <ClerkHeaderAuth />
-          ) : (
-            <Link className="nav-signin" href="/dashboard">Dashboard</Link>
-          )}
+          <HeaderAuth signedIn={signedIn} />
         </div>
       </div>
     </header>
   );
 }
-

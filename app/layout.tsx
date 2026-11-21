@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import { ClerkProvider } from "@clerk/nextjs";
-import { clerkEnabled, env } from "@/lib/env";
+import { clerkEnabled } from "@/lib/env";
+import { hasSessionCookie } from "@/lib/auth-cookie";
 import "../styles/fonts.css";
 import "../styles/globals.css";
 import "../styles/home.css";
@@ -15,22 +15,20 @@ import "../styles/cookie-notice.css";
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { CookieNotice } from "@/components/layout/cookie-notice";
-import { SessionGuard } from "@/components/auth/session-guard";
+import { ClerkBoundary } from "@/components/layout/clerk-boundary";
 
 export const metadata: Metadata = {
   title: "ESTIMO - Estimate Smarter. Build Better.",
   description: "Ghana-focused electrical estimating and material intelligence.",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  const shell = (
-    <div className="shell">
-      <SiteHeader />
-      {children}
-      <SiteFooter year={new Date().getFullYear()} />
-      <CookieNotice />
-    </div>
-  );
+/**
+ * Clerk is mounted by the layouts that need it (the app shell and the auth pages).
+ * Public pages only read the session cookie, so visitors who are not signed in do
+ * not download Clerk's runtime at all.
+ */
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  const signedIn = clerkEnabled && (await hasSessionCookie());
 
   return (
     <html lang="en">
@@ -49,14 +47,14 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           type="font/woff2"
           crossOrigin="anonymous"
         />
-        {clerkEnabled ? (
-          <ClerkProvider publishableKey={env.clerkPublishableKey}>
-            <SessionGuard />
-            {shell}
-          </ClerkProvider>
-        ) : (
-          shell
-        )}
+        <ClerkBoundary enabled={signedIn}>
+        <div className="shell">
+          <SiteHeader signedIn={signedIn} />
+          {children}
+          <SiteFooter year={new Date().getFullYear()} />
+          <CookieNotice />
+        </div>
+      </ClerkBoundary>
       </body>
     </html>
   );
