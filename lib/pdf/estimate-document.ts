@@ -21,7 +21,7 @@ const LINE = rgb(0xe2 / 255, 0xe4 / 255, 0xdc / 255);
 const WHITE = rgb(1, 1, 1);
 const PALE = rgb(0xc3 / 255, 0xce / 255, 0xe2 / 255);
 
-const money = (value: number, digits = 0) =>
+const money = (value: number, digits = Number.isInteger(value) ? 0 : 2) =>
   `GHS ${value.toLocaleString("en-GH", { maximumFractionDigits: digits, minimumFractionDigits: digits })}`;
 
 type Input = {
@@ -155,16 +155,51 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
   const wordmark = await pdf.embedPng(loadBrandFile("estimo-logo-horizontal-dark.png"));
   const footerMark = await pdf.embedPng(loadBrandFile("estimo-logo-horizontal-mono-navy.png"));
 
-  const page = pdf.addPage([595.28, 841.89]);
-  const { width, height } = page.getSize();
+  const pageWidth = 595.28;
+  const pageHeight = 841.89;
+  const height = pageHeight;
   const margin = 48;
+  const tableRight = pageWidth - margin;
+  const columns = { item: margin + 14, qty: 330, unit: 430, amount: tableRight - 14 };
+  const footerY = 54;
+  const bottomLimit = 112;
+  const rowHeight = 26;
+  const documentTitle = name ?? type.label;
+  const dateLabel = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric" }).format(issuedAt);
 
-  // ── header ────────────────────────────────────────────────────────────────
-  const title = fitTitle(name ?? type.label, bold, width - margin * 2);
+  const drawFooter = (target: PDFPage) => {
+    target.drawLine({ start: { x: margin, y: footerY + 16 }, end: { x: tableRight, y: footerY + 16 }, thickness: 0.7, color: LINE });
+    const markHeight = 10;
+    const markWidth = (footerMark.width / footerMark.height) * markHeight;
+    target.drawImage(footerMark, { x: margin, y: footerY - 1, width: markWidth, height: markHeight });
+    strongText(target, "Ghana electrical estimates", { x: margin + markWidth + 10, y: footerY, size: 8, font: bold, color: NAVY });
+    rightText(target, "estimo.app", tableRight, footerY, 8, font, MUTED);
+    target.drawText(`Issued ${dateLabel} · Reference ${type.code}-${quality.slice(0, 3).toUpperCase()}`, {
+      x: margin,
+      y: footerY - 12,
+      size: 7.5,
+      font,
+      color: MUTED,
+    });
+  };
+
+  const drawTableHead = (target: PDFPage, top: number) => {
+    target.drawRectangle({ x: margin, y: top - 26, width: tableRight - margin, height: 26, color: NAVY });
+    strongText(target, "Item", { x: columns.item, y: top - 17, size: 9, font: bold, color: WHITE });
+    strongText(target, "Qty", { x: columns.qty, y: top - 17, size: 9, font: bold, color: WHITE });
+    rightStrong(target, "Unit price", columns.unit, top - 17, 9, bold, WHITE);
+    rightStrong(target, "Amount", columns.amount, top - 17, 9, bold, WHITE);
+    return top - 26;
+  };
+
+  let page = pdf.addPage([pageWidth, pageHeight]);
+
+  // ── header (first page) ───────────────────────────────────────────────────
+  const title = fitTitle(documentTitle, bold, pageWidth - margin * 2);
   const titleLead = 26;
   const headerHeight = 168 + (title.lines.length - 1) * titleLead;
-  page.drawRectangle({ x: 0, y: height - headerHeight, width, height: headerHeight, color: NAVY });
-  page.drawRectangle({ x: 0, y: height - headerHeight, width, height: 4, color: AMBER });
+  page.drawRectangle({ x: 0, y: height - headerHeight, width: pageWidth, height: headerHeight, color: NAVY });
+  page.drawRectangle({ x: 0, y: height - headerHeight, width: pageWidth, height: 4, color: AMBER });
 
   const wordmarkHeight = 26;
   const wordmarkWidth = (wordmark.width / wordmark.height) * wordmarkHeight;
@@ -183,39 +218,47 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
     font,
     color: PALE,
   });
-
-  const dateLabel = new Intl.DateTimeFormat("en-GB", { day: "numeric", month: "short", year: "numeric" }).format(issuedAt);
-  rightText(page, dateLabel, width - margin, subtitleY, 10, font, PALE);
+  rightText(page, dateLabel, pageWidth - margin, subtitleY, 10, font, PALE);
 
   // ── total card ────────────────────────────────────────────────────────────
   let y = height - headerHeight - 36;
-  page.drawRectangle({ x: margin, y: y - 74, width: width - margin * 2, height: 74, color: PLASTER });
+  page.drawRectangle({ x: margin, y: y - 74, width: pageWidth - margin * 2, height: 74, color: PLASTER });
   page.drawRectangle({ x: margin, y: y - 74, width: 4, height: 74, color: AMBER });
   strongText(page, "ESTIMATED TOTAL", { x: margin + 20, y: y - 24, size: 8, font: bold, color: MUTED });
   strongText(page, money(total), { x: margin + 20, y: y - 58, size: 28, font: bold, color: NAVY });
 
-  const cardRight = width - margin - 20;
+  const cardRight = pageWidth - margin - 20;
   rightText(page, quantityLines ? "Materials only, at catalogue prices." : "Materials only.", cardRight, y - 30, 8.5, font, MUTED);
   rightText(page, quantityLines ? "Preliminary take-off, not a quotation." : "Illustrative planning figure, not a quotation.", cardRight, y - 43, 8.5, font, MUTED);
 
-  // ── table ─────────────────────────────────────────────────────────────────
+  // ── table, paginated ──────────────────────────────────────────────────────
   y -= 110;
-  const tableRight = width - margin;
-  const columns = { item: margin + 14, qty: 330, unit: 430, amount: tableRight - 14 };
+  y = drawTableHead(page, y);
 
-  page.drawRectangle({ x: margin, y: y - 26, width: tableRight - margin, height: 26, color: NAVY });
-  strongText(page, "Item", { x: columns.item, y: y - 17, size: 9, font: bold, color: WHITE });
-  strongText(page, "Qty", { x: columns.qty, y: y - 17, size: 9, font: bold, color: WHITE });
-  rightStrong(page, "Unit price", columns.unit, y - 17, 9, bold, WHITE);
-  rightStrong(page, "Amount", columns.amount, y - 17, 9, bold, WHITE);
+  const newPage = () => {
+    drawFooter(page);
+    page = pdf.addPage([pageWidth, pageHeight]);
 
-  y -= 26;
-  const rowHeight = 26;
+    // slim continuation header so every page is identifiable
+    const band = 96;
+    page.drawRectangle({ x: 0, y: pageHeight - band, width: pageWidth, height: band, color: NAVY });
+    page.drawRectangle({ x: 0, y: pageHeight - band, width: pageWidth, height: 4, color: AMBER });
+    const markHeight = 20;
+    const markWidth = (wordmark.width / wordmark.height) * markHeight;
+    page.drawImage(wordmark, { x: margin, y: pageHeight - 58, width: markWidth, height: markHeight });
+    const label = ellipsize(`${documentTitle} (continued)`, bold, 11, pageWidth - margin * 2 - markWidth - 16);
+    strongText(page, label, { x: margin + markWidth + 12, y: pageHeight - 53, size: 11, font: bold, color: WHITE });
+    rightText(page, dateLabel, pageWidth - margin, pageHeight - 53, 9, font, PALE);
+
+    return drawTableHead(page, pageHeight - band - 18);
+  };
+
   lines.forEach((line, index) => {
+    if (y - rowHeight < bottomLimit) y = newPage();
     if (index % 2 === 1) {
       page.drawRectangle({ x: margin, y: y - rowHeight, width: tableRight - margin, height: rowHeight, color: PLASTER });
     }
-    page.drawText(line.label, { x: columns.item, y: y - 17, size: 9.5, font, color: NAVY });
+    page.drawText(ellipsize(line.label, font, 9.5, columns.qty - columns.item - 12), { x: columns.item, y: y - 17, size: 9.5, font, color: NAVY });
     page.drawText(line.quantity, { x: columns.qty, y: y - 17, size: 9.5, font, color: MUTED });
     if ("pending" in line && line.pending) {
       rightText(page, "Pending", columns.unit, y - 17, 9.5, font, MUTED);
@@ -228,27 +271,30 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
     y -= rowHeight;
   });
 
-  // total row
+  // total row, with room to breathe above the footer
+  if (y - 52 < bottomLimit) y = newPage();
   page.drawLine({ start: { x: margin, y }, end: { x: tableRight, y }, thickness: 2, color: NAVY });
   strongText(page, "Total", { x: columns.item, y: y - 20, size: 10.5, font: bold, color: NAVY });
   rightStrong(page, money(total), columns.amount, y - 20, 11, bold, NAVY);
   y -= 46;
 
-  // ── special loads ──────────────────────────────────────────────
+  /** Starts a page when a block would otherwise cross into the footer. */
+  const ensureRoom = (needed: number) => {
+    if (y - needed < bottomLimit) y = newPage();
+  };
+
   if (specialLoads.length) {
-    strongText(page, 'Special loads', { x: margin, y, size: 10, font: bold, color: NAVY });
+    ensureRoom(24 + specialLoads.length * 12 + 18);
+    strongText(page, "Special loads", { x: margin, y, size: 10, font: bold, color: NAVY });
     y -= 15;
     specialLoads.forEach((key) => {
       page.drawText(`• ${loadLabel(key)}`, { x: margin, y, size: 9, font, color: MUTED });
       y -= 12;
     });
-    page.drawText('Concluded by phone call or WhatsApp.', { x: margin, y: y - 2, size: 8.5, font, color: MUTED });
-    y -= 22;
+    page.drawText("Concluded by phone call or WhatsApp.", { x: margin, y: y - 2, size: 8.5, font, color: MUTED });
+    y -= 24;
   }
 
-  // ── breakdown note ────────────────────────────────────────────────────────
-  strongText(page, quantityLines ? "Basis" : "How this is built up", { x: margin, y, size: 10, font: bold, color: NAVY });
-  y -= 16;
   const notes = quantityLines
     ? [
         "Quantities from the ESTIMO-GH-QTY-v1.0 rule set for the spaces in this estimate.",
@@ -260,27 +306,15 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
         "and earthing are allowance groups from the ESTIMO staging model. Labour is quoted separately.",
         "Prices are planning assumptions and are not verified supplier prices.",
       ];
+
+  ensureRoom(18 + notes.length * 12);
+  strongText(page, quantityLines ? "Basis" : "How this is built up", { x: margin, y, size: 10, font: bold, color: NAVY });
+  y -= 16;
   notes.forEach((line) => {
     page.drawText(line, { x: margin, y, size: 8.5, font, color: MUTED });
     y -= 12;
   });
 
-  // ── footer ────────────────────────────────────────────────────────────────
-  const footerY = 54;
-  page.drawLine({ start: { x: margin, y: footerY + 16 }, end: { x: tableRight, y: footerY + 16 }, thickness: 0.7, color: LINE });
-
-  const footerMarkHeight = 10;
-  const footerMarkWidth = (footerMark.width / footerMark.height) * footerMarkHeight;
-  page.drawImage(footerMark, { x: margin, y: footerY - 1, width: footerMarkWidth, height: footerMarkHeight });
-  strongText(page, "Ghana electrical estimates", { x: margin + footerMarkWidth + 10, y: footerY, size: 8, font: bold, color: NAVY });
-  rightText(page, "estimo.app", tableRight, footerY, 8, font, MUTED);
-  page.drawText(`Issued ${dateLabel} · Reference ${type.code}-${quality.slice(0, 3).toUpperCase()}`, {
-    x: margin,
-    y: footerY - 12,
-    size: 7.5,
-    font,
-    color: MUTED,
-  });
-
+  drawFooter(page);
   return pdf.save();
 }
