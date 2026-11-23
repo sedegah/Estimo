@@ -11,7 +11,7 @@ type Template = {
 const homes: Template[] = [
   { label: "Single Room", code: "HOME-1R", caption: "Starter room / compact living" },
   { label: "1-Bedroom Home", code: "HOME-1B", caption: "Small apartment or annex" },
-  { label: "2-Bedroom Home", code: "HOME-2B", caption: "Quickest way to a full estimate", featured: true },
+  { label: "2-Bedroom Home", code: "HOME-2B", caption: "Quickest way to a full estimate" },
   { label: "3-Bedroom Home", code: "HOME-3B", caption: "Family home" },
   { label: "4-Bedroom / Villa", code: "HOME-4B", caption: "Larger premium home" },
 ];
@@ -29,7 +29,6 @@ function TemplateRow({ label, code, caption, featured }: Template) {
       <div className="mega-row-copy">
         <span className="mega-row-title">
           {label}
-          {featured ? <span className="mega-badge">Most used</span> : null}
         </span>
         <span className="mega-row-caption">{caption}</span>
       </div>
