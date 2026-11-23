@@ -124,7 +124,26 @@ export function QuantityView(props: Props) {
   const [spaces, setSpaces] = useState<SpaceInput[]>(props.spacesByTemplate[firstTemplate.id] ?? []);
   const [overrides, setOverrides] = useState<PointOverride[]>([]);
   const [added, setAdded] = useState("");
-  const [loads, setLoads] = useState<string[]>([]);
+  const [loads, setLoads] = useState<string[]>(() =>
+    (props.specialLoads ?? []).filter((load) => load.default_enabled).map((load) => load.load_key),
+  );
+
+  /** Loads offered for the rooms in this plan, per the rulebook's space_context. */
+  const availableLoads = useMemo(() => {
+    const contexts = new Set<string>(["building"]);
+    for (const space of spaces) {
+      const type = space.room_type;
+      if (type === "kitchen") { contexts.add("kitchen"); contexts.add("kitchen_or_utility"); contexts.add("kitchen_or_bathroom"); }
+      if (type === "utility_room") contexts.add("kitchen_or_utility");
+      if (type === "bathroom" || type === "wc") { contexts.add("bathroom"); contexts.add("kitchen_or_bathroom"); }
+      if (["bedroom", "living_room", "dining_room", "private_office", "meeting_room", "reception"].includes(type)) contexts.add("habitable_room");
+      if (type === "workshop") { contexts.add("workshop"); contexts.add("shop_or_workshop"); }
+      if (type === "shop_floor" || type === "store") contexts.add("shop_or_workshop");
+      if (type === "porch_veranda" || type === "external_area") contexts.add("external");
+      if (type === "garage") contexts.add("garage");
+    }
+    return (props.specialLoads ?? []).filter((load) => contexts.has(load.space_context));
+  }, [props.specialLoads, spaces]);
 
   // The working estimate is kept in this browser, signed in or not.
   useEffect(() => {
@@ -538,7 +557,7 @@ export function QuantityView(props: Props) {
           <h2>Special loads</h2>
         </div>
         <div className="quantities-loads">
-          {(props.specialLoads ?? []).map((load) => {
+          {availableLoads.map((load) => {
             const active = loads.includes(load.load_key);
             return (
               <button
