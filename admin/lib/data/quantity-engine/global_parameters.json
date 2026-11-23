@@ -1,0 +1,152 @@
+[
+  {
+    "key": "residential_ceiling_height_m",
+    "value": 3.0,
+    "unit": "m",
+    "description": "Default residential ceiling height"
+  },
+  {
+    "key": "office_ceiling_height_m",
+    "value": 3.0,
+    "unit": "m",
+    "description": "Default office ceiling height"
+  },
+  {
+    "key": "shop_ceiling_height_m",
+    "value": 3.3,
+    "unit": "m",
+    "description": "Default shop ceiling height"
+  },
+  {
+    "key": "workshop_ceiling_height_m",
+    "value": 4.0,
+    "unit": "m",
+    "description": "Default workshop height"
+  },
+  {
+    "key": "switch_height_m",
+    "value": 1.2,
+    "unit": "m",
+    "description": "Switch mounting height"
+  },
+  {
+    "key": "socket_height_m",
+    "value": 0.3,
+    "unit": "m",
+    "description": "General socket mounting height"
+  },
+  {
+    "key": "kitchen_socket_height_m",
+    "value": 1.1,
+    "unit": "m",
+    "description": "Kitchen worktop socket height"
+  },
+  {
+    "key": "db_height_m",
+    "value": 1.5,
+    "unit": "m",
+    "description": "DB mounting height"
+  },
+  {
+    "key": "cable_waste_pct",
+    "value": 7.5,
+    "unit": "%",
+    "description": "Cable allowance after calculated route"
+  },
+  {
+    "key": "containment_waste_pct",
+    "value": 10.0,
+    "unit": "%",
+    "description": "Conduit/trunking allowance"
+  },
+  {
+    "key": "small_accessory_waste_pct",
+    "value": 5.0,
+    "unit": "%",
+    "description": "Small accessory allowance"
+  },
+  {
+    "key": "db_spare_capacity_pct",
+    "value": 25.0,
+    "unit": "%",
+    "description": "Spare ways allowance"
+  },
+  {
+    "key": "route_correction_factor",
+    "value": 1.15,
+    "unit": "factor",
+    "description": "Fallback route correction"
+  },
+  {
+    "key": "termination_allowance_m",
+    "value": 1.0,
+    "unit": "m/end",
+    "description": "Cable termination allowance each end"
+  },
+  {
+    "key": "lighting_route_perimeter_factor",
+    "value": 0.35,
+    "unit": "factor",
+    "description": "Fraction of room perimeter used for lighting containment"
+  },
+  {
+    "key": "socket_route_perimeter_factor",
+    "value": 0.5,
+    "unit": "factor",
+    "description": "Fraction of room perimeter used for socket containment"
+  },
+  {
+    "key": "light_branch_allowance_m",
+    "value": 1.0,
+    "unit": "m/point",
+    "description": "Branch allowance per light point"
+  },
+  {
+    "key": "lighting_conductor_factor",
+    "value": 2.7,
+    "unit": "factor",
+    "description": "Approximate conductor metres per metre of lighting containment"
+  },
+  {
+    "key": "conduit_piece_length_m",
+    "value": 3.0,
+    "unit": "m",
+    "description": "Commercial conduit length"
+  },
+  {
+    "key": "cable_roll_length_m",
+    "value": 100.0,
+    "unit": "m",
+    "description": "Typical cable roll length; may be product-specific"
+  },
+  {
+    "key": "coupler_per_conduit_m",
+    "value": 0.3,
+    "unit": "each/m",
+    "description": "Provisional coupler factor"
+  },
+  {
+    "key": "bend_per_conduit_m",
+    "value": 0.16666666666666666,
+    "unit": "each/m",
+    "description": "Provisional bend factor"
+  },
+  {
+    "key": "drawbox_per_conduit_m",
+    "value": 0.1111111111111111,
+    "unit": "each/m",
+    "description": "Provisional draw box factor"
+  },
+  {
+    "key": "lighting_points_per_circuit",
+    "value": 10,
+    "unit": "points/circuit",
+    "description": "Preliminary lighting circuit grouping"
+  },
+  {
+    "key": "residential_double_sockets_per_circuit",
+    "value": 6,
+    "unit": "points/circuit",
+    "description": "Preliminary radial socket grouping"
+  }
+]

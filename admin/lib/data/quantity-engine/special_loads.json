@@ -1,0 +1,114 @@
+[
+  {
+    "load_key": "refrigerator",
+    "space_context": "kitchen",
+    "selection_mode": "optional",
+    "default_enabled": true,
+    "circuit_policy": "dedicated_or_design_rule",
+    "notes": "General kitchen appliance; dedicated depending load/installation"
+  },
+  {
+    "load_key": "freezer",
+    "space_context": "kitchen",
+    "selection_mode": "optional",
+    "default_enabled": false,
+    "circuit_policy": "dedicated_or_design_rule",
+    "notes": ""
+  },
+  {
+    "load_key": "microwave",
+    "space_context": "kitchen",
+    "selection_mode": "optional",
+    "default_enabled": false,
+    "circuit_policy": "dedicated_or_design_rule",
+    "notes": ""
+  },
+  {
+    "load_key": "electric_cooker",
+    "space_context": "kitchen",
+    "selection_mode": "user_select",
+    "default_enabled": false,
+    "circuit_policy": "dedicated",
+    "notes": "Requires load-based cable and breaker sizing"
+  },
+  {
+    "load_key": "dishwasher",
+    "space_context": "kitchen",
+    "selection_mode": "optional",
+    "default_enabled": false,
+    "circuit_policy": "dedicated",
+    "notes": ""
+  },
+  {
+    "load_key": "washing_machine",
+    "space_context": "kitchen_or_utility",
+    "selection_mode": "optional",
+    "default_enabled": false,
+    "circuit_policy": "dedicated",
+    "notes": ""
+  },
+  {
+    "load_key": "extractor",
+    "space_context": "kitchen_or_bathroom",
+    "selection_mode": "optional",
+    "default_enabled": false,
+    "circuit_policy": "dedicated_or_shared",
+    "notes": ""
+  },
+  {
+    "load_key": "water_heater",
+    "space_context": "bathroom",
+    "selection_mode": "optional",
+    "default_enabled": false,
+    "circuit_policy": "dedicated",
+    "notes": "Requires load-based sizing"
+  },
+  {
+    "load_key": "air_conditioner",
+    "space_context": "habitable_room",
+    "selection_mode": "optional",
+    "default_enabled": false,
+    "circuit_policy": "dedicated",
+    "notes": "Capacity required/estimated"
+  },
+  {
+    "load_key": "water_pump",
+    "space_context": "building",
+    "selection_mode": "optional",
+    "default_enabled": false,
+    "circuit_policy": "dedicated",
+    "notes": ""
+  },
+  {
+    "load_key": "gate_motor",
+    "space_context": "external",
+    "selection_mode": "optional",
+    "default_enabled": false,
+    "circuit_policy": "dedicated_or_design_rule",
+    "notes": ""
+  },
+  {
+    "load_key": "ev_charger",
+    "space_context": "garage",
+    "selection_mode": "optional",
+    "default_enabled": false,
+    "circuit_policy": "dedicated",
+    "notes": "Future-ready; load-based"
+  },
+  {
+    "load_key": "workshop_machine",
+    "space_context": "workshop",
+    "selection_mode": "user_defined",
+    "default_enabled": false,
+    "circuit_policy": "dedicated",
+    "notes": "Machine kW and phase required"
+  },
+  {
+    "load_key": "refrigeration_equipment",
+    "space_context": "shop_or_workshop",
+    "selection_mode": "optional",
+    "default_enabled": false,
+    "circuit_policy": "dedicated",
+    "notes": ""
+  }
+]

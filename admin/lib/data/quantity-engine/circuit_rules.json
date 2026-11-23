@@ -1,0 +1,50 @@
+[
+  {
+    "circuit_type": "lighting",
+    "project_context": "residential",
+    "limit_value": 10,
+    "limit_basis": "points_per_circuit",
+    "nominal_cable_family": "1.5mm2 nominal starting family",
+    "notes": "Not a statutory maximum"
+  },
+  {
+    "circuit_type": "general_sockets",
+    "project_context": "residential",
+    "limit_value": 6,
+    "limit_basis": "double_socket_points_per_circuit",
+    "nominal_cable_family": "2.5mm2 nominal starting family",
+    "notes": "Preliminary radial grouping"
+  },
+  {
+    "circuit_type": "lighting",
+    "project_context": "office",
+    "limit_value": 10,
+    "limit_basis": "points_per_circuit",
+    "nominal_cable_family": "design_rule",
+    "notes": ""
+  },
+  {
+    "circuit_type": "general_sockets",
+    "project_context": "office",
+    "limit_value": 6,
+    "limit_basis": "double_socket_points_per_circuit",
+    "nominal_cable_family": "design_rule",
+    "notes": ""
+  },
+  {
+    "circuit_type": "general_sockets",
+    "project_context": "shop",
+    "limit_value": 6,
+    "limit_basis": "double_socket_points_per_circuit",
+    "nominal_cable_family": "design_rule",
+    "notes": ""
+  },
+  {
+    "circuit_type": "machine",
+    "project_context": "workshop",
+    "limit_value": 1,
+    "limit_basis": "machine_per_dedicated_circuit",
+    "nominal_cable_family": "load_based",
+    "notes": "Default one machine per circuit"
+  }
+]

@@ -1,0 +1,50 @@
+[
+  {
+    "assembly_key": "double_socket_point",
+    "name": "Double 13A socket point",
+    "assembly_type": "point",
+    "description": "Socket outlet + box + route-driven conductors/containment"
+  },
+  {
+    "assembly_key": "lighting_point",
+    "name": "Lighting point",
+    "assembly_type": "point",
+    "description": "Light point + box + route-driven conductors/containment"
+  },
+  {
+    "assembly_key": "switch_point",
+    "name": "Switch position",
+    "assembly_type": "point",
+    "description": "Switch + box + vertical drop + conductors"
+  },
+  {
+    "assembly_key": "ac_point",
+    "name": "AC dedicated point",
+    "assembly_type": "load",
+    "description": "Dedicated circuit, isolator, protection, cable and containment"
+  },
+  {
+    "assembly_key": "water_heater_point",
+    "name": "Water heater dedicated point",
+    "assembly_type": "load",
+    "description": "Dedicated circuit and control"
+  },
+  {
+    "assembly_key": "cooker_point",
+    "name": "Electric cooker point",
+    "assembly_type": "load",
+    "description": "Cooker control/outlet + dedicated circuit"
+  },
+  {
+    "assembly_key": "earthing_basic_residential",
+    "name": "Basic residential earthing",
+    "assembly_type": "system",
+    "description": "Electrode, clamp, chamber, main earth conductor route"
+  },
+  {
+    "assembly_key": "office_workstation",
+    "name": "Office workstation electrical point",
+    "assembly_type": "workstation",
+    "description": "1 double socket + 1 data outlet by standard rule"
+  }
+]

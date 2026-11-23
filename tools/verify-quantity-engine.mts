@@ -68,6 +68,12 @@ for (const want of expected) {
     ["drawboxes_est", result.totals.drawboxes_est, Number(want.drawboxes_est)],
   ];
 
+  if (want.recommended_db_ways === "engineered") {
+    checks.push(["recommended_db_ways", result.totals.recommended_db_ways ?? -1, -1]);
+  } else {
+    checks.push(["recommended_db_ways", result.totals.recommended_db_ways ?? 0, Number(want.recommended_db_ways)]);
+  }
+
   const diffs = checks.filter(([, got, expectedValue]) => Math.abs(got - expectedValue) > 0.11);
   if (diffs.length) {
     failures += 1;
