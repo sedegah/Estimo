@@ -29,6 +29,17 @@ const UNIT_LABELS: Record<string, string> = {
   pair: "per pair",
 };
 
+/** Counted stock reads "pcs", not "No."; measured stock keeps its own word. */
+export function unitLabel(unit: string): string {
+  if (unit === "No.") return "pcs";
+  if (unit === "length") return "lengths";
+  if (unit === "box") return "boxes";
+  if (unit === "bag") return "bags";
+  if (unit === "set") return "sets";
+  if (unit === "lot") return "lots";
+  return unit.toLowerCase();
+}
+
 /** "per metre", "each", ... — the basis a catalogue price is quoted on. */
 export function materialUnitLabel(unit: string): string {
   return UNIT_LABELS[unit] ?? `per ${unit.toLowerCase()}`;

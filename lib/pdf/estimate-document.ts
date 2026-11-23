@@ -2,6 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import fontkit from "@pdf-lib/fontkit";
 import { PDFDocument, rgb, type PDFFont, type PDFPage } from "pdf-lib";
+import { unitLabel } from "@/lib/format";
 import {
   FITTINGS,
   computeEstimate,
@@ -131,7 +132,7 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
     const amount = line.priceGhs == null ? 0 : line.priceGhs * line.quantity;
     return {
       label: line.name,
-      quantity: line.unit === "No." ? String(line.quantity) : `${line.quantity} ${line.unit === "length" ? "lengths" : line.unit}`,
+      quantity: `${line.quantity} ${unitLabel(line.unit)}`,
       unitPrice: line.priceGhs ?? 0,
       amount,
       pending: line.priceGhs == null,

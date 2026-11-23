@@ -16,6 +16,7 @@ import {
 } from "@/lib/estimate-model";
 import { formatDate, formatGhs } from "@/lib/format";
 import { pricedCount, pricedTotal } from "@/lib/estimate-total";
+import { unitLabel } from "@/lib/format";
 import {
   SAVED_EVENT,
   deleteSavedEstimate,
@@ -366,7 +367,7 @@ export default function ProjectPage() {
                 {project.items.map((line) => (
                   <tr key={line.name}>
                     <td>{line.name}</td>
-                    <td className="muted-cell">{line.quantity} {line.unit}</td>
+                    <td className="muted-cell">{line.quantity} {unitLabel(line.unit)}</td>
                     <td className="align-right">{line.priceGhs == null ? "Pending" : formatGhs(line.priceGhs)}</td>
                     <td className="align-right">{line.priceGhs == null ? "—" : formatGhs(line.priceGhs * line.quantity)}</td>
                   </tr>

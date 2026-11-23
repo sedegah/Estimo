@@ -17,6 +17,7 @@ import type {
 } from "@/lib/quantity-engine/types";
 import type { CatalogueMaterialInfo } from "@/lib/quantity-engine/catalogue";
 import { pricedCount, pricedTotal } from "@/lib/estimate-total";
+import { unitLabel } from "@/lib/format";
 import { readBasket, writeBasket } from "@/lib/storage/basket";
 import { listSavedEstimates, saveEstimate, updateSavedEstimate } from "@/lib/storage/saved-estimates";
 import { pushCreate, pushUpdate } from "@/lib/api/estimates";
@@ -650,7 +651,7 @@ export function QuantityView(props: Props) {
                     </td>
                     <td className="is-num">
                       {line.purchaseQuantity}
-                      <span className="quantities-unit">{UNIT_LABEL[line.catalogueUnit] ?? line.catalogueUnit.toLowerCase()}</span>
+                      <span className="quantities-unit">{unitLabel(line.catalogueUnit)}</span>
                     </td>
                     <td className="is-num is-muted">
                       {measured ? `${line.engineeringQuantity} m` : "—"}
