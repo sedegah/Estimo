@@ -171,6 +171,12 @@ export function QuantityView(props: Props) {
 
   const rules = useMemo(() => rulesByKey(props.rules), [props.rules]);
 
+  const roomTypes = useMemo(
+    () =>
+      Array.from(new Set(props.rules.filter((rule) => rule.spec_level === specLevel).map((rule) => rule.room_type))).sort(),
+    [props.rules, specLevel],
+  );
+
   const result = useMemo(
     () =>
       calculateProject({
@@ -233,6 +239,37 @@ export function QuantityView(props: Props) {
 
   const updateSpace = (id: string, patch: Partial<SpaceInput>) => {
     setSpaces((current) => current.map((space) => (space.id === id ? { ...space, ...patch } : space)));
+    setAdded("");
+  };
+
+  const addSpace = () => {
+    setSpaces((current) => [
+      ...current,
+      {
+        id: `space-${Date.now()}`,
+        space_name: `Space ${current.length + 1}`,
+        room_type: "living_room",
+        length_m: 4,
+        width_m: 3,
+        height_m: 3,
+        quantity: 1,
+      },
+    ]);
+    setAdded("");
+  };
+
+  const duplicateSpace = (space: SpaceInput) => {
+    setSpaces((current) => {
+      const index = current.findIndex((entry) => entry.id === space.id);
+      const copy: SpaceInput = { ...space, id: `space-${Date.now()}`, space_name: `${space.space_name} 2` };
+      return [...current.slice(0, index + 1), copy, ...current.slice(index + 1)];
+    });
+    setAdded("");
+  };
+
+  const removeSpace = (id: string) => {
+    setSpaces((current) => current.filter((space) => space.id !== id));
+    setOverrides((current) => current.filter((override) => override.space_id !== id));
     setAdded("");
   };
 
@@ -360,8 +397,9 @@ export function QuantityView(props: Props) {
       ) : null}
 
       <section className="quantities-section">
-        <div className="quantities-section-head">
+          <div className="quantities-section-head is-inline">
           <h2>Spaces</h2>
+          <button className="btn-outline btn-small" type="button" onClick={addSpace}>Add space</button>
         </div>
         <div className="quantities-scroll">
           <table className="quantities-table">
@@ -375,6 +413,7 @@ export function QuantityView(props: Props) {
                 <th>Qty</th>
                 <th className="is-num">Area</th>
                 <th>Points</th>
+                <th />
               </tr>
             </thead>
             <tbody>
@@ -384,7 +423,17 @@ export function QuantityView(props: Props) {
                 return (
                   <tr key={space.space_id}>
                     <td>{space.space_name}</td>
-                    <td className="is-muted">{space.room_type.replace(/_/g, " ")}</td>
+                    <td>
+                      <select
+                        className="quantities-room"
+                        value={source.room_type}
+                        onChange={(event) => updateSpace(space.space_id, { room_type: event.target.value })}
+                      >
+                        {roomTypes.map((type) => (
+                          <option key={type} value={type}>{type.replace(/_/g, " ")}</option>
+                        ))}
+                      </select>
+                    </td>
                     <td>
                       <input
                         type="number" min={1} step={0.1} value={source.length_m}
@@ -414,6 +463,10 @@ export function QuantityView(props: Props) {
                       {space.lighting_points}L · {space.double_sockets}S · {space.switch_positions}Sw
                       {space.data_points ? ` · ${space.data_points}D` : ""}
                     </td>
+                    <td className="is-actions">
+                      <button className="quantities-icon-btn" type="button" onClick={() => duplicateSpace(source)} aria-label={`Duplicate ${space.space_name}`}>+</button>
+                      <button className="quantities-icon-btn is-danger" type="button" onClick={() => removeSpace(space.space_id)} aria-label={`Remove ${space.space_name}`}>×</button>
+                    </td>
                   </tr>
                 );
               })}
@@ -430,7 +483,7 @@ export function QuantityView(props: Props) {
           {result.spaces.map((space) => (
             <div className="quantities-override" key={space.space_id}>
               <strong>{space.space_name}</strong>
-              {POINT_FIELDS.filter((field) => ["lighting", "double_sockets", "switches"].includes(field.type)).map((field) => {
+              {POINT_FIELDS.map((field) => {
                 const current = overrides.find(
                   (override) => override.space_id === space.space_id && override.point_type === field.type,
                 );

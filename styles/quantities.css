@@ -274,3 +274,38 @@
 }
 .quantities-total .btn-outline:hover { border-color: #cfd4cb; }
 .quantities-total .btn-amber { background: var(--yellow); color: var(--navy); }
+/* space editor controls */
+.quantities-section-head.is-inline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+.btn-small { min-height: 38px; padding: 0 14px; font-size: 13.5px; }
+.quantities-room {
+  height: 38px;
+  padding: 0 8px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--ink);
+  text-transform: capitalize;
+  max-width: 150px;
+}
+.is-actions { width: 86px; text-align: right; white-space: nowrap; }
+.quantities-icon-btn {
+  width: 32px;
+  height: 32px;
+  margin-left: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+.quantities-icon-btn:hover { border-color: #cfd4cb; background: #fbfaf6; }
+.quantities-icon-btn.is-danger:hover { border-color: #f0d6d2; background: #fdf3f2; color: #b42318; }
