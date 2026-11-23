@@ -18,7 +18,8 @@
     "prices:apply": "node tools/apply-catalogue-prices.mjs",
     "console:build": "npm --prefix admin run build",
     "console:deploy": "npm --prefix admin run deploy",
-    "quantities:verify": "tsx tools/verify-quantity-engine.mts"
+    "quantities:verify": "tsx tools/verify-quantity-engine.mts",
+    "rules:validate": "python tools/validate-rulebook.py"
   },
   "dependencies": {
     "@clerk/nextjs": "^7.10.0",
