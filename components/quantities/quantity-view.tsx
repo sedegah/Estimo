@@ -155,7 +155,7 @@ export function QuantityView(props: Props) {
         setSpecLevel(draft.specLevel ?? "standard");
         setSpaces(draft.spaces);
         setOverrides(draft.overrides ?? []);
-        setLoads(draft.loads ?? []);
+        if (Array.isArray(draft.loads)) setLoads(draft.loads);
       }
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
