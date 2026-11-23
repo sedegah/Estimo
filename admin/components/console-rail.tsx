@@ -1,37 +1,65 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
+import { useClerk, useUser } from "@clerk/nextjs";
 
-const LINKS = [
-  { href: "/", label: "Prices" },
-  { href: "/materials/new", label: "Add material" },
-  { href: "/builder", label: "Estimate builder" },
-  { href: "/quantities", label: "Quantities" },
-  { href: "/estimates", label: "Estimates" },
-  { href: "/rules", label: "Rules" },
-  { href: "/audit", label: "Audit log" },
-  { href: "/", label: "Settings" },
+const MANAGE = [
+  { label: "Prices", href: "/" },
+  { label: "Materials", href: "/?tab=materials" },
+  { label: "Add material", href: "/materials/new" },
+  { label: "Estimate builder", href: "/builder" },
+  { label: "Quantities", href: "/quantities" },
+  { label: "Settings", href: "/?tab=settings" },
 ];
 
-/** Console navigation shared by the newer admin screens. */
-export function ConsoleRail({ active }: { active: string }) {
+/**
+ * One console navigation for every screen. The dashboard's tabbed pages are reached
+ * with ?tab=, the rest are their own routes; the entry matching the current location
+ * is marked, and the account block shows who is signed in rather than a stray link.
+ */
+export function ConsoleRail({ active }: { active?: string }) {
   const pathname = usePathname();
+  const params = useSearchParams();
+  const { isLoaded, isSignedIn, user } = useUser();
+  const { signOut } = useClerk();
+
+  const tab = params.get("tab");
+  const current =
+    active ??
+    (pathname === "/"
+      ? tab === "materials"
+        ? "Materials"
+        : tab === "settings"
+          ? "Settings"
+          : "Prices"
+      : MANAGE.find((link) => link.href === pathname)?.label);
+
   return (
     <aside className="rail">
-      <p className="rail-brand">ESTIMO</p>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img className="rail-logo" src="/brand/estimo-logo-horizontal-dark.png" alt="ESTIMO" />
       <p className="rail-label">Manage</p>
-      {LINKS.filter((link) => link.label !== "Settings").map((link) => (
-        <Link
-          key={link.label}
-          className={link.href === pathname && link.label === active ? "rail-item is-active" : "rail-item"}
-          href={link.href}
-        >
+
+      {MANAGE.map((link) => (
+        <Link key={link.label} className={current === link.label ? "rail-item is-active" : "rail-item"} href={link.href}>
           {link.label}
         </Link>
       ))}
-      <p className="rail-label" style={{ marginTop: 18 }}>Account</p>
-      <a className="rail-item" href="/signin">Sign in</a>
+
+      <div className="rail-account">
+        {!isLoaded ? null : isSignedIn ? (
+          <>
+            <p className="rail-who">{user?.primaryEmailAddress?.emailAddress ?? "Signed in"}</p>
+            <button className="rail-item" type="button" onClick={() => void signOut({ redirectUrl: "/" })}>
+              Sign out
+            </button>
+          </>
+        ) : (
+          <Link className="rail-item" href="/signin">Sign in</Link>
+        )}
+        <p className="rail-build">Console build {process.env.NEXT_PUBLIC_CONSOLE_BUILD ?? "dev"}</p>
+      </div>
     </aside>
   );
 }

@@ -4,6 +4,7 @@ import { SignIn, useClerk, useUser } from "@clerk/nextjs";
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { deleteItem, listCatalogue, materialImageUrl, setPrice, setUnit, type CatalogueItem } from "@/lib/api";
+import { ConsoleRail } from "@/components/console-rail";
 import { AuthScreen } from "./auth-screen";
 import { LoadingScreen } from "./loading-screen";
 
@@ -239,38 +240,7 @@ export default function AdminPage() {
       </header>
 
       <div className="body">
-        <aside className="rail">
-          <p className="rail-label">Manage</p>
-          <button type="button" className={tab === "prices" ? "rail-item is-active" : "rail-item"} onClick={() => selectTab("prices")}>
-            <Icon path={ICONS.prices} /> Prices
-          </button>
-          <button type="button" className={tab === "materials" ? "rail-item is-active" : "rail-item"} onClick={() => selectTab("materials")}>
-            <Icon path={ICONS.materials} /> Materials
-          </button>
-          <Link className="rail-item" href="/materials/new">
-            <Icon path={ICONS.add} /> Add material
-          </Link>
-          <a className="rail-item" href="/builder">
-            <Icon path={ICONS.builder} /> Estimate builder
-          </a>
-          <a className="rail-item" href="/quantities">
-            <Icon path={ICONS.builder} /> Quantities
-          </a>
-          <p className="rail-label" style={{ marginTop: 14 }}>Review</p>
-          <a className="rail-item" href="/estimates">
-            <Icon path={ICONS.materials} /> Estimates
-          </a>
-          <a className="rail-item" href="/rules">
-            <Icon path={ICONS.settings} /> Rules
-          </a>
-          <a className="rail-item" href="/audit">
-            <Icon path={ICONS.prices} /> Audit log
-          </a>
-          <button type="button" className={tab === "settings" ? "rail-item is-active" : "rail-item"} onClick={() => selectTab("settings")}>
-            <Icon path={ICONS.settings} /> Settings
-          </button>
-          <p className="rail-build">Console build {process.env.NEXT_PUBLIC_CONSOLE_BUILD ?? "dev"}</p>
-        </aside>
+        <ConsoleRail active={tab === "materials" ? "Materials" : tab === "settings" ? "Settings" : "Prices"} />
 
         <main className="main">
           <header className="head">

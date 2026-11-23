@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ConsoleRail } from "@/components/console-rail";
 import { useEffect, useMemo, useState } from "react";
 import { useUser } from "@clerk/nextjs";
 import { AuthScreen } from "../auth-screen";
@@ -99,18 +100,7 @@ export default function AdminQuantitiesPage() {
       </header>
 
       <div className="body">
-        <aside className="rail">
-          <p className="rail-label">Manage</p>
-          <Link className="rail-item" href="/">Prices</Link>
-          <Link className="rail-item" href="/">Materials</Link>
-          <Link className="rail-item" href="/materials/new">Add material</Link>
-          <span className="rail-item is-active">Quantities</span>
-          <a className="rail-item" href="/builder">Estimate builder</a>
-        <a className="rail-item" href="/estimates">Estimates</a>
-        <a className="rail-item" href="/rules">Rules</a>
-        <a className="rail-item" href="/audit">Audit log</a>
-          <Link className="rail-item" href="/?tab=settings">Settings</Link>
-        </aside>
+        <ConsoleRail active="Quantities" />
 
         <main className="main">
           <header className="head">

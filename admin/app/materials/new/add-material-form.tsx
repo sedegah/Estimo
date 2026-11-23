@@ -2,6 +2,7 @@
 
 import { useUser } from "@clerk/nextjs";
 import Link from "next/link";
+import { ConsoleRail } from "@/components/console-rail";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AuthScreen } from "../../auth-screen";
@@ -165,18 +166,7 @@ export function AddMaterialForm() {
       </header>
 
       <div className="body">
-        <aside className="rail">
-          <p className="rail-label">Manage</p>
-          <Link className="rail-item" href="/">Prices</Link>
-          <Link className="rail-item" href="/">Materials</Link>
-          <span className="rail-item is-active">Add material</span>
-          <a className="rail-item" href="/builder">Estimate builder</a>
-        <a className="rail-item" href="/quantities">Quantities</a>
-        <a className="rail-item" href="/estimates">Estimates</a>
-        <a className="rail-item" href="/rules">Rules</a>
-        <a className="rail-item" href="/audit">Audit log</a>
-          <Link className="rail-item" href="/?tab=settings">Settings</Link>
-        </aside>
+        <ConsoleRail active="Add material" />
 
         <main className="main">
           <Link className="back-link" href="/">
