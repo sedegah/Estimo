@@ -21,6 +21,9 @@ export type BasketItem = {
   name: string;
   category: string;
   unit: string;
+  /** Which estimate the line belongs to, so several can share the basket. */
+  groupId?: string;
+  groupName?: string;
   quantity: number;
   priceGhs: number | null;
   brandName: string | null;
