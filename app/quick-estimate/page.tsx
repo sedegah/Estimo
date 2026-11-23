@@ -61,7 +61,6 @@ export default async function QuickEstimatePage({
   const projectLabel = PROJECT_TYPES.find((type) => type.key === projectType)?.label ?? "2-Bedroom Home";
   const templateLabel = templates.find((entry) => entry.id === templateId)?.name ?? "";
 
-  const catalogueData = await getCatalogueData();
   const catalogueIds = new Set(
     Object.values(MATERIAL_CATALOGUE)
       .map((link) => link.id)
@@ -75,11 +74,8 @@ export default async function QuickEstimatePage({
     ]),
   );
 
-  const prices = Object.fromEntries(
-    Object.entries(catalogueData.prices)
-      .filter(([id]) => catalogueIds.has(id))
-      .map(([id, entry]) => [id, { price: entry.price, brand: entry.brand, source: entry.source, updatedAt: entry.updatedAt }]),
-  );
+  // prices are fetched by the client after paint, so the estimate opens instantly
+  const prices: Record<string, { price: number; brand: string | null; source: string | null; updatedAt: string | null }> = {};
 
   return (
     <main className="quantities-page">

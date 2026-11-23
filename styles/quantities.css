@@ -240,3 +240,23 @@
   .quantities-specs button { flex: 1 1 30%; }
   .quantities-override strong { min-width: 100%; }
 }
+
+/* route skeleton: keeps the first paint immediate */
+.quantities-skeleton { display: grid; gap: 12px; }
+.quantities-skeleton-bar,
+.quantities-skeleton-row {
+  display: block;
+  border-radius: 12px;
+  background: linear-gradient(90deg, #f1f2ee 25%, #e7e9e2 37%, #f1f2ee 63%);
+  background-size: 400% 100%;
+  animation: quantities-shimmer 1.4s ease infinite;
+}
+.quantities-skeleton-bar { height: 74px; }
+.quantities-skeleton-row { height: 52px; }
+@keyframes quantities-shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: 0 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .quantities-skeleton-bar, .quantities-skeleton-row { animation: none; }
+}

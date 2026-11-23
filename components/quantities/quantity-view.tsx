@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { calculateProject, rulesByKey } from "@/lib/quantity-engine/engine";
 import { priceQuantities } from "@/lib/quantity-engine/catalogue";
 import type { PriceEntry } from "@/lib/quantity-engine/catalogue";
@@ -88,6 +88,39 @@ export function QuantityView(props: Props) {
   const [spaces, setSpaces] = useState<SpaceInput[]>(props.spacesByTemplate[firstTemplate.id] ?? []);
   const [overrides, setOverrides] = useState<PointOverride[]>([]);
   const [added, setAdded] = useState("");
+  const [livePrices, setLivePrices] = useState<Record<string, PriceEntry>>(props.prices);
+
+  // Prices arrive after the page: the catalogue call is edge-cached and the page
+  // itself stays static, so the estimate opens immediately.
+  useEffect(() => {
+    if (Object.keys(props.prices).length) setLivePrices(props.prices);
+  }, [props.prices]);
+
+  useEffect(() => {
+    if (Object.keys(livePrices).length) return;
+    const base = process.env.NEXT_PUBLIC_ESTIMO_API_URL ?? "https://estimo-api.sedegahkimathi.workers.dev";
+    const ids = new Set(Object.keys(props.catalogue));
+    if (!ids.size) return;
+    let cancelled = false;
+    void fetch(`${base}/catalogue`)
+      .then((response) => (response.ok ? response.json() : null))
+      .then((body: { items?: { id: string; price_ghs: number | null; price_brand?: string | null; price_source?: string | null; price_updated_at?: string | null }[] } | null) => {
+        if (cancelled || !body?.items) return;
+        const next: Record<string, PriceEntry> = {};
+        for (const item of body.items) {
+          if (!ids.has(item.id) || typeof item.price_ghs !== "number") continue;
+          next[item.id] = {
+            price: item.price_ghs,
+            brand: item.price_brand ?? null,
+            source: item.price_source ?? null,
+            updatedAt: item.price_updated_at ?? null,
+          };
+        }
+        setLivePrices(next);
+      })
+      .catch(() => undefined);
+    return () => { cancelled = true; };
+  }, [livePrices, props.catalogue]);
 
   const templatesForType = useMemo(
     () => props.templates.filter((template) => template.projectType === projectType),
@@ -131,8 +164,8 @@ export function QuantityView(props: Props) {
 
   const catalogueMap = useMemo(() => new Map(Object.entries(props.catalogue)), [props.catalogue]);
   const lines = useMemo(
-    () => priceQuantities(result.materialQuantities, props.prices, catalogueMap),
-    [result.materialQuantities, props.prices, catalogueMap],
+    () => priceQuantities(result.materialQuantities, livePrices, catalogueMap),
+    [result.materialQuantities, livePrices, catalogueMap],
   );
 
   const total = lines.reduce((sum, line) => sum + (line.amount ?? 0), 0);
