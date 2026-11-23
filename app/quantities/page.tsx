@@ -10,6 +10,7 @@ import circuitRules from "@/lib/data/quantity-engine/circuit_rules.json";
 import assemblies from "@/lib/data/quantity-engine/assemblies.json";
 import assemblyItems from "@/lib/data/quantity-engine/assembly_items.json";
 import { parametersFromRows } from "@/lib/quantity-engine/engine";
+import type { AssemblyItemRow, AssemblyRow, RoomRuleRow } from "@/lib/quantity-engine/types";
 import { QuantityView } from "@/components/quantities/quantity-view";
 
 export const metadata: Metadata = {
@@ -65,11 +66,11 @@ export default async function QuantitiesPage() {
           projectTypes={PROJECT_TYPES.map((type) => ({ key: type.key, label: type.label }))}
           templates={templates}
           spacesByTemplate={spacesByTemplate}
-          rules={roomRules}
+          rules={roomRules as unknown as RoomRuleRow[]}
           params={parametersFromRows(globalParameters)}
           circuitRules={circuitRules}
-          assemblies={assemblies}
-          assemblyItems={assemblyItems}
+          assemblies={assemblies as unknown as AssemblyRow[]}
+          assemblyItems={assemblyItems as unknown as AssemblyItemRow[]}
           catalogue={catalogue}
           prices={prices}
         />

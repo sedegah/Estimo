@@ -16,6 +16,8 @@ import specialLoads from "@/lib/data/quantity-engine/special_loads.json";
 
 import { calculateProject, parametersFromRows, rulesByKey, templateSpaces } from "./engine";
 import type {
+  AssemblyItemRow,
+  AssemblyRow,
   CircuitRuleRow,
   EngineResult,
   GlobalParameterRow,
