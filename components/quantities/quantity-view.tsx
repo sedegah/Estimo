@@ -72,6 +72,20 @@ type SpaceInputResult = {
   switch_positions: number;
 };
 
+/** Catalogue units read badly on a bill of quantities: "No." becomes "pcs". */
+const UNIT_LABEL: Record<string, string> = {
+  "No.": "pcs",
+  "length": "lengths",
+  "m": "m",
+  "set": "sets",
+  "bag": "bags",
+  "roll": "rolls",
+  "strip": "strips",
+  "box": "boxes",
+  "coil": "coils",
+  "pair": "pairs",
+};
+
 const money = (value: number | null) =>
   value === null || value === undefined
     ? "—"
@@ -398,10 +412,15 @@ export function QuantityView(props: Props) {
                 return (
                   <tr key={line.catalogueId}>
                     <td>
-                      <Link href={`/catalogue/${line.catalogueId}`}>{line.catalogueName}</Link>
-                      <span className={`quantities-confidence is-${line.confidence}`}>{line.confidence}</span>
+                      <div className="quantities-material">
+                        <Link href={`/catalogue/${line.catalogueId}`}>{line.catalogueName}</Link>
+                        <span className={`quantities-confidence is-${line.confidence}`}>{line.confidence}</span>
+                      </div>
                     </td>
-                    <td className="is-num">{line.purchaseQuantity} {orderUnit}</td>
+                    <td className="is-num">
+                      {line.purchaseQuantity}
+                      <span className="quantities-unit">{UNIT_LABEL[line.catalogueUnit] ?? line.catalogueUnit.toLowerCase()}</span>
+                    </td>
                     <td className="is-num is-muted">
                       {measured ? `${line.engineeringQuantity} m` : "—"}
                     </td>
