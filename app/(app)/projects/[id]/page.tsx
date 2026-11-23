@@ -267,7 +267,9 @@ export default function ProjectPage() {
             <p className="app-eyebrow">Saved estimate</p>
             <h1 className="app-title">{project.name}</h1>
             <p className="app-sub">
-              {takeOff.spaces.length} space{takeOff.spaces.length === 1 ? "" : "s"} · {project.detail.split(" · ").slice(1).join(" · ")}
+              {takeOff.spaces.length} space{takeOff.spaces.length === 1 ? "" : "s"} · {takeOff.specLevel} · {Math.round(area * 10) / 10} m²
+              {project.counts?.lights != null ? ` · ${project.counts.lights} lights · ${project.counts.sockets ?? 0} sockets` : ""}
+              {project.totalGhs != null ? ` · ${formatGhs(project.totalGhs)}` : ""}
             </p>
           </div>
           <div className="settings-actions">
@@ -342,9 +344,28 @@ export default function ProjectPage() {
                   </tr>
                 ))}
               </tbody>
+              <tfoot>
+                <tr>
+                  <th>Total</th>
+                  <th />
+                  <th />
+                  <th className="align-right">
+                    {project.totalGhs != null
+                      ? formatGhs(project.totalGhs)
+                      : formatGhs(project.items.reduce((sum, line) => sum + (line.priceGhs == null ? 0 : line.priceGhs * line.quantity), 0))}
+                  </th>
+                </tr>
+              </tfoot>
             </table>
+            {project.items.some((line) => line.priceGhs == null) ? (
+              <p className="settings-note" style={{ padding: "10px 16px" }}>
+                Lines marked Pending still wait for a catalogue price.
+              </p>
+            ) : null}
           </section>
-        ) : null}
+        ) : (
+          <p className="settings-note">This estimate was saved before its material list was recorded.</p>
+        )}
         {takeOff.specialLoads?.length ? (
           <section className="table-card" style={{ marginTop: 16 }}>
             <table className="data-table">
