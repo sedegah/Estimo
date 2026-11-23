@@ -109,6 +109,7 @@ type EstimateRow = {
   total_ghs: number | null;
   status: string;
   counts_json: string | null;
+  snapshot_json: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -116,7 +117,7 @@ type EstimateRow = {
 async function listEstimates(env: Env, owner: string): Promise<Response> {
   const { results } = await env.DB
     .prepare(
-      `SELECT id, name, template, quality, spaces, total_ghs, status, counts_json, created_at, updated_at
+      `SELECT id, name, template, quality, spaces, total_ghs, status, counts_json, snapshot_json, created_at, updated_at
        FROM estimates WHERE owner_key = ? ORDER BY updated_at DESC LIMIT 200`,
     )
     .bind(owner)
@@ -137,6 +138,7 @@ async function createEstimate(env: Env, owner: string, body: Record<string, unkn
   const total = body.totalGhs === null || body.totalGhs === undefined ? null : Number(body.totalGhs);
   const status = String(body.status ?? (total ? "estimated" : "draft"));
   const counts = body.counts && typeof body.counts === "object" ? JSON.stringify(body.counts) : null;
+  const snapshot = body.snapshot && typeof body.snapshot === "object" ? JSON.stringify(body.snapshot) : null;
 
   // users.id mirrors the owner hash so the foreign key stays valid.
   await env.DB
@@ -146,10 +148,10 @@ async function createEstimate(env: Env, owner: string, body: Record<string, unkn
 
   await env.DB
     .prepare(
-      `INSERT INTO estimates (id, user_id, owner_key, name, template, quality, spaces, total_ghs, status, counts_json)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      `INSERT INTO estimates (id, user_id, owner_key, name, template, quality, spaces, total_ghs, status, counts_json, snapshot_json)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     )
-    .bind(id, owner, owner, name, template, quality, spaces, total, status, counts)
+    .bind(id, owner, owner, name, template, quality, spaces, total, status, counts, snapshot)
     .run();
 
   return json({ ok: true, id }, 201);
@@ -167,6 +169,10 @@ async function updateEstimate(env: Env, owner: string, id: string, body: Record<
   if (body.counts && typeof body.counts === "object") {
     fields.push("counts_json = ?");
     values.push(JSON.stringify(body.counts));
+  }
+  if (body.snapshot && typeof body.snapshot === "object") {
+    fields.push("snapshot_json = ?");
+    values.push(JSON.stringify(body.snapshot));
   }
 
   if (!fields.length) return json({ ok: false, error: "nothing to update" }, 400);

@@ -1,4 +1,5 @@
 import { PROJECT_LABELS } from "@/lib/estimate-model";
+import { fromSnapshot, toSnapshot } from "@/lib/estimate-snapshot";
 import type { SavedEstimate } from "@/lib/types";
 
 const API_URL = process.env.NEXT_PUBLIC_ESTIMO_API_URL ?? "https://estimo-api.sedegahkimathi.workers.dev";
@@ -12,6 +13,7 @@ type ApiEstimate = {
   total_ghs: number | null;
   status: string;
   counts_json: string | null;
+  snapshot_json: string | null;
   created_at: string;
   updated_at: string;
 };
@@ -46,27 +48,32 @@ async function request(path: string, init: RequestInit = {}): Promise<Response |
   }
 }
 
-function toSavedEstimate(row: ApiEstimate): SavedEstimate {
-  let counts: Record<string, number> | undefined;
-  if (row.counts_json) {
-    try {
-      counts = JSON.parse(row.counts_json) as Record<string, number>;
-    } catch {
-      counts = undefined;
-    }
+function parseJson<T>(value: string | null): T | undefined {
+  if (!value) return undefined;
+  try {
+    return JSON.parse(value) as T;
+  } catch {
+    return undefined;
   }
+}
 
+function toSavedEstimate(row: ApiEstimate): SavedEstimate {
+  const counts = parseJson<Record<string, number>>(row.counts_json);
+  const snapshot = fromSnapshot(parseJson<unknown>(row.snapshot_json));
   const label = PROJECT_LABELS[row.template] ?? row.template;
+
   return {
     id: row.id,
-    name: row.name,
-    kind: "quick",
+    name: snapshot.name ?? row.name,
+    kind: snapshot.kind ?? "quick",
     createdAt: row.created_at,
-    detail: `${label} · ${row.quality} fittings · ${row.spaces} spaces`,
-    totalGhs: row.total_ghs,
-    template: row.template,
-    quality: row.quality,
-    counts,
+    detail: snapshot.detail ?? `${label} · ${row.quality} fittings · ${row.spaces} spaces`,
+    totalGhs: snapshot.totalGhs ?? row.total_ghs,
+    template: snapshot.template ?? row.template,
+    quality: snapshot.quality ?? row.quality,
+    counts: snapshot.counts ?? counts,
+    items: snapshot.items,
+    quantities: snapshot.quantities,
   };
 }
 
@@ -78,34 +85,26 @@ export async function fetchServerEstimates(): Promise<SavedEstimate[] | null> {
   return (body.estimates ?? []).map(toSavedEstimate);
 }
 
+function bodyFor(entry: SavedEstimate) {
+  return {
+    id: entry.id,
+    name: entry.name,
+    template: entry.template ?? "HOME-2B",
+    quality: entry.quality ?? "standard",
+    counts: entry.counts ?? {},
+    totalGhs: entry.totalGhs,
+    status: entry.totalGhs ? "estimated" : "draft",
+    spaces: entry.quantities?.spaces.length ?? Object.values(entry.counts ?? {}).reduce((sum, value) => sum + Number(value || 0), 0),
+    snapshot: toSnapshot(entry),
+  };
+}
+
 export async function pushCreate(entry: SavedEstimate): Promise<void> {
-  await request("/estimates", {
-    method: "POST",
-    body: JSON.stringify({
-      id: entry.id,
-      name: entry.name,
-      template: entry.template ?? "HOME-2B",
-      quality: entry.quality ?? "standard",
-      counts: entry.counts ?? {},
-      totalGhs: entry.totalGhs,
-      status: entry.totalGhs ? "estimated" : "draft",
-      spaces: Object.values(entry.counts ?? {}).reduce((sum, value) => sum + Number(value || 0), 0),
-    }),
-  });
+  await request("/estimates", { method: "POST", body: JSON.stringify(bodyFor(entry)) });
 }
 
 export async function pushUpdate(entry: SavedEstimate): Promise<void> {
-  await request(`/estimates/${entry.id}`, {
-    method: "PATCH",
-    body: JSON.stringify({
-      name: entry.name,
-      quality: entry.quality ?? "standard",
-      counts: entry.counts ?? {},
-      totalGhs: entry.totalGhs,
-      status: entry.totalGhs ? "estimated" : "draft",
-      spaces: Object.values(entry.counts ?? {}).reduce((sum, value) => sum + Number(value || 0), 0),
-    }),
-  });
+  await request(`/estimates/${entry.id}`, { method: "PATCH", body: JSON.stringify(bodyFor(entry)) });
 }
 
 export async function pushDelete(id: string): Promise<void> {

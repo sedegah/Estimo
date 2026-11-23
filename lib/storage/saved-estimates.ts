@@ -87,8 +87,19 @@ export function mergeSavedEstimates(entries: SavedEstimate[]): SavedEstimate[] {
   for (const entry of entries) {
     if (deleted.has(entry.id)) continue;
     const current = byId.get(entry.id);
-    // the server copy wins, except that a local take-off is richer than what the API stores
-    byId.set(entry.id, current ? { ...current, ...entry, quantities: current.quantities ?? entry.quantities } : entry);
+    // the server copy wins normally, but a local edit that has not been pushed yet is
+    // richer: keep the full take-off and the saved lines from whichever side has them
+    byId.set(
+      entry.id,
+      current
+        ? {
+            ...current,
+            ...entry,
+            items: entry.items?.length ? entry.items : current.items,
+            quantities: current.quantities ?? entry.quantities,
+          }
+        : entry,
+    );
   }
 
   const merged = [...byId.values()]

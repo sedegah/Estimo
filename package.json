@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "test": "node --test tests/estimate-model.test.ts tests/storage-reset.test.ts tests/catalogue-prices.test.ts tests/quantity-engine.test.ts tests/estimate-consistency.test.ts",
+    "test": "node --test tests/estimate-model.test.ts tests/storage-reset.test.ts tests/catalogue-prices.test.ts tests/quantity-engine.test.ts tests/estimate-consistency.test.ts tests/estimate-snapshot.test.ts",
     "test:integration": "node tests/integration.mjs",
     "worker:dev": "npx -y wrangler@latest dev --config worker/wrangler.toml",
     "worker:deploy": "npx -y wrangler@latest deploy --config worker/wrangler.toml",
