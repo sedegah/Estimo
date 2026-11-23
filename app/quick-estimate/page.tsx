@@ -11,6 +11,7 @@ import assemblyItems from "@/lib/data/quantity-engine/assembly_items.json";
 import { parametersFromRows } from "@/lib/quantity-engine/engine";
 import type { AssemblyItemRow, AssemblyRow, RoomRuleRow } from "@/lib/quantity-engine/types";
 import { QuantityView } from "@/components/quantities/quantity-view";
+import { hasSessionCookie } from "@/lib/auth-cookie";
 
 export const metadata: Metadata = {
   title: "Your estimate — ESTIMO",
@@ -49,6 +50,7 @@ export default async function QuickEstimatePage({
   searchParams: Promise<{ template?: string }>;
 }) {
   const { template } = await searchParams;
+  const signedIn = await hasSessionCookie();
   const code = template ?? "HOME-2B";
   const templateId = TEMPLATE_FOR_CODE[code] ?? "T011";
 
@@ -89,6 +91,8 @@ export default async function QuickEstimatePage({
 
       <div className="container quantities-body">
         <QuantityView
+          signedIn={signedIn}
+          templateCode={code}
           initialTemplateId={templateId}
           estimateHref={`/estimate?template=${encodeURIComponent(code)}`}
           projectTypes={PROJECT_TYPES.map((type) => ({ key: type.key, label: type.label }))}

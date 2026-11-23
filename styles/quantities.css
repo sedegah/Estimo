@@ -11,7 +11,7 @@
   background-size: 44px 44px, 44px 44px, 100% 100%;
   background-repeat: repeat, repeat, no-repeat;
   color: #fff;
-  padding: 66px 0 38px;
+  padding: 128px 0 38px;
 }
 
 .quantities-meta {
@@ -213,12 +213,12 @@
 }
 .quantities-total span { display: block; color: #6b7684; font-size: 12.5px; }
 .quantities-total strong { font-size: 24px; font-weight: 800; letter-spacing: -0.02em; color: var(--navy); }
-.quantities-total button {
+.quantities-actions { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.quantities-total button, .quantities-total .btn-outline {
   min-height: 46px;
   padding: 0 20px;
   border: 0;
   border-radius: 10px;
-  background: var(--yellow);
   color: var(--navy);
   font: inherit;
   font-size: 15px;
@@ -241,7 +241,7 @@
 .quantities-note p:last-child { margin-bottom: 0; }
 
 @media (max-width: 720px) {
-  .quantities-hero { padding: 44px 0 30px; }
+  .quantities-hero { padding: 104px 0 30px; }
   .quantities-lead { font-size: 15.5px; }
   .quantities-specs { flex-wrap: wrap; }
   .quantities-specs button { flex: 1 1 30%; }
@@ -267,3 +267,10 @@
 @media (prefers-reduced-motion: reduce) {
   .quantities-skeleton-bar, .quantities-skeleton-row { animation: none; }
 }
+.quantities-total .btn-outline {
+  border: 1px solid var(--line);
+  background: #fff;
+  color: var(--ink);
+}
+.quantities-total .btn-outline:hover { border-color: #cfd4cb; }
+.quantities-total .btn-amber { background: var(--yellow); color: var(--navy); }

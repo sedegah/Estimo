@@ -17,6 +17,8 @@ import type {
 } from "@/lib/quantity-engine/types";
 import type { CatalogueMaterialInfo } from "@/lib/quantity-engine/catalogue";
 import { readBasket, writeBasket } from "@/lib/storage/basket";
+import { saveEstimate } from "@/lib/storage/saved-estimates";
+import { pushCreate } from "@/lib/api/estimates";
 import type { BasketItem } from "@/lib/types";
 
 interface TemplateSummary {
@@ -29,6 +31,8 @@ interface TemplateSummary {
 }
 
 interface Props {
+  signedIn?: boolean;
+  templateCode?: string;
   initialTemplateId?: string;
   /** Priced-estimate editor link, so the classic flow stays reachable. */
   estimateHref?: string;
@@ -102,6 +106,27 @@ export function QuantityView(props: Props) {
   const [spaces, setSpaces] = useState<SpaceInput[]>(props.spacesByTemplate[firstTemplate.id] ?? []);
   const [overrides, setOverrides] = useState<PointOverride[]>([]);
   const [added, setAdded] = useState("");
+
+  // The working estimate is kept in this browser, signed in or not.
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("estimo_estimate_draft_v1");
+      if (!raw) return;
+      const draft = JSON.parse(raw) as { templateId?: string; specLevel?: SpecLevel; spaces?: SpaceInput[]; overrides?: PointOverride[] };
+      if (draft.templateId === templateId && draft.spaces?.length) {
+        setSpecLevel(draft.specLevel ?? "standard");
+        setSpaces(draft.spaces);
+        setOverrides(draft.overrides ?? []);
+      }
+    } catch {}
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem("estimo_estimate_draft_v1", JSON.stringify({ templateId, specLevel, spaces, overrides }));
+    } catch {}
+  }, [templateId, specLevel, spaces, overrides]);
   const [livePrices, setLivePrices] = useState<Record<string, PriceEntry>>(props.prices);
 
   // Prices arrive after the page: the catalogue call is edge-cached and the page
@@ -135,6 +160,9 @@ export function QuantityView(props: Props) {
       .catch(() => undefined);
     return () => { cancelled = true; };
   }, [livePrices, props.catalogue]);
+
+  const templateName =
+    props.templates.find((template) => template.id === templateId)?.name ?? "Project";
 
   const templatesForType = useMemo(
     () => props.templates.filter((template) => template.projectType === projectType),
@@ -216,6 +244,39 @@ export function QuantityView(props: Props) {
       if (!Number.isFinite(value) || value < 0) return without;
       return [...without, { space_id: spaceId, point_type: type, value, source: "user_override" }];
     });
+  };
+
+  /** Saved locally first; pushed to the account when the visitor is signed in. */
+  const saveEstimateNow = () => {
+    const counts = {
+      lights: result.totals.lighting_points,
+      sockets: result.totals.double_sockets,
+      switches: result.totals.switch_positions,
+      fans: result.totals.fan_points,
+      data: result.totals.data_points,
+      spaces: result.spaces.length,
+    };
+    const saved = saveEstimate({
+      name: `${templateName} estimate`,
+      kind: "quick",
+      detail: `${specLevel} · ${result.totals.floor_area_m2} m² · ${result.totals.total_final_circuits} circuits`,
+      totalGhs: total > 0 ? Math.round(total * 100) / 100 : null,
+      template: props.templateCode ?? "HOME-2B",
+      counts,
+      quality: specLevel,
+      items: lines.map((line) => ({
+        name: line.catalogueName,
+        quantity: Math.max(1, Math.ceil(line.purchaseQuantity)),
+        unit: line.catalogueUnit,
+        priceGhs: line.unitPrice,
+      })),
+    });
+    if (props.signedIn) {
+      void pushCreate(saved);
+      setAdded("Saved to your account.");
+    } else {
+      setAdded("Saved in this browser. Sign in to keep it with your account.");
+    }
   };
 
   const autoFor = (spaceId: string, key: keyof SpaceInputResult) => {
@@ -439,11 +500,16 @@ export function QuantityView(props: Props) {
             <span>{pricedCount} of {lines.length} materials priced</span>
             <strong>{money(total)}</strong>
           </div>
-          <button className="btn-amber" type="button" onClick={addToEstimate} disabled={!lines.length}>
-            Add {lines.length} materials to estimate
-          </button>
+          <div className="quantities-actions">
+            <button className="btn-outline" type="button" onClick={saveEstimateNow}>
+              Save estimate
+            </button>
+            <button className="btn-amber" type="button" onClick={addToEstimate} disabled={!lines.length}>
+              Add {lines.length} materials to estimate
+            </button>
+          </div>
         </div>
-        {added ? <p className="quantities-added">{added} <Link href="/estimate-basket">Open the estimate basket</Link></p> : null}
+        {added ? <p className="quantities-added">{added} <Link href="/projects">Saved estimates</Link></p> : null}
       </section>
     </div>
   );
