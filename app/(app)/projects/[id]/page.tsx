@@ -142,7 +142,7 @@ export default function ProjectPage() {
 
   // A material list is what it says: the items that were added, with their quantities.
   // It must never be dressed up as a home estimate.
-  if (project.kind === "materials") {
+  if (project.items?.length) {
     const lines = project.items ?? [];
     const priced = lines.reduce((sum, line) => (line.priceGhs == null ? sum : sum + line.priceGhs * line.quantity), 0);
     const unpriced = lines.filter((line) => line.priceGhs == null).length;
@@ -293,6 +293,27 @@ export default function ProjectPage() {
             </tbody>
           </table>
         </section>
+
+        {takeOff.specialLoads?.length ? (
+          <section className="table-card" style={{ marginTop: 16 }}>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Special load</th>
+                  <th>Confirmation</th>
+                </tr>
+              </thead>
+              <tbody>
+                {takeOff.specialLoads.map((key) => (
+                  <tr key={key}>
+                    <td>{key.replace(/_/g, " ").replace(/^\w/, (letter: string) => letter.toUpperCase())}</td>
+                    <td className="muted-cell">Concluded by phone call or WhatsApp</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        ) : null}
 
         <p className="settings-note">
           Rule set {takeOff.ruleSet} · saved {formatDate(project.createdAt)}

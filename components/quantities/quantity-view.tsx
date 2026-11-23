@@ -142,7 +142,11 @@ export function QuantityView(props: Props) {
       if (type === "porch_veranda" || type === "external_area") contexts.add("external");
       if (type === "garage") contexts.add("garage");
     }
-    return (props.specialLoads ?? []).filter((load) => contexts.has(load.space_context));
+    const rows = props.specialLoads ?? [];
+    return [...rows].sort((a, b) => {
+      const score = (row: { space_context: string }) => (contexts.has(row.space_context) ? 0 : 1);
+      return score(a) - score(b);
+    });
   }, [props.specialLoads, spaces]);
 
   // The working estimate is kept in this browser, signed in or not.
@@ -621,6 +625,20 @@ export function QuantityView(props: Props) {
             </tbody>
           </table>
         </div>
+
+        {loads.length ? (
+          <div className="quantities-loads-summary">
+            <div>
+              <h3>Special loads</h3>
+              <p>Concluded by phone call or WhatsApp.</p>
+            </div>
+            <ul>
+              {loads.map((key) => (
+                <li key={key}>{LOAD_LABELS[key] ?? key.replace(/_/g, " ")}</li>
+              ))}
+            </ul>
+          </div>
+        ) : null}
 
         <div className="quantities-total">
           <div>

@@ -57,6 +57,7 @@ export type SavedQuantities = {
     machine_count?: number;
   }[];
   overrides?: { space_id: string; point_type: string; value: number; source: string }[];
+  specialLoads?: string[];
 };
 
 export type SavedEstimate = {

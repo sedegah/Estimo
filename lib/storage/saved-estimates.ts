@@ -7,6 +7,7 @@
 import type { SavedEstimate } from "@/lib/types";
 
 const STORAGE_KEY = "estimo_saved_estimates_v1";
+const DELETED_KEY = "estimo_deleted_estimates_v1";
 
 export const SAVED_EVENT = "estimo-saved-change";
 
@@ -16,7 +17,8 @@ export function listSavedEstimates(): SavedEstimate[] {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     const parsed = raw ? JSON.parse(raw) : [];
     if (!Array.isArray(parsed)) return [];
-    return (parsed as SavedEstimate[]).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    const deleted = new Set(readDeleted());
+    return (parsed as SavedEstimate[]).filter((entry) => !deleted.has(entry.id)).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
   } catch {
     return [];
   }
@@ -37,7 +39,24 @@ export function saveEstimate(entry: Omit<SavedEstimate, "id" | "createdAt">): Sa
   return saved;
 }
 
+/** Ids deleted on purpose, so a later account sync cannot resurrect them. */
+function readDeleted(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(DELETED_KEY);
+    const parsed = raw ? JSON.parse(raw) : [];
+    return Array.isArray(parsed) ? (parsed as string[]) : [];
+  } catch {
+    return [];
+  }
+}
+
 export function deleteSavedEstimate(id: string): void {
+  try {
+    const deleted = new Set(readDeleted());
+    deleted.add(id);
+    window.localStorage.setItem(DELETED_KEY, JSON.stringify([...deleted].slice(-200)));
+  } catch {}
   persist(listSavedEstimates().filter((entry) => entry.id !== id));
 }
 
@@ -56,5 +75,6 @@ export function updateSavedEstimate(id: string, patch: Partial<Omit<SavedEstimat
 
 /** Replace the local cache with the server list (signed-in sync). */
 export function replaceSavedEstimates(entries: SavedEstimate[]): void {
-  persist([...entries].sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
+  const deleted = new Set(readDeleted());
+  persist(entries.filter((entry) => !deleted.has(entry.id)).sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
 }
