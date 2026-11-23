@@ -17,8 +17,8 @@ import type {
 } from "@/lib/quantity-engine/types";
 import type { CatalogueMaterialInfo } from "@/lib/quantity-engine/catalogue";
 import { readBasket, writeBasket } from "@/lib/storage/basket";
-import { saveEstimate } from "@/lib/storage/saved-estimates";
-import { pushCreate } from "@/lib/api/estimates";
+import { listSavedEstimates, saveEstimate, updateSavedEstimate } from "@/lib/storage/saved-estimates";
+import { pushCreate, pushUpdate } from "@/lib/api/estimates";
 import type { BasketItem } from "@/lib/types";
 
 interface TemplateSummary {
@@ -327,7 +327,7 @@ export function QuantityView(props: Props) {
     });
   };
 
-  /** Saved locally first; pushed to the account when the visitor is signed in. */
+  /** One action: files the estimate under Saved projects and fills the basket. */
   const saveEstimateNow = () => {
     const counts = {
       lights: result.totals.lighting_points,
@@ -337,9 +337,12 @@ export function QuantityView(props: Props) {
       data: result.totals.data_points,
       spaces: result.spaces.length,
     };
-    const saved = saveEstimate({
+    const existing = listSavedEstimates().find(
+      (entry) => entry.quantities?.templateId === templateId && entry.quantities?.specLevel === specLevel,
+    );
+    const payload = {
       name: `${templateName} estimate`,
-      kind: "quick",
+      kind: "quick" as const,
       detail: `${templateName} · ${specLevel} · ${result.totals.floor_area_m2} m² · ${result.totals.total_final_circuits} circuits`,
       totalGhs: total > 0 ? Math.round(total * 100) / 100 : null,
       template: props.templateCode ?? "HOME-2B",
@@ -359,13 +362,14 @@ export function QuantityView(props: Props) {
         overrides,
         specialLoads: loads,
       },
-    });
+    };
+    const saved = existing ? updateSavedEstimate(existing.id, payload) : saveEstimate(payload);
+    if (!saved) return null;
     if (props.signedIn) {
-      void pushCreate(saved);
-      setAdded("Saved to your account.");
-    } else {
-      setAdded("Saved in this browser. Sign in to keep it with your account.");
+      if (existing) void pushUpdate(saved);
+      else void pushCreate(saved);
     }
+    return saved;
   };
 
   const autoFor = (spaceId: string, key: keyof SpaceInputResult) => {
@@ -374,7 +378,10 @@ export function QuantityView(props: Props) {
   };
 
   /** Every line goes in, priced or not, so the estimate shows the full take-off. */
+  /** Adds the take-off to the basket and files it under Saved projects in one go. */
   const addToEstimate = () => {
+    const groupId = `qty:${templateId}:${specLevel}`;
+    const groupName = `${templateName} · ${specLevel}`;
     const lines_: BasketItem[] = lines.map((line) => ({
       materialId: line.catalogueId,
       name: line.catalogueName,
@@ -385,12 +392,24 @@ export function QuantityView(props: Props) {
       brandName: line.brand,
       supplierName: "ESTIMO catalogue",
       verifiedAt: new Date().toISOString().slice(0, 10),
+      groupId,
+      groupName,
     }));
     if (!lines_.length) return;
 
-    const rest = readBasket().filter((item) => !lines_.some((line) => line.materialId === item.materialId));
+    // only this estimate's own lines are replaced; other estimates keep theirs
+    const rest = readBasket().filter(
+      (item) => !(item.groupId === groupId && lines_.some((line) => line.materialId === item.materialId)),
+    );
     writeBasket([...rest, ...lines_]);
-    setAdded(`${lines_.length} material${lines_.length === 1 ? "" : "s"} added to your estimate.`);
+
+    const saved = saveEstimateNow();
+    const where = props.signedIn ? "your account" : "this browser";
+    setAdded(
+      saved
+        ? `${lines_.length} materials added and saved to ${where}.`
+        : `${lines_.length} materials added to your estimate.`,
+    );
   };
 
   return (
@@ -646,14 +665,9 @@ export function QuantityView(props: Props) {
             <span>{pricedCount} of {lines.length} materials priced</span>
             <strong>{money(total)}</strong>
           </div>
-          <div className="quantities-actions">
-            <button className="btn-outline" type="button" onClick={saveEstimateNow}>
-              Save estimate
-            </button>
-            <button className="btn-amber" type="button" onClick={addToEstimate} disabled={!lines.length}>
-              Add {lines.length} materials to estimate
-            </button>
-          </div>
+          <button className="btn-amber" type="button" onClick={addToEstimate} disabled={!lines.length}>
+            Add {lines.length} materials to estimate
+          </button>
         </div>
         {added ? <p className="quantities-added">{added} <Link href="/projects">Saved estimates</Link></p> : null}
       </section>

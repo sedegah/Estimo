@@ -6,7 +6,7 @@ import { PlanThumb } from "@/components/estimates/plan-thumb";
 import { MaterialThumb } from "@/components/estimates/material-thumb";
 import { estimateType, isEstimated, statusLabel } from "@/lib/estimates-view";
 import { formatDate, formatGhsOrNull } from "@/lib/format";
-import { BASKET_EVENT, basketUnitCount, readBasket, writeBasket } from "@/lib/storage/basket";
+import { BASKET_EVENT, basketMaterialCount, readBasket, writeBasket } from "@/lib/storage/basket";
 import { DRAFT_EVENT, clearDraft, draftHref, readDraft, type EstimateDraft } from "@/lib/storage/draft";
 import {
   SAVED_EVENT,
@@ -30,7 +30,7 @@ export default function ProjectsPage() {
   useEffect(() => {
     const syncProjects = () => setProjects(listSavedEstimates());
     const syncDraft = () => setDraft(readDraft());
-    const syncBasket = () => setBasketCount(basketUnitCount(readBasket()));
+    const syncBasket = () => setBasketCount(basketMaterialCount(readBasket()));
 
     syncProjects();
     syncDraft();
@@ -107,7 +107,7 @@ export default function ProjectsPage() {
         <section className="resume-card">
           <div>
             <span className="resume-eyebrow">In your estimate basket</span>
-            <strong>{basketCount} item{basketCount === 1 ? "" : "s"} waiting</strong>
+            <strong>{basketCount} material{basketCount === 1 ? "" : "s"} waiting</strong>
             <p>Save them as a project so the quantities are kept.</p>
           </div>
           <button className="btn-amber" type="button" onClick={mergeBasket}>Save as project</button>
