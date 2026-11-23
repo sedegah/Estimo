@@ -29,7 +29,29 @@ type Input = {
   counts: Counts;
   name?: string;
   issuedAt?: Date;
+  /** Load keys confirmed outside the estimate, listed but not priced. */
+  specialLoads?: string[];
 };
+
+const LOAD_LABELS: Record<string, string> = {
+  refrigerator: "Refrigerator",
+  freezer: "Freezer",
+  microwave: "Microwave",
+  electric_cooker: "Electric cooker",
+  dishwasher: "Dishwasher",
+  washing_machine: "Washing machine",
+  extractor: "Extractor",
+  water_heater: "Water heater",
+  air_conditioner: "Air conditioner",
+  water_pump: "Water pump",
+  gate_motor: "Gate motor",
+  ev_charger: "EV charger",
+  workshop_machine: "Workshop machine",
+  refrigeration_equipment: "Refrigeration equipment",
+};
+
+const loadLabel = (key: string) =>
+  LOAD_LABELS[key] ?? key.replace(/_/g, " ").replace(/^\w/, (letter) => letter.toUpperCase());
 
 type DrawOptions = NonNullable<Parameters<PDFPage["drawText"]>[1]> & { x: number };
 
@@ -97,7 +119,7 @@ function fitTitle(text: string, font: PDFFont, maxWidth: number, maxLines = 2) {
   return { size, lines };
 }
 
-export async function buildEstimatePdf({ template, quality, counts, name, issuedAt = new Date() }: Input): Promise<Uint8Array> {
+export async function buildEstimatePdf({ template, quality, counts, name, issuedAt = new Date(), specialLoads = [] }: Input): Promise<Uint8Array> {
   const type = projectType(template);
   const total = computeEstimate(type.code, counts, quality);
   const lines = estimateLines(total, type.code, counts);
@@ -189,6 +211,18 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
   strongText(page, "Total", { x: columns.item, y: y - 20, size: 10.5, font: bold, color: NAVY });
   rightStrong(page, money(total), columns.amount, y - 20, 11, bold, NAVY);
   y -= 46;
+
+  // ── special loads ──────────────────────────────────────────────
+  if (specialLoads.length) {
+    strongText(page, 'Special loads', { x: margin, y, size: 10, font: bold, color: NAVY });
+    y -= 15;
+    specialLoads.forEach((key) => {
+      page.drawText(`• ${loadLabel(key)}`, { x: margin, y, size: 9, font, color: MUTED });
+      y -= 12;
+    });
+    page.drawText('Concluded by phone call or WhatsApp.', { x: margin, y: y - 2, size: 8.5, font, color: MUTED });
+    y -= 22;
+  }
 
   // ── breakdown note ────────────────────────────────────────────────────────
   strongText(page, "How this is built up", { x: margin, y, size: 10, font: bold, color: NAVY });

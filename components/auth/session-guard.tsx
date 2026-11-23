@@ -3,7 +3,7 @@
 import { useUser } from "@clerk/nextjs";
 import { useEffect } from "react";
 import { fetchServerEstimates, pushCreate } from "@/lib/api/estimates";
-import { listSavedEstimates, replaceSavedEstimates } from "@/lib/storage/saved-estimates";
+import { listSavedEstimates, mergeSavedEstimates } from "@/lib/storage/saved-estimates";
 import { readOwner, reconcileOwner } from "@/lib/storage/reset";
 
 /**
@@ -12,7 +12,8 @@ import { readOwner, reconcileOwner } from "@/lib/storage/reset";
  * - first sign-in adopts guest work and uploads it;
  * - a different account wipes the previous account's local data;
  * - ending the session wipes it;
- * - every sign-in pulls the account's estimates back down.
+ * - every sign-in merges the account's estimates in, keeping anything this browser
+ *   saved that has not reached the server yet (and uploading it).
  */
 export function SessionGuard() {
   const { isLoaded, isSignedIn, user } = useUser();
@@ -35,7 +36,11 @@ export function SessionGuard() {
         }
       }
       const server = await fetchServerEstimates();
-      if (server) replaceSavedEstimates(server);
+      if (!server) return;
+      const localOnly = mergeSavedEstimates(server);
+      for (const entry of localOnly) {
+        await pushCreate(entry);
+      }
     })();
   }, [isLoaded, isSignedIn, user]);
 

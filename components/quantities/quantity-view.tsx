@@ -340,7 +340,7 @@ export function QuantityView(props: Props) {
     const saved = saveEstimate({
       name: `${templateName} estimate`,
       kind: "quick",
-      detail: `${specLevel} · ${result.totals.floor_area_m2} m² · ${result.totals.total_final_circuits} circuits`,
+      detail: `${templateName} · ${specLevel} · ${result.totals.floor_area_m2} m² · ${result.totals.total_final_circuits} circuits`,
       totalGhs: total > 0 ? Math.round(total * 100) / 100 : null,
       template: props.templateCode ?? "HOME-2B",
       counts,

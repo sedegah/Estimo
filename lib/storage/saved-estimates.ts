@@ -73,8 +73,35 @@ export function updateSavedEstimate(id: string, patch: Partial<Omit<SavedEstimat
   return next;
 }
 
-/** Replace the local cache with the server list (signed-in sync). */
-export function replaceSavedEstimates(entries: SavedEstimate[]): void {
+/**
+ * Signed-in sync. The server list is merged into the browser rather than replacing
+ * it, so an estimate saved a moment ago cannot vanish while its upload is in flight.
+ * Entries only held in this browser are returned so the caller can push them.
+ */
+export function mergeSavedEstimates(entries: SavedEstimate[]): SavedEstimate[] {
   const deleted = new Set(readDeleted());
-  persist(entries.filter((entry) => !deleted.has(entry.id)).sort((a, b) => b.createdAt.localeCompare(a.createdAt)));
+  const local = listSavedEstimates();
+  const byId = new Map<string, SavedEstimate>();
+
+  for (const entry of local) byId.set(entry.id, entry);
+  for (const entry of entries) {
+    if (deleted.has(entry.id)) continue;
+    const current = byId.get(entry.id);
+    // the server copy wins, except that a local take-off is richer than what the API stores
+    byId.set(entry.id, current ? { ...current, ...entry, quantities: current.quantities ?? entry.quantities } : entry);
+  }
+
+  const merged = [...byId.values()]
+    .filter((entry) => !deleted.has(entry.id))
+    .sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+
+  persist(merged);
+
+  const serverIds = new Set(entries.map((entry) => entry.id));
+  return merged.filter((entry) => !serverIds.has(entry.id));
+}
+
+/** Backwards-compatible name for callers that only want the merge. */
+export function replaceSavedEstimates(entries: SavedEstimate[]): void {
+  mergeSavedEstimates(entries);
 }

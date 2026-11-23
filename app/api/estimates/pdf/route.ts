@@ -18,7 +18,12 @@ export async function GET(request: Request) {
   }
 
   const name = url.searchParams.get("name")?.trim().slice(0, 80) || undefined;
-  const pdf = await buildEstimatePdf({ template: type.code, quality, counts, name });
+  // load keys confirmed with the customer, listed on the estimate but not priced
+  const specialLoads = (url.searchParams.get("loads") ?? "")
+    .split(",")
+    .map((key) => key.trim())
+    .filter(Boolean);
+  const pdf = await buildEstimatePdf({ template: type.code, quality, counts, name, specialLoads });
 
   const filename = `${(name ?? type.label).replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase() || "estimo"}.pdf`;
 

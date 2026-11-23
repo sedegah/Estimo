@@ -580,7 +580,7 @@
   .catalogue-card-price strong{font-size:22px}
   .catalogue-summary{position:static;margin-top:24px}
 }
-/* â”€â”€ mobile estimate: total first, then a readable line list â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── mobile estimate: total first, then a readable line list ─────────────── */
 .estimate-lines { display: none; }
 
 @media (max-width: 760px) {

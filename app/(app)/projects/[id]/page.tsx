@@ -26,6 +26,26 @@ import type { SavedEstimate } from "@/lib/types";
 
 const clamp = (value: number) => Math.max(0, Math.min(20, Math.round(value)));
 
+/** Readable special-load names, acronyms included. */
+const LOAD_NAMES: Record<string, string> = {
+  refrigerator: "Refrigerator",
+  freezer: "Freezer",
+  microwave: "Microwave",
+  electric_cooker: "Electric cooker",
+  dishwasher: "Dishwasher",
+  washing_machine: "Washing machine",
+  extractor: "Extractor",
+  water_heater: "Water heater",
+  air_conditioner: "Air conditioner",
+  water_pump: "Water pump",
+  gate_motor: "Gate motor",
+  ev_charger: "EV charger",
+  workshop_machine: "Workshop machine",
+  refrigeration_equipment: "Refrigeration equipment",
+};
+
+const loadName = (key: string) =>
+  LOAD_NAMES[key] ?? key.replace(/_/g, " ").replace(/^\w/, (letter) => letter.toUpperCase());
 const itemQuantity = (item: SpaceItem) =>
   item.lights ?? item.sockets ?? item.acs ?? item.heaters ?? item.switches ?? item.cooking ?? 0;
 
@@ -247,11 +267,17 @@ export default function ProjectPage() {
             <p className="app-eyebrow">Saved estimate</p>
             <h1 className="app-title">{project.name}</h1>
             <p className="app-sub">
-              {takeOff.spaces.length} space{takeOff.spaces.length === 1 ? "" : "s"} · {project.detail}
+              {takeOff.spaces.length} space{takeOff.spaces.length === 1 ? "" : "s"} · {project.detail.split(" · ").slice(1).join(" · ")}
             </p>
           </div>
           <div className="settings-actions">
             <Link className="btn-outline" href="/projects">Back</Link>
+            <a
+              className="btn-outline"
+              href={`/api/estimates/pdf?template=${encodeURIComponent(project.template ?? "HOME-2B")}&quality=${takeOff.specLevel}&loads=${(takeOff.specialLoads ?? []).join(",")}`}
+            >
+              Download PDF
+            </a>
             <button className="btn-amber" type="button" onClick={resume}>Continue this estimate</button>
             <button
               className="link-button"
@@ -294,6 +320,31 @@ export default function ProjectPage() {
           </table>
         </section>
 
+        {project.items?.length ? (
+          <section className="table-card" style={{ marginTop: 16 }}>
+            <div className="panel-head" style={{ padding: "14px 16px" }}><h2 style={{ margin: 0, fontSize: 15 }}>Saved materials</h2></div>
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Material</th>
+                  <th>Quantity</th>
+                  <th className="align-right">Unit price</th>
+                  <th className="align-right">Amount</th>
+                </tr>
+              </thead>
+              <tbody>
+                {project.items.map((line) => (
+                  <tr key={line.name}>
+                    <td>{line.name}</td>
+                    <td className="muted-cell">{line.quantity} {line.unit}</td>
+                    <td className="align-right">{line.priceGhs == null ? "Pending" : formatGhs(line.priceGhs)}</td>
+                    <td className="align-right">{line.priceGhs == null ? "—" : formatGhs(line.priceGhs * line.quantity)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+        ) : null}
         {takeOff.specialLoads?.length ? (
           <section className="table-card" style={{ marginTop: 16 }}>
             <table className="data-table">
@@ -306,7 +357,7 @@ export default function ProjectPage() {
               <tbody>
                 {takeOff.specialLoads.map((key) => (
                   <tr key={key}>
-                    <td>{key.replace(/_/g, " ").replace(/^\w/, (letter: string) => letter.toUpperCase())}</td>
+                    <td>{loadName(key)}</td>
                     <td className="muted-cell">Concluded by phone call or WhatsApp</td>
                   </tr>
                 ))}
