@@ -82,11 +82,12 @@ export function priceQuantities(
     const info = catalogue.get(link.id);
     if (!info) continue;
 
-    const convert = link.convert === "metres-to-lengths" && link.unitLength;
+    const unitLength = link.unitLength ?? 3;
+    const convert = link.convert === "metres-to-lengths";
     const quantity = convert
-      ? Math.ceil(material.engineering_quantity / link.unitLength)
+      ? Math.ceil(material.engineering_quantity / unitLength)
       : material.engineering_quantity;
-    const purchase = convert ? quantity * link.unitLength : material.purchase_quantity;
+    const purchase = convert ? quantity * unitLength : material.purchase_quantity;
 
     const existing = merged.get(link.id);
     if (existing) {

@@ -291,12 +291,12 @@ export function calculateProject(args: CalculateArgs): EngineResult {
     drawboxes_est: Math.ceil(totalContainment * (params.drawbox_per_conduit_m ?? 1 / 9)),
   };
 
-  const circuits: CircuitSummary[] = [
+  const circuits = ([
     { type: "lighting", points: lightingPoints, limit: lightingLimit, circuits: lightingCircuits, cableFamily: "1.5 mm²" },
     { type: "general_sockets", points: socketPoints, limit: socketLimit, circuits: socketCircuits, cableFamily: "2.5 mm²" },
     { type: "ac", points: acPoints, limit: 1, circuits: acCircuits, cableFamily: "load based" },
     { type: "machine", points: machineCount, limit: 1, circuits: machineCircuits, cableFamily: "load based" },
-  ].filter((circuit) => circuit.points > 0 || circuit.type === "lighting" || circuit.type === "general_sockets");
+  ] as CircuitSummary[]).filter((circuit) => circuit.points > 0 || circuit.type === "lighting" || circuit.type === "general_sockets");
 
   if (db.engineered) {
     warnings.push(

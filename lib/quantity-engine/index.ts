@@ -50,10 +50,10 @@ export const SPEC_LEVELS: { key: SpecLevel; label: string; hint: string }[] = [
   { key: "premium", label: "Premium", hint: "More points, more comfort" },
 ];
 
-const templates = structureTemplates as StructureTemplateRow[];
-const spaces = templateSpacesData as TemplateSpaceRow[];
-const params = parametersFromRows(globalParameters as GlobalParameterRow[]);
-const rules = rulesByKey(roomRules as RoomRuleRow[]);
+const templates = structureTemplates as unknown as StructureTemplateRow[];
+const spaces = templateSpacesData as unknown as TemplateSpaceRow[];
+const params = parametersFromRows(globalParameters as unknown as GlobalParameterRow[]);
+const rules = rulesByKey(roomRules as unknown as RoomRuleRow[]);
 
 export interface TemplateSummary {
   id: string;
@@ -115,16 +115,16 @@ export function calculate(options: CalculateOptions): EngineResult {
     overrides: options.overrides ?? [],
     params,
     rules,
-    circuitRules: circuitRules as CircuitRuleRow[],
-    assemblies,
-    assemblyItems,
+    circuitRules: circuitRules as unknown as CircuitRuleRow[],
+    assemblies: assemblies as unknown as AssemblyRow[],
+    assemblyItems: assemblyItems as unknown as AssemblyItemRow[],
   });
 }
 
 /** Room rules for the given spec level, for the rules panel. */
 export function roomRulesFor(specLevel: SpecLevel): RoomRuleRow[] {
-  return (roomRules as RoomRuleRow[]).filter((rule) => rule.spec_level === specLevel);
+  return (roomRules as unknown as RoomRuleRow[]).filter((rule) => rule.spec_level === specLevel);
 }
 
 export const specialLoadsCatalog = specialLoads;
-export const globalParameterRows = globalParameters as GlobalParameterRow[];
+export const globalParameterRows = globalParameters as unknown as GlobalParameterRow[];
