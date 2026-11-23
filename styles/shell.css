@@ -373,3 +373,9 @@ button.chip:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px;
   }
   .app-rail-signout::before { content: none; }
 }
+/* desktop rail order: brand, navigation, then sign out at the foot */
+@media (min-width: 861px) {
+  .app-rail-brand { order: 1; }
+  .app-rail-nav { order: 2; }
+  .app-rail-footer { order: 3; margin-top: auto; }
+}
