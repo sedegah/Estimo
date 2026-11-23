@@ -82,18 +82,23 @@ export function priceQuantities(
     const info = catalogue.get(link.id);
     if (!info) continue;
 
+    // Everything a person sees is in catalogue units: lengths of conduit, metres of
+    // cable, pieces of accessories. The engineering quantity stays in metres.
     const unitLength = link.unitLength ?? 3;
     const convert = link.convert === "metres-to-lengths";
     const quantity = convert
       ? Math.ceil(material.engineering_quantity / unitLength)
-      : material.engineering_quantity;
-    const purchase = convert ? quantity * unitLength : material.purchase_quantity;
+      : material.purchase_quantity;
+    const purchase = quantity;
 
     const existing = merged.get(link.id);
     if (existing) {
       existing.quantity = Math.round((existing.quantity + quantity) * 10) / 10;
       existing.engineeringQuantity = Math.round((existing.engineeringQuantity + material.engineering_quantity) * 10) / 10;
       existing.purchaseQuantity = Math.round((existing.purchaseQuantity + purchase) * 10) / 10;
+      // a merged line (phase + neutral, for example) must total both runs
+      existing.amount =
+        existing.unitPrice == null ? null : Math.round(existing.unitPrice * existing.quantity * 100) / 100;
       existing.trace = [...existing.trace, ...material.trace];
       continue;
     }

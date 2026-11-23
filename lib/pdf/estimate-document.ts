@@ -195,7 +195,7 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
   strongText(page, money(total), { x: margin + 20, y: y - 58, size: 28, font: bold, color: NAVY });
 
   const cardRight = width - margin - 20;
-  rightText(page, quantityLines ? "Materials only, at catalogue prices." : "Materials and labour.", cardRight, y - 30, 8.5, font, MUTED);
+  rightText(page, quantityLines ? "Materials only, at catalogue prices." : "Materials only.", cardRight, y - 30, 8.5, font, MUTED);
   rightText(page, quantityLines ? "Preliminary take-off, not a quotation." : "Illustrative planning figure, not a quotation.", cardRight, y - 43, 8.5, font, MUTED);
 
   // ── table ─────────────────────────────────────────────────────────────────
@@ -256,8 +256,8 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
         "from the total until a price is published.",
       ]
     : [
-        "Cables and conduit, sockets and switches, light fittings, distribution board and breakers,",
-        "earthing and labour are allowance groups from the ESTIMO staging model.",
+        "Cables and conduit, sockets and switches, light fittings, distribution board and breakers",
+        "and earthing are allowance groups from the ESTIMO staging model. Labour is quoted separately.",
         "Prices are planning assumptions and are not verified supplier prices.",
       ];
   notes.forEach((line) => {

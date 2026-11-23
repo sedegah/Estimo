@@ -225,6 +225,23 @@ export function QuantityView(props: Props) {
 
   const rules = useMemo(() => rulesByKey(props.rules), [props.rules]);
 
+  /**
+   * A dining room always gets a ceiling fan. It is written as an editable override,
+   * so the rule set stays as published and the person can still set it to 0.
+   */
+  useEffect(() => {
+    setOverrides((current) => {
+      const missing = spaces
+        .filter((space) => space.room_type === "dining_room")
+        .filter((space) => !current.some((entry) => entry.space_id === space.id && entry.point_type === "fans"));
+      if (!missing.length) return current;
+      return [
+        ...current,
+        ...missing.map((space): PointOverride => ({ space_id: space.id, point_type: "fans", value: 1, source: "template" })),
+      ];
+    });
+  }, [spaces]);
+
   const roomTypes = useMemo(
     () =>
       Array.from(new Set(props.rules.filter((rule) => rule.spec_level === specLevel).map((rule) => rule.room_type))).sort(),

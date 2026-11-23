@@ -376,7 +376,6 @@ const LINES: { label: string; share: number }[] = [
   { label: "Light fittings", share: 0.1 },
   { label: "Distribution board and breakers", share: 0.14 },
   { label: "Earthing", share: 0.06 },
-  { label: "Labour", share: 0.24 },
 ];
 
 /** Splits the preliminary total into the cost groups shown on the estimate. */
@@ -392,11 +391,12 @@ export function estimateLines(total: number, code: string, counts: Counts): Esti
     "Light fittings": `${points.lights}`,
     "Distribution board and breakers": "1 set",
     Earthing: "1 set",
-    Labour: "1 lot",
   };
 
+  const shareTotal = LINES.reduce((sum, line) => sum + line.share, 0);
+
   return LINES.map(({ label, share }) => {
-    const amount = Math.round((total * share) / 10) * 10;
+    const amount = Math.round((total * (share / shareTotal)) / 10) * 10;
     const quantity = quantities[label];
     const numeric = Number.parseInt(quantity, 10);
     return {
