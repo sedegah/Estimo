@@ -27,7 +27,6 @@ export function SiteHeader({ signedIn = false }: { signedIn?: boolean }) {
         <nav className="nav">
           <Link className={isActive("/") ? "is-active" : ""} href="/">Home</Link>
           <Link className={isActive("/catalogue") ? "is-active" : ""} href="/catalogue">Catalogue</Link>
-          <Link className={isActive("/quantities") ? "is-active" : ""} href="/quantities">Quantities</Link>
           <EstimateBasketLink />
         </nav>
         <div className="topbar-auth">
