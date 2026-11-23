@@ -106,6 +106,9 @@ export default function AdminQuantitiesPage() {
           <Link className="rail-item" href="/materials/new">Add material</Link>
           <span className="rail-item is-active">Quantities</span>
           <a className="rail-item" href="/builder">Estimate builder</a>
+        <a className="rail-item" href="/estimates">Estimates</a>
+        <a className="rail-item" href="/rules">Rules</a>
+        <a className="rail-item" href="/audit">Audit log</a>
           <Link className="rail-item" href="/?tab=settings">Settings</Link>
         </aside>
 

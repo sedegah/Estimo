@@ -253,9 +253,23 @@ export default function AdminPage() {
           <a className="rail-item" href="/builder">
             <Icon path={ICONS.builder} /> Estimate builder
           </a>
+          <a className="rail-item" href="/quantities">
+            <Icon path={ICONS.builder} /> Quantities
+          </a>
+          <p className="rail-label" style={{ marginTop: 14 }}>Review</p>
+          <a className="rail-item" href="/estimates">
+            <Icon path={ICONS.materials} /> Estimates
+          </a>
+          <a className="rail-item" href="/rules">
+            <Icon path={ICONS.settings} /> Rules
+          </a>
+          <a className="rail-item" href="/audit">
+            <Icon path={ICONS.prices} /> Audit log
+          </a>
           <button type="button" className={tab === "settings" ? "rail-item is-active" : "rail-item"} onClick={() => selectTab("settings")}>
             <Icon path={ICONS.settings} /> Settings
           </button>
+          <p className="rail-build">Console build {process.env.NEXT_PUBLIC_CONSOLE_BUILD ?? "dev"}</p>
         </aside>
 
         <main className="main">

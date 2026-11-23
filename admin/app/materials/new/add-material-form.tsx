@@ -171,6 +171,10 @@ export function AddMaterialForm() {
           <Link className="rail-item" href="/">Materials</Link>
           <span className="rail-item is-active">Add material</span>
           <a className="rail-item" href="/builder">Estimate builder</a>
+        <a className="rail-item" href="/quantities">Quantities</a>
+        <a className="rail-item" href="/estimates">Estimates</a>
+        <a className="rail-item" href="/rules">Rules</a>
+        <a className="rail-item" href="/audit">Audit log</a>
           <Link className="rail-item" href="/?tab=settings">Settings</Link>
         </aside>
 
