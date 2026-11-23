@@ -359,18 +359,24 @@ export function QuantityView(props: Props) {
               </tr>
             </thead>
             <tbody>
-              {lines.map((line) => (
-                <tr key={line.catalogueId}>
-                  <td>
-                    <Link href={`/catalogue/${line.catalogueId}`}>{line.catalogueName}</Link>
-                    <span className="quantities-confidence">{line.confidence}</span>
-                  </td>
-                  <td className="is-num">{line.quantity} {line.catalogueUnit}</td>
-                  <td className="is-num is-muted">{line.engineeringQuantity} {line.catalogueUnit === "length" ? "m" : line.catalogueUnit}</td>
-                  <td className="is-num">{line.unitPrice === null ? "Pending" : money(line.unitPrice)}</td>
-                  <td className="is-num">{line.amount === null ? "—" : money(line.amount)}</td>
-                </tr>
-              ))}
+              {lines.map((line) => {
+                const measured = line.catalogueUnit === "length" || line.catalogueUnit === "m";
+                const orderUnit = line.catalogueUnit === "length" ? "lengths" : line.catalogueUnit;
+                return (
+                  <tr key={line.catalogueId}>
+                    <td>
+                      <Link href={`/catalogue/${line.catalogueId}`}>{line.catalogueName}</Link>
+                      <span className={`quantities-confidence is-${line.confidence}`}>{line.confidence}</span>
+                    </td>
+                    <td className="is-num">{line.purchaseQuantity} {orderUnit}</td>
+                    <td className="is-num is-muted">
+                      {measured ? `${line.engineeringQuantity} m` : "—"}
+                    </td>
+                    <td className="is-num">{line.unitPrice === null ? "Pending" : money(line.unitPrice)}</td>
+                    <td className="is-num">{line.amount === null ? "—" : money(line.amount)}</td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

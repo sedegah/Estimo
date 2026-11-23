@@ -30,6 +30,19 @@ const TEMPLATE_FOR_CODE: Record<string, string> = {
   "IND-WORK": "T026",
 };
 
+/** Building type label for the header line, keyed by the home page code. */
+const PROJECT_TYPE_FOR_CODE: Record<string, string> = {
+  "HOME-1R": "single_room",
+  "HOME-1B": "one_bedroom",
+  "HOME-2B": "two_bedroom",
+  "HOME-3B": "three_bedroom",
+  "HOME-4B": "four_bedroom_villa",
+  "SHOP-KIOSK": "container_kiosk",
+  "SHOP-RETAIL": "shop_retail",
+  "COMM-OFF-S": "office",
+  "IND-WORK": "workshop_small_factory",
+};
+
 export default async function QuickEstimatePage({
   searchParams,
 }: {
@@ -43,6 +56,10 @@ export default async function QuickEstimatePage({
   const spacesByTemplate = Object.fromEntries(
     templates.map((entry) => [entry.id, getTemplateSpaces(entry.id)]),
   );
+
+  const projectType = PROJECT_TYPE_FOR_CODE[code] ?? "two_bedroom";
+  const projectLabel = PROJECT_TYPES.find((type) => type.key === projectType)?.label ?? "2-Bedroom Home";
+  const templateLabel = templates.find((entry) => entry.id === templateId)?.name ?? "";
 
   const catalogueData = await getCatalogueData();
   const catalogueIds = new Set(
@@ -70,6 +87,7 @@ export default async function QuickEstimatePage({
         <div className="container">
           <p className="eyebrow">Your estimate</p>
           <h1 className="quantities-title">What the job needs.</h1>
+          <p className="quantities-meta">{projectLabel} · {templateLabel}</p>
         </div>
       </section>
 
