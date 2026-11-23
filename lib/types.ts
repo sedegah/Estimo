@@ -39,6 +39,26 @@ export type SavedEstimateItem = {
   priceGhs?: number | null;
 };
 
+/** The take-off behind a saved estimate, so it can be reopened as it was. */
+export type SavedQuantities = {
+  templateId: string;
+  specLevel: string;
+  ruleSet: string;
+  spaces: {
+    id: string;
+    space_name: string;
+    room_type: string;
+    length_m: number;
+    width_m: number;
+    height_m: number;
+    quantity?: number;
+    workstations?: number;
+    checkout_counters?: number;
+    machine_count?: number;
+  }[];
+  overrides?: { space_id: string; point_type: string; value: number; source: string }[];
+};
+
 export type SavedEstimate = {
   id: string;
   name: string;
@@ -51,4 +71,5 @@ export type SavedEstimate = {
   template?: string;
   counts?: Record<string, number>;
   quality?: string;
+  quantities?: SavedQuantities;
 };

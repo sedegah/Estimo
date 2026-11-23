@@ -307,6 +307,13 @@ export function QuantityView(props: Props) {
         unit: line.catalogueUnit,
         priceGhs: line.unitPrice,
       })),
+      quantities: {
+        templateId,
+        specLevel,
+        ruleSet: "ESTIMO-GH-QTY-v1.0",
+        spaces,
+        overrides,
+      },
     });
     if (props.signedIn) {
       void pushCreate(saved);

@@ -94,7 +94,7 @@ export default function ProjectPage() {
       counts,
       quality,
       totalGhs: total,
-      detail: `${type.label} · ${fittingsLabel} fittings · ${spaces} spaces`,
+      detail: `${type.label} Ã‚Â· ${fittingsLabel} fittings Ã‚Â· ${spaces} spaces`,
     });
     if (updated) {
       void pushUpdate(updated);
@@ -120,7 +120,7 @@ export default function ProjectPage() {
     return (
       <>
         <p className="app-eyebrow">Saved project</p>
-        <h1 className="app-title">Loading…</h1>
+        <h1 className="app-title">LoadingÃ¢â‚¬Â¦</h1>
       </>
     );
   }
@@ -156,7 +156,7 @@ export default function ProjectPage() {
             <p className="app-eyebrow">Material list</p>
             <h1 className="app-title">{project.name}</h1>
             <p className="app-sub">
-              {lines.length} material{lines.length === 1 ? "" : "s"} · saved {formatDate(project.createdAt)}
+              {lines.length} material{lines.length === 1 ? "" : "s"} Ã‚Â· saved {formatDate(project.createdAt)}
             </p>
           </div>
           <div className="settings-actions">
@@ -194,7 +194,7 @@ export default function ProjectPage() {
                   <td className="muted-cell">{line.quantity}</td>
                   <td className="muted-cell">{line.unit}</td>
                   <td className="align-right muted-cell">{line.priceGhs == null ? "Pending" : money(line.priceGhs)}</td>
-                  <td className="align-right">{line.priceGhs == null ? "—" : money(line.priceGhs * line.quantity)}</td>
+                  <td className="align-right">{line.priceGhs == null ? "Ã¢â‚¬â€" : money(line.priceGhs * line.quantity)}</td>
                 </tr>
               ))}
               <tr className="total-row">
@@ -218,6 +218,89 @@ export default function ProjectPage() {
     );
   }
 
+  // A saved take-off reopens in the estimate editor with its spaces and overrides.
+  if (project.quantities) {
+    const takeOff = project.quantities;
+    const area = takeOff.spaces.reduce(
+      (sum, space) => sum + space.length_m * space.width_m * Math.max(1, space.quantity ?? 1),
+      0,
+    );
+    const resume = () => {
+      try {
+        localStorage.setItem(
+          "estimo_estimate_draft_v1",
+          JSON.stringify({
+            templateId: takeOff.templateId,
+            specLevel: takeOff.specLevel,
+            spaces: takeOff.spaces,
+            overrides: takeOff.overrides ?? [],
+          }),
+        );
+      } catch {}
+      router.push(`/quick-estimate?template=${encodeURIComponent(project.template ?? "HOME-2B")}`);
+    };
+
+    return (
+      <>
+        <header className="app-head">
+          <div>
+            <p className="app-eyebrow">Saved estimate</p>
+            <h1 className="app-title">{project.name}</h1>
+            <p className="app-sub">
+              {takeOff.spaces.length} space{takeOff.spaces.length === 1 ? "" : "s"} · {project.detail}
+            </p>
+          </div>
+          <div className="settings-actions">
+            <Link className="btn-outline" href="/projects">Back</Link>
+            <button className="btn-amber" type="button" onClick={resume}>Continue this estimate</button>
+            <button
+              className="link-button"
+              type="button"
+              onClick={() => {
+                void pushDelete(project.id);
+                deleteSavedEstimate(project.id);
+                router.push("/projects");
+              }}
+            >
+              Delete estimate
+            </button>
+          </div>
+        </header>
+
+        <section className="table-card">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Space</th>
+                <th>Room type</th>
+                <th>Dimensions</th>
+                <th className="align-right">Area</th>
+              </tr>
+            </thead>
+            <tbody>
+              {takeOff.spaces.map((space) => (
+                <tr key={space.id}>
+                  <td>{space.space_name}</td>
+                  <td className="muted-cell">{space.room_type.replace(/_/g, " ")}</td>
+                  <td className="muted-cell">
+                    {space.length_m} Ãƒâ€” {space.width_m} Ãƒâ€” {space.height_m} m
+                  </td>
+                  <td className="align-right">
+                    {Math.round(space.length_m * space.width_m * Math.max(1, space.quantity ?? 1) * 10) / 10} mÃ‚Â²
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+
+        <p className="settings-note">
+          Rule set {takeOff.ruleSet} Ã‚Â· saved {formatDate(project.createdAt)}
+        </p>
+      </>
+    );
+  }
+
   return (
     <>
       <header className="app-head">
@@ -225,7 +308,7 @@ export default function ProjectPage() {
           <p className="app-eyebrow">Adjust estimate</p>
           <h1 className="app-title">{name || project.name}</h1>
           <p className="app-sub">
-            {type.label} · saved {formatDate(project.createdAt)}
+            {type.label} Ã‚Â· saved {formatDate(project.createdAt)}
           </p>
         </div>
         <div className="settings-actions">
@@ -288,7 +371,7 @@ export default function ProjectPage() {
                       </svg>
                     </button>
                     <div className="stepper">
-                      <button type="button" onClick={() => changeSpace(field.key, -1)} aria-label={`Fewer ${field.label}`}>−</button>
+                      <button type="button" onClick={() => changeSpace(field.key, -1)} aria-label={`Fewer ${field.label}`}>Ã¢Ë†â€™</button>
                       <span aria-live="polite">{count}</span>
                       <button type="button" onClick={() => changeSpace(field.key, 1)} aria-label={`More ${field.label}`}>+</button>
                     </div>
@@ -297,7 +380,7 @@ export default function ProjectPage() {
                     <div className="room-panel">
                       {count > 0 ? (
                         <>
-                          <p className="room-panel-note">{count} × {field.label.toLowerCase()} included</p>
+                          <p className="room-panel-note">{count} Ãƒâ€” {field.label.toLowerCase()} included</p>
                           <ul className="room-panel-list">
                             {field.items.map((item) => {
                               const quantity = itemQuantity(item) * count;
