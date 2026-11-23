@@ -29,6 +29,9 @@ interface TemplateSummary {
 }
 
 interface Props {
+  initialTemplateId?: string;
+  /** Priced-estimate editor link, so the classic flow stays reachable. */
+  estimateHref?: string;
   projectTypes: { key: string; label: string }[];
   templates: TemplateSummary[];
   spacesByTemplate: Record<string, SpaceInput[]>;
@@ -75,7 +78,10 @@ const money = (value: number | null) =>
     : `GHS ${value.toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 export function QuantityView(props: Props) {
-  const firstTemplate = props.templates.find((template) => template.projectType === "two_bedroom") ?? props.templates[0];
+  const firstTemplate =
+    props.templates.find((template) => template.id === props.initialTemplateId) ??
+    props.templates.find((template) => template.projectType === "two_bedroom") ??
+    props.templates[0];
   const [projectType, setProjectType] = useState(firstTemplate.projectType);
   const [templateId, setTemplateId] = useState(firstTemplate.id);
   const [specLevel, setSpecLevel] = useState<SpecLevel>("standard");
