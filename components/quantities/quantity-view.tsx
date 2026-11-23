@@ -253,7 +253,6 @@ export function QuantityView(props: Props) {
       <section className="quantities-section">
         <div className="quantities-section-head">
           <h2>Spaces</h2>
-          <p>Dimensions in metres. Change them and the quantities follow.</p>
         </div>
         <div className="quantities-scroll">
           <table className="quantities-table">
@@ -316,8 +315,7 @@ export function QuantityView(props: Props) {
 
       <section className="quantities-section">
         <div className="quantities-section-head">
-          <h2>Adjust the points</h2>
-          <p>ESTIMO recommends; blank means auto. Typed values are kept when the room changes.</p>
+          <h2>Points</h2>
         </div>
         <div className="quantities-overrides">
           {result.spaces.map((space) => (
@@ -348,7 +346,6 @@ export function QuantityView(props: Props) {
       <section className="quantities-section">
         <div className="quantities-section-head">
           <h2>Materials</h2>
-          <p>Engineering quantity, then the purchase quantity with pack rounding.</p>
         </div>
         <div className="quantities-scroll">
           <table className="quantities-table">
