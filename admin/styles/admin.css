@@ -75,8 +75,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
   max-height: 100vh;
 }
 .rail-build {
-  margin: auto 0 0 10px;
-  padding-top: 14px;
+  margin: 10px 12px 0;
   color: #6f7f99;
   font-size: 10.5px;
   letter-spacing: 0.02em;
@@ -583,3 +582,21 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .aq-load:hover { border-color: #cfd4cb; background: #fbfaf6; }
 .aq-load.is-active { background: var(--navy); border-color: var(--navy); color: #fff; }
+/* rail footer: who is signed in, then the build stamp */
+.rail-account {
+  margin-top: auto;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, .08);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.rail-who {
+  margin: 0 12px 2px;
+  color: #8798b3;
+  font-size: 11.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.rail-account .rail-item { padding: 9px 12px; font-size: 13.5px; }

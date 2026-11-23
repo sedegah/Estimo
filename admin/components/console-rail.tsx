@@ -37,8 +37,6 @@ export function ConsoleRail({ active }: { active?: string }) {
 
   return (
     <aside className="rail">
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img className="rail-logo" src="/brand/estimo-logo-horizontal-dark.png" alt="ESTIMO" />
       <p className="rail-label">Manage</p>
 
       {MANAGE.map((link) => (
