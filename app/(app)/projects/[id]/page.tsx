@@ -353,6 +353,9 @@ export default function ProjectPage() {
                     {project.totalGhs != null
                       ? formatGhs(project.totalGhs)
                       : formatGhs(project.items.reduce((sum, line) => sum + (line.priceGhs == null ? 0 : line.priceGhs * line.quantity), 0))}
+                    <small className="muted-cell" style={{ display: "block", fontWeight: 500 }}>
+                      {project.items.filter((line) => line.priceGhs != null).length} of {project.items.length} priced
+                    </small>
                   </th>
                 </tr>
               </tfoot>
