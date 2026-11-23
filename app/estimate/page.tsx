@@ -70,15 +70,39 @@ function EstimateContent() {
     return `/api/estimates/pdf?${params.toString()}`;
   };
 
-  /** PDFs are for signed-in accounts; a guest is sent to sign in and brought back. */
+  /**
+   * Signed-in accounts download straight away. A guest gets a short-lived signed link
+   * for this exact estimate, so the endpoint stays closed to strangers.
+   */
   const downloadPdf = async () => {
-    const response = await fetch(pdfHref());
-    if (response.status === 401) {
-      window.location.href = `/signin?redirect_url=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+    const direct = await fetch(pdfHref());
+    if (direct.ok) {
+      await saveBlob(await direct.blob());
       return;
     }
-    if (!response.ok) return;
-    const blob = await response.blob();
+    if (direct.status !== 401) return;
+
+    const linkResponse = await fetch("/api/estimates/pdf/link", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        template: type.code,
+        quality,
+        name: `${type.label} estimate`,
+        counts,
+        loads: [],
+      }),
+    });
+    if (!linkResponse.ok) return;
+    const link = (await linkResponse.json()) as { url?: string };
+    if (!link.url) return;
+
+    const linked = await fetch(link.url);
+    if (!linked.ok) return;
+    await saveBlob(await linked.blob());
+  };
+
+  const saveBlob = async (blob: Blob) => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;

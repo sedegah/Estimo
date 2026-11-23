@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { defaultCounts, projectType, type FittingQuality } from "@/lib/estimate-model";
 import { buildEstimatePdf } from "@/lib/pdf/estimate-document";
 import { clerkEnabled } from "@/lib/env";
+import { verifyPdfToken } from "@/lib/pdf/token";
 
 export const runtime = "nodejs";
 
@@ -30,9 +31,29 @@ function unauthorised(): Response {
 
 /** Streams a branded PDF for the estimate described by the query string. */
 export async function GET(request: Request) {
-  if (!(await signedIn())) return unauthorised();
-
   const url = new URL(request.url);
+
+  // A signed link is how a guest downloads their own estimate; a session is how an
+  // account does it. Anything else is refused before any work is done.
+  const link = verifyPdfToken(url.searchParams.get("token"));
+  if (!link && !(await signedIn())) return unauthorised();
+
+  if (link) {
+    const linkedType = projectType(link.template);
+    const counts = defaultCounts(linkedType.code);
+    for (const field of linkedType.fields) {
+      const value = Number(link.counts[field.key] ?? counts[field.key] ?? 0);
+      counts[field.key] = Number.isFinite(value) ? Math.max(0, Math.min(99, Math.round(value))) : 0;
+    }
+    const pdf = await buildEstimatePdf({
+      template: linkedType.code,
+      quality: link.quality,
+      counts,
+      name: link.name,
+      specialLoads: link.loads ?? [],
+    });
+    return pdfResponse(pdf, link.name ?? linkedType.label);
+  }
   const template = url.searchParams.get("template") ?? "HOME-2B";
   const type = projectType(template);
   const qualityParam = url.searchParams.get("quality");
