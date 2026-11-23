@@ -357,6 +357,7 @@ export function QuantityView(props: Props) {
         ruleSet: "ESTIMO-GH-QTY-v1.0",
         spaces,
         overrides,
+        specialLoads: loads,
       },
     });
     if (props.signedIn) {

@@ -142,7 +142,7 @@ export default function ProjectPage() {
 
   // A material list is what it says: the items that were added, with their quantities.
   // It must never be dressed up as a home estimate.
-  if (project.items?.length) {
+  if (project.items?.length && !project.quantities) {
     const lines = project.items ?? [];
     const priced = lines.reduce((sum, line) => (line.priceGhs == null ? sum : sum + line.priceGhs * line.quantity), 0);
     const unpriced = lines.filter((line) => line.priceGhs == null).length;
