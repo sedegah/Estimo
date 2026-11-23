@@ -46,6 +46,7 @@ interface Props {
   assemblyItems: AssemblyItemRow[];
   catalogue: Record<string, CatalogueMaterialInfo>;
   prices: Record<string, PriceEntry>;
+  specialLoads?: { load_key: string; space_context: string; selection_mode: string; default_enabled: boolean; circuit_policy: string; notes: string }[];
 }
 
 const SPECS: { key: SpecLevel; label: string }[] = [
@@ -90,6 +91,23 @@ const UNIT_LABEL: Record<string, string> = {
   "pair": "pairs",
 };
 
+const LOAD_LABELS: Record<string, string> = {
+  refrigerator: "Fridge",
+  freezer: "Freezer",
+  microwave: "Microwave",
+  electric_cooker: "Electric cooker",
+  dishwasher: "Dishwasher",
+  washing_machine: "Washing machine",
+  extractor: "Extractor",
+  water_heater: "Water heater",
+  air_conditioner: "Air conditioner",
+  water_pump: "Water pump",
+  gate_motor: "Gate motor",
+  ev_charger: "EV charger",
+  workshop_machine: "Workshop machine",
+  refrigeration_equipment: "Refrigeration plant",
+};
+
 const money = (value: number | null) =>
   value === null || value === undefined
     ? "—"
@@ -106,17 +124,19 @@ export function QuantityView(props: Props) {
   const [spaces, setSpaces] = useState<SpaceInput[]>(props.spacesByTemplate[firstTemplate.id] ?? []);
   const [overrides, setOverrides] = useState<PointOverride[]>([]);
   const [added, setAdded] = useState("");
+  const [loads, setLoads] = useState<string[]>([]);
 
   // The working estimate is kept in this browser, signed in or not.
   useEffect(() => {
     try {
       const raw = localStorage.getItem("estimo_estimate_draft_v1");
       if (!raw) return;
-      const draft = JSON.parse(raw) as { templateId?: string; specLevel?: SpecLevel; spaces?: SpaceInput[]; overrides?: PointOverride[] };
+      const draft = JSON.parse(raw) as { templateId?: string; specLevel?: SpecLevel; spaces?: SpaceInput[]; overrides?: PointOverride[]; loads?: string[] };
       if (draft.templateId === templateId && draft.spaces?.length) {
         setSpecLevel(draft.specLevel ?? "standard");
         setSpaces(draft.spaces);
         setOverrides(draft.overrides ?? []);
+        setLoads(draft.loads ?? []);
       }
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -124,9 +144,9 @@ export function QuantityView(props: Props) {
 
   useEffect(() => {
     try {
-      localStorage.setItem("estimo_estimate_draft_v1", JSON.stringify({ templateId, specLevel, spaces, overrides }));
+      localStorage.setItem("estimo_estimate_draft_v1", JSON.stringify({ templateId, specLevel, spaces, overrides, loads }));
     } catch {}
-  }, [templateId, specLevel, spaces, overrides]);
+  }, [templateId, specLevel, spaces, overrides, loads]);
   const [livePrices, setLivePrices] = useState<Record<string, PriceEntry>>(props.prices);
 
   // Prices arrive after the page: the catalogue call is edge-cached and the page
@@ -393,6 +413,7 @@ export function QuantityView(props: Props) {
         <div><span>Light points</span><strong>{result.totals.lighting_points}</strong></div>
         <div><span>Double sockets</span><strong>{result.totals.double_sockets}</strong></div>
         <div><span>Final circuits</span><strong>{result.totals.total_final_circuits}</strong></div>
+        <div><span>Special loads</span><strong>{loads.length}</strong></div>
         <div><span>Board</span><strong>{result.totals.recommended_db_ways ? `${result.totals.recommended_db_ways} way` : "Engineered"}</strong></div>
         <div><span>Conduit</span><strong>{result.totals.total_containment_m} m</strong></div>
       </section>
@@ -509,6 +530,32 @@ export function QuantityView(props: Props) {
               })}
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="quantities-section">
+        <div className="quantities-section-head">
+          <h2>Special loads</h2>
+        </div>
+        <div className="quantities-loads">
+          {(props.specialLoads ?? []).map((load) => {
+            const active = loads.includes(load.load_key);
+            return (
+              <button
+                key={load.load_key}
+                type="button"
+                className={active ? "quantities-load is-active" : "quantities-load"}
+                aria-pressed={active}
+                onClick={() => {
+                  setLoads((current) => (current.includes(load.load_key) ? current.filter((key) => key !== load.load_key) : [...current, load.load_key]));
+                  setAdded("");
+                }}
+              >
+                <span>{LOAD_LABELS[load.load_key] ?? load.load_key.replace(/_/g, " ")}</span>
+                <small>{load.space_context.replace(/_/g, " ")}</small>
+              </button>
+            );
+          })}
         </div>
       </section>
 

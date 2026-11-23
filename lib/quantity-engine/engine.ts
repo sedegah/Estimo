@@ -206,6 +206,7 @@ export interface CalculateArgs {
   projectType: string;
   templateId?: string | null;
   overrides?: PointOverride[];
+  specialLoads?: string[];
   params: Record<string, number>;
   rules: Map<string, RoomRuleRow>;
   circuitRules?: CircuitRuleRow[];
@@ -214,7 +215,7 @@ export interface CalculateArgs {
 }
 
 export function calculateProject(args: CalculateArgs): EngineResult {
-  const { spaces, specLevel, params, rules, overrides = [], assemblies = [], assemblyItems = [] } = args;
+  const { spaces, specLevel, params, rules, overrides = [], assemblies = [], assemblyItems = [], specialLoads = [] } = args;
   const warnings: string[] = [];
   const circuitRules = args.circuitRules ?? [];
 
@@ -249,7 +250,8 @@ export function calculateProject(args: CalculateArgs): EngineResult {
   const socketCircuits = ceilDiv(socketPoints, socketLimit);
   const acCircuits = acPoints;
   const machineCircuits = machineCount;
-  const finalCircuits = lightingCircuits + socketCircuits + acCircuits + machineCircuits;
+  const dedicatedCircuits = specialLoads.length;
+  const finalCircuits = lightingCircuits + socketCircuits + acCircuits + machineCircuits + dedicatedCircuits;
   const db = chooseDb(finalCircuits, params.db_spare_capacity_pct ?? 25);
 
   const lightingRaw = sum("lighting_containment_raw_m");
@@ -277,6 +279,7 @@ export function calculateProject(args: CalculateArgs): EngineResult {
     socket_circuits: socketCircuits,
     ac_circuits: acCircuits,
     machine_circuits: machineCircuits,
+    dedicated_circuits: dedicatedCircuits,
     total_final_circuits: finalCircuits,
     recommended_db_ways: db.recommendedWays,
     db_design_ways: db.designWays,
@@ -296,11 +299,17 @@ export function calculateProject(args: CalculateArgs): EngineResult {
     { type: "general_sockets", points: socketPoints, limit: socketLimit, circuits: socketCircuits, cableFamily: "2.5 mm²" },
     { type: "ac", points: acPoints, limit: 1, circuits: acCircuits, cableFamily: "load based" },
     { type: "machine", points: machineCount, limit: 1, circuits: machineCircuits, cableFamily: "load based" },
+    { type: "dedicated", points: dedicatedCircuits, limit: 1, circuits: dedicatedCircuits, cableFamily: "load based" },
   ] as CircuitSummary[]).filter((circuit) => circuit.points > 0 || circuit.type === "lighting" || circuit.type === "general_sockets");
 
   if (db.engineered) {
     warnings.push(
       `The plan needs ${db.designWays} ways, more than the largest stocked board (${DB_SIZES[DB_SIZES.length - 1]}); split the installation or specify an engineered board.`,
+    );
+  }
+  if (dedicatedCircuits > 0) {
+    warnings.push(
+      `${dedicatedCircuits} special load${dedicatedCircuits === 1 ? " needs" : "s need"} load-based cable and protection sizing; quantities cover the circuit and containment only.`,
     );
   }
   if (machineCount > 0) {
@@ -326,6 +335,7 @@ export function calculateProject(args: CalculateArgs): EngineResult {
     db,
     totals,
     materialQuantities,
+    specialLoads,
     warnings,
   };
 }

@@ -130,7 +130,7 @@ export interface SpaceEstimate {
 }
 
 export interface CircuitSummary {
-  type: "lighting" | "general_sockets" | "ac" | "machine";
+  type: "lighting" | "general_sockets" | "ac" | "machine" | "dedicated";
   points: number;
   limit: number;
   circuits: number;
@@ -158,6 +158,7 @@ export interface ProjectTotals {
   socket_circuits: number;
   ac_circuits: number;
   machine_circuits: number;
+  dedicated_circuits: number;
   total_final_circuits: number;
   recommended_db_ways: number | null;
   db_design_ways: number;
@@ -193,6 +194,7 @@ export interface EngineResult {
   db: DbSelection;
   totals: ProjectTotals;
   materialQuantities: MaterialQuantity[];
+  specialLoads: string[];
   warnings: string[];
 }
 
@@ -202,5 +204,6 @@ export interface CalculateRequest {
   specLevel: SpecLevel;
   spaces: SpaceInput[];
   overrides?: PointOverride[];
+  specialLoads?: string[];
   ruleSet?: string;
 }
