@@ -1,0 +1,423 @@
+/**
+ * ESTIMO Quantity Estimating Engine V1 — calculation core.
+ *
+ * Follows the handoff contract: geometry → auto point recommendations → overrides →
+ * circuit grouping → DB selection → routes → conductors/containment → assemblies →
+ * waste → pack rounding. Pricing happens outside this module.
+ *
+ * Values come from the rule data in lib/data/quantity-engine, never from this file,
+ * apart from the commercial DB sizes listed below.
+ */
+
+import type {
+  AssemblyItemRow,
+  AssemblyRow,
+  CircuitRuleRow,
+  CircuitSummary,
+  DbSelection,
+  EngineResult,
+  GlobalParameterRow,
+  MaterialQuantity,
+  PointOverride,
+  PointType,
+  ProjectTotals,
+  RoomRuleRow,
+  SpaceEstimate,
+  SpaceInput,
+  SpecLevel,
+  TemplateSpaceRow,
+  StructureTemplateRow,
+} from "./types";
+
+export const RULE_SET = "ESTIMO-GH-QTY-v1.0";
+
+/** Commercial distribution board ways; a requirement beyond these is engineered. */
+export const DB_SIZES = [4, 6, 8, 12, 18, 24];
+
+/** Works out kit round-ups: conduit by the 3 m length, cable by the 100 m roll. */
+export const PACK_SIZES: Record<string, number> = {
+  "20mm_conduit": 3,
+  "2.5mm2_phase_conductor": 100,
+  "2.5mm2_neutral_conductor": 100,
+  "cpc_conductor": 100,
+  "lighting_conductors": 100,
+  "main_earthing_conductor": 100,
+};
+
+const MATERIAL_LABELS: Record<string, string> = {
+  double_13a_socket: "Double 13A socket outlet",
+  socket_mounting_box: "Socket mounting box",
+  light_fitting_allowance: "Light fitting (allowance)",
+  ceiling_junction_box: "Ceiling junction box",
+  switch_mechanism: "Switch mechanism",
+  switch_mounting_box: "Switch mounting box",
+  "2.5mm2_phase_conductor": "2.5 mm² phase conductor",
+  "2.5mm2_neutral_conductor": "2.5 mm² neutral conductor",
+  cpc_conductor: "Circuit protective conductor",
+  lighting_conductors: "Lighting circuit conductors",
+  "20mm_conduit": "20 mm PVC conduit",
+  earth_electrode: "Earth electrode",
+  earth_clamp: "Earth clamp",
+  earth_inspection_chamber: "Earth inspection chamber",
+  main_earthing_conductor: "Main earthing conductor",
+};
+
+const ceilDiv = (value: number, divisor: number) => (divisor > 0 ? Math.ceil(value / divisor) : 0);
+const round1 = (value: number) => Math.round(value * 10) / 10;
+
+export function parametersFromRows(rows: GlobalParameterRow[]): Record<string, number> {
+  const map: Record<string, number> = {};
+  for (const row of rows) map[row.key] = row.value;
+  return map;
+}
+
+export function ruleKey(roomType: string, spec: SpecLevel) {
+  return `${roomType}:${spec}`;
+}
+
+export function rulesByKey(rules: RoomRuleRow[]): Map<string, RoomRuleRow> {
+  return new Map(rules.map((rule) => [ruleKey(rule.room_type, rule.spec_level), rule]));
+}
+
+/** Templates for a project type, with their spaces resolved and editable. */
+export function templateSpaces(
+  template: StructureTemplateRow,
+  spaces: TemplateSpaceRow[],
+): SpaceInput[] {
+  return spaces
+    .filter((space) => space.template_id === template.template_id)
+    .sort((a, b) => a.space_no - b.space_no)
+    .map((space) => ({
+      id: `${template.template_id}-${space.space_no}`,
+      space_name: space.space_name,
+      room_type: space.room_type,
+      length_m: space.length_m,
+      width_m: space.width_m,
+      height_m: space.height_m,
+      quantity: space.quantity || 1,
+      workstations: space.workstations || 0,
+      checkout_counters: space.checkout_counters || 0,
+      machine_count: space.machine_count || 0,
+    }));
+}
+
+function overridden(overrides: PointOverride[], spaceId: string, type: PointType): number | null {
+  const hit = overrides.find(
+    (entry) => entry.space_id === spaceId && entry.point_type === type && entry.source === "user_override",
+  );
+  return hit ? hit.value : null;
+}
+
+export function estimateSpace(
+  space: SpaceInput,
+  rule: RoomRuleRow,
+  params: Record<string, number>,
+  overrides: PointOverride[] = [],
+): SpaceEstimate {
+  const quantity = Math.max(1, space.quantity ?? 1);
+  const area = space.length_m * space.width_m;
+  const perimeter = 2 * (space.length_m + space.width_m);
+
+  let lighting = rule.minimum_lighting_points;
+  if (space.room_type === "corridor") {
+    lighting = Math.max(1, Math.ceil(space.length_m / 4));
+  } else if (rule.lighting_area_per_point_m2) {
+    lighting = Math.max(rule.minimum_lighting_points, ceilDiv(area, rule.lighting_area_per_point_m2));
+  }
+
+  let sockets = rule.minimum_double_sockets;
+  if (space.room_type === "open_office") {
+    const workstations = Math.max(0, space.workstations ?? 0);
+    sockets = workstations + Math.ceil(workstations / 4);
+  } else if (rule.socket_spacing_perimeter_m) {
+    sockets = Math.max(rule.minimum_double_sockets, ceilDiv(perimeter, rule.socket_spacing_perimeter_m));
+  }
+  if (space.room_type === "shop_floor") {
+    sockets += Math.max(0, space.checkout_counters ?? 0) * 2;
+  }
+
+  const autoFans = rule.fan_points_default;
+  const autoAc = rule.ac_default === "yes" ? 1 : 0;
+  const autoTv = rule.tv_points_default;
+  const autoData =
+    space.room_type === "open_office" ? Math.max(0, space.workstations ?? 0) : rule.data_points_default;
+  const autoSwitches = space.room_type === "corridor" && space.length_m > 4 ? 2 : 1;
+
+  const applied: PointType[] = [];
+  const pick = (type: PointType, auto: number) => {
+    const override = overridden(overrides, space.id, type);
+    if (override !== null) applied.push(type);
+    return override ?? auto;
+  };
+
+  const lights = pick("lighting", lighting);
+  const socketsFinal = pick("double_sockets", sockets);
+  const fans = pick("fans", autoFans);
+  const ac = pick("ac", autoAc);
+  const tv = pick("tv", autoTv);
+  const data = pick("data", autoData);
+  const switches = pick("switches", autoSwitches);
+
+  const lightingRoute =
+    (params.lighting_route_perimeter_factor ?? 0.35) * perimeter +
+    (params.light_branch_allowance_m ?? 1) * lights +
+    switches * Math.max(0, space.height_m - (params.switch_height_m ?? 1.2));
+
+  const socketRoute =
+    socketsFinal > 0
+      ? (params.socket_route_perimeter_factor ?? 0.5) * perimeter +
+        socketsFinal * Math.max(0, space.height_m - (params.socket_height_m ?? 0.3))
+      : 0;
+
+  return {
+    space_id: space.id,
+    space_name: space.space_name,
+    room_type: space.room_type,
+    area_m2: area * quantity,
+    perimeter_m: perimeter,
+    lighting_points: lights * quantity,
+    double_sockets: socketsFinal * quantity,
+    fan_points: fans * quantity,
+    ac_points: ac * quantity,
+    tv_points: tv * quantity,
+    data_points: data * quantity,
+    switch_positions: switches * quantity,
+    lighting_containment_raw_m: lightingRoute * quantity,
+    socket_containment_raw_m: socketRoute * quantity,
+    machine_count: Math.max(0, space.machine_count ?? 0) * quantity,
+    overridden: applied,
+  };
+}
+
+function chooseDb(finalCircuits: number, sparePct: number): DbSelection {
+  const designWays = Math.ceil(finalCircuits * (1 + sparePct / 100));
+  const recommendedWays = DB_SIZES.find((size) => designWays <= size) ?? null;
+  return {
+    finalCircuits,
+    designWays,
+    recommendedWays,
+    engineered: recommendedWays === null,
+  };
+}
+
+export interface CalculateArgs {
+  spaces: SpaceInput[];
+  specLevel: SpecLevel;
+  projectType: string;
+  templateId?: string | null;
+  overrides?: PointOverride[];
+  params: Record<string, number>;
+  rules: Map<string, RoomRuleRow>;
+  circuitRules?: CircuitRuleRow[];
+  assemblies?: AssemblyRow[];
+  assemblyItems?: AssemblyItemRow[];
+}
+
+export function calculateProject(args: CalculateArgs): EngineResult {
+  const { spaces, specLevel, params, rules, overrides = [], assemblies = [], assemblyItems = [] } = args;
+  const warnings: string[] = [];
+  const circuitRules = args.circuitRules ?? [];
+
+  const lightingLimit =
+    circuitRules.find((rule) => rule.circuit_type === "lighting")?.limit_value ??
+    params.lighting_points_per_circuit ??
+    10;
+  const socketLimit =
+    circuitRules.find((rule) => rule.circuit_type === "general_sockets")?.limit_value ??
+    params.residential_double_sockets_per_circuit ??
+    6;
+
+  const calculated: SpaceEstimate[] = [];
+  for (const space of spaces) {
+    const rule = rules.get(ruleKey(space.room_type, specLevel));
+    if (!rule) {
+      warnings.push(`No ${specLevel} rule for “${space.room_type}” (${space.space_name}); space skipped.`);
+      continue;
+    }
+    calculated.push(estimateSpace(space, rule, params, overrides));
+  }
+
+  const sum = (key: keyof SpaceEstimate) =>
+    calculated.reduce((total, space) => total + Number(space[key] ?? 0), 0);
+
+  const lightingPoints = sum("lighting_points");
+  const socketPoints = sum("double_sockets");
+  const acPoints = sum("ac_points");
+  const machineCount = sum("machine_count");
+
+  const lightingCircuits = ceilDiv(lightingPoints, lightingLimit);
+  const socketCircuits = ceilDiv(socketPoints, socketLimit);
+  const acCircuits = acPoints;
+  const machineCircuits = machineCount;
+  const finalCircuits = lightingCircuits + socketCircuits + acCircuits + machineCircuits;
+  const db = chooseDb(finalCircuits, params.db_spare_capacity_pct ?? 25);
+
+  const lightingRaw = sum("lighting_containment_raw_m");
+  const socketRaw = sum("socket_containment_raw_m");
+  const containmentWaste = 1 + (params.containment_waste_pct ?? 10) / 100;
+  const lightingContainment = round1(lightingRaw * containmentWaste);
+  const socketContainment = round1(socketRaw * containmentWaste);
+  const totalContainment = round1(lightingContainment + socketContainment);
+
+  const cableWaste = 1 + (params.cable_waste_pct ?? 7.5) / 100;
+  const lightingConductor = round1(lightingRaw * (params.lighting_conductor_factor ?? 2.7) * cableWaste);
+  const socketConductor = round1(socketRaw * 3 * cableWaste);
+
+  const totals: ProjectTotals = {
+    floor_area_m2: round1(sum("area_m2")),
+    lighting_points: lightingPoints,
+    double_sockets: socketPoints,
+    fan_points: sum("fan_points"),
+    ac_points: acPoints,
+    tv_points: sum("tv_points"),
+    data_points: sum("data_points"),
+    switch_positions: sum("switch_positions"),
+    machine_count: machineCount,
+    lighting_circuits: lightingCircuits,
+    socket_circuits: socketCircuits,
+    ac_circuits: acCircuits,
+    machine_circuits: machineCircuits,
+    total_final_circuits: finalCircuits,
+    recommended_db_ways: db.recommendedWays,
+    db_design_ways: db.designWays,
+    lighting_containment_m: lightingContainment,
+    socket_containment_m: socketContainment,
+    total_containment_m: totalContainment,
+    conduit_lengths_3m: Math.ceil(totalContainment / (params.conduit_piece_length_m ?? 3)),
+    lighting_conductor_est_m: lightingConductor,
+    socket_conductor_est_m: socketConductor,
+    conduit_couplers_est: Math.ceil(totalContainment * (params.coupler_per_conduit_m ?? 0.3)),
+    conduit_bends_est: Math.ceil(totalContainment * (params.bend_per_conduit_m ?? 1 / 6)),
+    drawboxes_est: Math.ceil(totalContainment * (params.drawbox_per_conduit_m ?? 1 / 9)),
+  };
+
+  const circuits: CircuitSummary[] = [
+    { type: "lighting", points: lightingPoints, limit: lightingLimit, circuits: lightingCircuits, cableFamily: "1.5 mm²" },
+    { type: "general_sockets", points: socketPoints, limit: socketLimit, circuits: socketCircuits, cableFamily: "2.5 mm²" },
+    { type: "ac", points: acPoints, limit: 1, circuits: acCircuits, cableFamily: "load based" },
+    { type: "machine", points: machineCount, limit: 1, circuits: machineCircuits, cableFamily: "load based" },
+  ].filter((circuit) => circuit.points > 0 || circuit.type === "lighting" || circuit.type === "general_sockets");
+
+  if (db.engineered) {
+    warnings.push(
+      `The plan needs ${db.designWays} ways, more than the largest stocked board (${DB_SIZES[DB_SIZES.length - 1]}); split the installation or specify an engineered board.`,
+    );
+  }
+  if (machineCount > 0) {
+    warnings.push(
+      "Machine circuits need the motor kW and phase before cable and protection can be sized; quantities exclude that cable.",
+    );
+  }
+
+  const materialQuantities = aggregateMaterials({
+    totals,
+    calculated,
+    assemblies,
+    assemblyItems,
+  });
+
+  return {
+    ruleSet: args.templateId ? RULE_SET : RULE_SET,
+    templateId: args.templateId ?? null,
+    projectType: args.projectType,
+    specLevel,
+    spaces: calculated,
+    circuits,
+    db,
+    totals,
+    materialQuantities,
+    warnings,
+  };
+}
+
+function aggregateMaterials(args: {
+  totals: ProjectTotals;
+  calculated: SpaceEstimate[];
+  assemblies: AssemblyRow[];
+  assemblyItems: AssemblyItemRow[];
+}): MaterialQuantity[] {
+  const { totals, assemblies, assemblyItems } = args;
+  const known = new Set(assemblies.map((assembly) => assembly.assembly_key));
+  const rows = new Map<string, MaterialQuantity>();
+  const engineered = new Map<string, number>();
+
+  // fixed items, driven by the point counts
+  const pointCounts: Record<string, number> = {
+    double_socket_point: totals.double_sockets,
+    lighting_point: totals.lighting_points,
+    switch_point: totals.switch_positions,
+  };
+
+  // route-driven quantities, before assemblies see them
+  engineered.set("2.5mm2_phase_conductor", totals.socket_conductor_est_m);
+  engineered.set("2.5mm2_neutral_conductor", totals.socket_conductor_est_m);
+  engineered.set("cpc_conductor", totals.socket_conductor_est_m);
+  engineered.set("lighting_conductors", totals.lighting_conductor_est_m);
+  engineered.set("20mm_conduit", totals.total_containment_m);
+  engineered.set("main_earthing_conductor", totals.switch_positions > 0 ? 6 : 0);
+
+  for (const item of assemblyItems) {
+    if (!known.has(item.assembly_key)) continue;
+    const count = pointCounts[item.assembly_key] ?? 1;
+    const fixed = item.quantity_mode === "fixed" ? (item.quantity ?? 1) * (pointCounts[item.assembly_key] ?? 1) : 0;
+    const routeDriven = engineered.get(item.material_key) ?? 0;
+    const value = item.quantity_mode === "fixed" ? fixed : routeDriven;
+    if (!value) continue;
+    void count;
+    const existing = rows.get(item.material_key);
+    if (existing) {
+      existing.engineering_quantity = round1(existing.engineering_quantity + value);
+    } else {
+      rows.set(item.material_key, {
+        material_key: item.material_key,
+        name: MATERIAL_LABELS[item.material_key] ?? item.material_key,
+        unit: item.unit,
+        engineering_quantity: round1(value),
+        purchase_quantity: 0,
+        pack_size: null,
+        trace: [],
+        confidence: item.quantity_mode === "fixed" ? "high" : "estimated",
+      });
+    }
+  }
+
+  // accessory allowances and pack rounding
+  for (const row of rows.values()) {
+    const pack = PACK_SIZES[row.material_key] ?? null;
+    row.pack_size = pack;
+    row.purchase_quantity = pack ? Math.ceil(row.engineering_quantity / pack) * pack : Math.ceil(row.engineering_quantity);
+    row.trace = [
+      row.confidence === "high"
+        ? `Fixed quantity from the point count`
+        : `Route-driven: ${round1(row.engineering_quantity / (1 + 0))} m before pack rounding`,
+      pack ? `Supplied in ${pack} ${row.unit === "each" ? "packs" : row.unit}, rounded up` : "No pack rounding",
+    ];
+  }
+
+  // couplers, bends and draw boxes are counted, not measured
+  const accessory = (key: string, name: string, value: number, basis: string) => {
+    if (!value) return;
+    rows.set(key, {
+      material_key: key,
+      name,
+      unit: "each",
+      engineering_quantity: value,
+      purchase_quantity: value,
+      pack_size: null,
+      trace: [basis],
+      confidence: "estimated",
+    });
+  };
+  accessory("conduit_coupler", "Conduit coupler", totals.conduit_couplers_est, "Provisional rate per metre of conduit");
+  accessory("conduit_bend", "Conduit bend", totals.conduit_bends_est, "Provisional rate per metre of conduit");
+  accessory("draw_box", "Draw box", totals.drawboxes_est, "Provisional rate per metre of conduit");
+
+  return Array.from(rows.values()).sort((a, b) => a.name.localeCompare(b.name));
+}
+
+export function templateOf(
+  templates: StructureTemplateRow[],
+  templateId: string,
+): StructureTemplateRow | undefined {
+  return templates.find((template) => template.template_id === templateId);
+}

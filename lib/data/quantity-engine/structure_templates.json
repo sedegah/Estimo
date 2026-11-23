@@ -1,0 +1,191 @@
+[
+  {
+    "template_id": "T001",
+    "project_type": "container_kiosk",
+    "template_name": "Small Kiosk",
+    "size_class": "compact",
+    "description": "Simple kiosk / booth"
+  },
+  {
+    "template_id": "T002",
+    "project_type": "container_kiosk",
+    "template_name": "Standard Container Shop",
+    "size_class": "standard",
+    "description": "Approx. 20ft container format"
+  },
+  {
+    "template_id": "T003",
+    "project_type": "container_kiosk",
+    "template_name": "Large Container / Double Bay",
+    "size_class": "large",
+    "description": "Larger containerised retail/work space"
+  },
+  {
+    "template_id": "T004",
+    "project_type": "single_room",
+    "template_name": "Single Room Compact",
+    "size_class": "compact",
+    "description": "Basic single room"
+  },
+  {
+    "template_id": "T005",
+    "project_type": "single_room",
+    "template_name": "Single Room Standard",
+    "size_class": "standard",
+    "description": "Typical larger single room"
+  },
+  {
+    "template_id": "T006",
+    "project_type": "single_room",
+    "template_name": "Single Room Large",
+    "size_class": "large",
+    "description": "Large self-contained room shell"
+  },
+  {
+    "template_id": "T007",
+    "project_type": "one_bedroom",
+    "template_name": "1-Bedroom Compact",
+    "size_class": "compact",
+    "description": "Approx. 45-50m2"
+  },
+  {
+    "template_id": "T008",
+    "project_type": "one_bedroom",
+    "template_name": "1-Bedroom Standard",
+    "size_class": "standard",
+    "description": "Approx. 55-70m2"
+  },
+  {
+    "template_id": "T009",
+    "project_type": "one_bedroom",
+    "template_name": "1-Bedroom Large",
+    "size_class": "large",
+    "description": "Approx. 75-90m2"
+  },
+  {
+    "template_id": "T010",
+    "project_type": "two_bedroom",
+    "template_name": "2-Bedroom Compact",
+    "size_class": "compact",
+    "description": "Approx. 65-80m2"
+  },
+  {
+    "template_id": "T011",
+    "project_type": "two_bedroom",
+    "template_name": "2-Bedroom Standard",
+    "size_class": "standard",
+    "description": "Approx. 85-110m2"
+  },
+  {
+    "template_id": "T012",
+    "project_type": "two_bedroom",
+    "template_name": "2-Bedroom Large",
+    "size_class": "large",
+    "description": "Approx. 120-150m2"
+  },
+  {
+    "template_id": "T013",
+    "project_type": "three_bedroom",
+    "template_name": "3-Bedroom Compact",
+    "size_class": "compact",
+    "description": "Approx. 90-110m2"
+  },
+  {
+    "template_id": "T014",
+    "project_type": "three_bedroom",
+    "template_name": "3-Bedroom Standard",
+    "size_class": "standard",
+    "description": "Approx. 120-150m2"
+  },
+  {
+    "template_id": "T015",
+    "project_type": "three_bedroom",
+    "template_name": "3-Bedroom Large",
+    "size_class": "large",
+    "description": "Approx. 160-210m2"
+  },
+  {
+    "template_id": "T016",
+    "project_type": "four_bedroom_villa",
+    "template_name": "4-Bedroom Compact",
+    "size_class": "compact",
+    "description": "Approx. 130-160m2"
+  },
+  {
+    "template_id": "T017",
+    "project_type": "four_bedroom_villa",
+    "template_name": "4-Bedroom Standard",
+    "size_class": "standard",
+    "description": "Approx. 170-220m2"
+  },
+  {
+    "template_id": "T018",
+    "project_type": "four_bedroom_villa",
+    "template_name": "4-Bedroom Villa Large",
+    "size_class": "large",
+    "description": "Approx. 230-320m2"
+  },
+  {
+    "template_id": "T019",
+    "project_type": "office",
+    "template_name": "Small Office",
+    "size_class": "compact",
+    "description": "20-50m2 compact office"
+  },
+  {
+    "template_id": "T020",
+    "project_type": "office",
+    "template_name": "Medium Office",
+    "size_class": "standard",
+    "description": "60-150m2 medium office"
+  },
+  {
+    "template_id": "T021",
+    "project_type": "office",
+    "template_name": "Large Office",
+    "size_class": "large",
+    "description": "150-500m2 multi-zone office"
+  },
+  {
+    "template_id": "T022",
+    "project_type": "shop_retail",
+    "template_name": "Small Shop",
+    "size_class": "compact",
+    "description": "20-30m2 retail"
+  },
+  {
+    "template_id": "T023",
+    "project_type": "shop_retail",
+    "template_name": "Standard Shop",
+    "size_class": "standard",
+    "description": "40-70m2 retail"
+  },
+  {
+    "template_id": "T024",
+    "project_type": "shop_retail",
+    "template_name": "Large Retail",
+    "size_class": "large",
+    "description": "80-150m2 retail"
+  },
+  {
+    "template_id": "T025",
+    "project_type": "workshop_small_factory",
+    "template_name": "Small Workshop",
+    "size_class": "compact",
+    "description": "50-100m2 light workshop"
+  },
+  {
+    "template_id": "T026",
+    "project_type": "workshop_small_factory",
+    "template_name": "Medium Workshop",
+    "size_class": "standard",
+    "description": "100-250m2 workshop"
+  },
+  {
+    "template_id": "T027",
+    "project_type": "workshop_small_factory",
+    "template_name": "Large Workshop",
+    "size_class": "large",
+    "description": "250-500m2 small industrial"
+  }
+]

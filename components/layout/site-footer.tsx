@@ -57,6 +57,7 @@ export function SiteFooter({ year }: { year: number }) {
             <h2>Estimate</h2>
             <Link href="/quick-estimate?template=HOME-2B">Start an estimate</Link>
             <Link href="/catalogue">Material catalogue</Link>
+            <Link href="/quantities">Material quantities</Link>
           </div>
           <div className="footer-col">
             <h2>Your work</h2>

@@ -11,6 +11,7 @@ import "../styles/brand.css";
 import "../styles/footer.css";
 import "../styles/legal.css";
 import "../styles/cookie-notice.css";
+import "../styles/quantities.css";
 
 import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";

@@ -1,0 +1,121 @@
+[
+  {
+    "assembly_key": "double_socket_point",
+    "material_key": "double_13a_socket",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed"
+  },
+  {
+    "assembly_key": "double_socket_point",
+    "material_key": "socket_mounting_box",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed"
+  },
+  {
+    "assembly_key": "double_socket_point",
+    "material_key": "2.5mm2_phase_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven"
+  },
+  {
+    "assembly_key": "double_socket_point",
+    "material_key": "2.5mm2_neutral_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven"
+  },
+  {
+    "assembly_key": "double_socket_point",
+    "material_key": "cpc_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven"
+  },
+  {
+    "assembly_key": "double_socket_point",
+    "material_key": "20mm_conduit",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven"
+  },
+  {
+    "assembly_key": "lighting_point",
+    "material_key": "light_fitting_allowance",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed"
+  },
+  {
+    "assembly_key": "lighting_point",
+    "material_key": "ceiling_junction_box",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed"
+  },
+  {
+    "assembly_key": "lighting_point",
+    "material_key": "lighting_conductors",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven"
+  },
+  {
+    "assembly_key": "lighting_point",
+    "material_key": "20mm_conduit",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven"
+  },
+  {
+    "assembly_key": "switch_point",
+    "material_key": "switch_mechanism",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed"
+  },
+  {
+    "assembly_key": "switch_point",
+    "material_key": "switch_mounting_box",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed"
+  },
+  {
+    "assembly_key": "switch_point",
+    "material_key": "20mm_conduit",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven"
+  },
+  {
+    "assembly_key": "earthing_basic_residential",
+    "material_key": "earth_electrode",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed"
+  },
+  {
+    "assembly_key": "earthing_basic_residential",
+    "material_key": "earth_clamp",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed"
+  },
+  {
+    "assembly_key": "earthing_basic_residential",
+    "material_key": "earth_inspection_chamber",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed"
+  },
+  {
+    "assembly_key": "earthing_basic_residential",
+    "material_key": "main_earthing_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven"
+  }
+]
