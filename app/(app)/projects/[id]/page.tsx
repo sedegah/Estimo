@@ -265,6 +265,10 @@ export default function ProjectPage() {
           specialLoads: takeOff.specialLoads ?? [],
         }),
       });
+      if (response.status === 401) {
+        router.push("/signin?redirect_url=" + encodeURIComponent(`/projects/${project.id}`));
+        return;
+      }
       if (!response.ok) return;
       const blob = await response.blob();
       const url = URL.createObjectURL(blob);

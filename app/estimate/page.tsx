@@ -70,6 +70,25 @@ function EstimateContent() {
     return `/api/estimates/pdf?${params.toString()}`;
   };
 
+  /** PDFs are for signed-in accounts; a guest is sent to sign in and brought back. */
+  const downloadPdf = async () => {
+    const response = await fetch(pdfHref());
+    if (response.status === 401) {
+      window.location.href = `/signin?redirect_url=${encodeURIComponent(window.location.pathname + window.location.search)}`;
+      return;
+    }
+    if (!response.ok) return;
+    const blob = await response.blob();
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = `${type.code.toLowerCase()}-estimate.pdf`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
+
   const adjustHref = () => {
     const params = new URLSearchParams({ template: type.code, quality });
     for (const field of type.fields) params.set(field.key, String(counts[field.key] ?? 0));
@@ -87,7 +106,7 @@ function EstimateContent() {
           <button className="btn-amber" type="button" onClick={saveProject}>
             {saved ? "Saved" : "Save project"}
           </button>
-          <a className="btn-outline" href={pdfHref()}>Download PDF</a>
+          <button className="btn-outline" type="button" onClick={() => void downloadPdf()}>Download PDF</button>
           <Link className="link-button" href={adjustHref()}>Adjust details</Link>
         </div>
       </header>

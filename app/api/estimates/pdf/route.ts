@@ -1,12 +1,37 @@
+import { auth } from "@clerk/nextjs/server";
 import { defaultCounts, projectType, type FittingQuality } from "@/lib/estimate-model";
 import { buildEstimatePdf } from "@/lib/pdf/estimate-document";
+import { clerkEnabled } from "@/lib/env";
 
 export const runtime = "nodejs";
 
 type SavedLine = { name: string; quantity: number; unit: string; priceGhs: number | null };
 
+const MAX_BODY_BYTES = 200_000;
+const MAX_LINES = 200;
+
+/**
+ * Estimate documents are built for signed-in accounts only: they can be expensive to
+ * render and they carry the customer's take-off. Guests can view the estimate on the
+ * page; downloading the document asks them to sign in.
+ */
+async function signedIn(): Promise<boolean> {
+  if (!clerkEnabled) return true;
+  const { userId } = await auth();
+  return Boolean(userId);
+}
+
+function unauthorised(): Response {
+  return new Response("Sign in to download this estimate.", {
+    status: 401,
+    headers: { "Content-Type": "text/plain; charset=utf-8", "Cache-Control": "no-store" },
+  });
+}
+
 /** Streams a branded PDF for the estimate described by the query string. */
 export async function GET(request: Request) {
+  if (!(await signedIn())) return unauthorised();
+
   const url = new URL(request.url);
   const template = url.searchParams.get("template") ?? "HOME-2B";
   const type = projectType(template);
@@ -24,7 +49,8 @@ export async function GET(request: Request) {
   const specialLoads = (url.searchParams.get("loads") ?? "")
     .split(",")
     .map((key) => key.trim())
-    .filter(Boolean);
+    .filter(Boolean)
+    .slice(0, 20);
   const pdf = await buildEstimatePdf({ template: type.code, quality, counts, name, specialLoads });
 
   return pdfResponse(pdf, name ?? type.label);
@@ -36,6 +62,13 @@ export async function GET(request: Request) {
  * screen can never disagree.
  */
 export async function POST(request: Request) {
+  if (!(await signedIn())) return unauthorised();
+
+  const raw = await request.text();
+  if (raw.length > MAX_BODY_BYTES) {
+    return new Response("Estimate too large", { status: 413 });
+  }
+
   let body: {
     name?: string;
     template?: string;
@@ -46,7 +79,7 @@ export async function POST(request: Request) {
     specialLoads?: string[];
   };
   try {
-    body = await request.json();
+    body = JSON.parse(raw);
   } catch {
     return new Response("Invalid JSON", { status: 400 });
   }
@@ -56,13 +89,13 @@ export async function POST(request: Request) {
   const quality: FittingQuality =
     body.specLevel === "economy" ? "basic" : body.specLevel === "premium" ? "premium" : "standard";
 
-  const items = (body.items ?? [])
+  const items = (Array.isArray(body.items) ? body.items : [])
     .filter((line) => typeof line?.name === "string" && Number.isFinite(line.quantity))
-    .slice(0, 200)
+    .slice(0, MAX_LINES)
     .map((line) => ({
       name: line.name.slice(0, 90),
       quantity: Math.max(0, Math.round(line.quantity)),
-      unit: typeof line.unit === "string" ? line.unit : "No.",
+      unit: typeof line.unit === "string" ? line.unit.slice(0, 20) : "No.",
       priceGhs: typeof line.priceGhs === "number" ? line.priceGhs : null,
     }));
 
@@ -77,8 +110,10 @@ export async function POST(request: Request) {
     name,
     items,
     totalOverride: total,
-    subtitle: body.subtitle,
-    specialLoads: (body.specialLoads ?? []).filter((key) => typeof key === "string").slice(0, 20),
+    subtitle: typeof body.subtitle === "string" ? body.subtitle.slice(0, 120) : undefined,
+    specialLoads: (Array.isArray(body.specialLoads) ? body.specialLoads : [])
+      .filter((key) => typeof key === "string")
+      .slice(0, 20),
   });
 
   return pdfResponse(pdf, name);
