@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-import { formatGhs } from "@/lib/format";
+import { formatGhs, materialUnitLabel } from "@/lib/format";
 import { BASKET_EVENT, readBasket, writeBasket } from "@/lib/storage/basket";
 import { saveEstimate } from "@/lib/storage/saved-estimates";
 import type { BasketItem } from "@/lib/types";
@@ -92,7 +92,7 @@ export function EstimateBasket() {
                 <p>{item.brandName || "Brand to be selected"}{item.supplierName ? ` · ${item.supplierName}` : ""}</p>
                 {item.priceGhs == null
                   ? <strong className="price-pending-inline">Price pending verification</strong>
-                  : <strong>{formatGhs(item.priceGhs)} <small>per {item.unit || "unit"}</small></strong>}
+                  : <strong>{formatGhs(item.priceGhs)} <small>{materialUnitLabel(item.unit || "unit")}</small></strong>}
               </div>
               <div className="estimate-qty" aria-label={`Quantity for ${item.name}`}>
                 <button type="button" onClick={() => changeQuantity(item.materialId, item.quantity - 1)} aria-label="Reduce quantity">−</button>

@@ -16,7 +16,7 @@ import type {
   SpecLevel,
 } from "@/lib/quantity-engine/types";
 import type { CatalogueMaterialInfo } from "@/lib/quantity-engine/catalogue";
-import { writeBasket } from "@/lib/storage/basket";
+import { readBasket, writeBasket } from "@/lib/storage/basket";
 import type { BasketItem } from "@/lib/types";
 
 interface TemplateSummary {
@@ -223,23 +223,24 @@ export function QuantityView(props: Props) {
     return space ? Number(space[key]) : 0;
   };
 
+  /** Every line goes in, priced or not, so the estimate shows the full take-off. */
   const addToEstimate = () => {
-    const items: BasketItem[] = lines
-      .filter((line) => line.unitPrice !== null)
-      .map((line) => ({
-        materialId: line.catalogueId,
-        name: line.catalogueName,
-        category: "Quantity take-off",
-        unit: line.catalogueUnit,
-        quantity: Math.max(1, Math.ceil(line.quantity)),
-        priceGhs: line.unitPrice,
-        brandName: line.brand,
-        supplierName: "ESTIMO catalogue",
-        verifiedAt: new Date().toISOString().slice(0, 10),
-      }));
-    if (!items.length) return;
-    writeBasket(items);
-    setAdded(`${items.length} material${items.length === 1 ? "" : "s"} added to your estimate.`);
+    const lines_: BasketItem[] = lines.map((line) => ({
+      materialId: line.catalogueId,
+      name: line.catalogueName,
+      category: "Quantity take-off",
+      unit: line.catalogueUnit,
+      quantity: Math.max(1, Math.ceil(line.purchaseQuantity)),
+      priceGhs: line.unitPrice,
+      brandName: line.brand,
+      supplierName: "ESTIMO catalogue",
+      verifiedAt: new Date().toISOString().slice(0, 10),
+    }));
+    if (!lines_.length) return;
+
+    const rest = readBasket().filter((item) => !lines_.some((line) => line.materialId === item.materialId));
+    writeBasket([...rest, ...lines_]);
+    setAdded(`${lines_.length} material${lines_.length === 1 ? "" : "s"} added to your estimate.`);
   };
 
   return (
@@ -438,8 +439,8 @@ export function QuantityView(props: Props) {
             <span>{pricedCount} of {lines.length} materials priced</span>
             <strong>{money(total)}</strong>
           </div>
-          <button className="btn-amber" type="button" onClick={addToEstimate} disabled={!pricedCount}>
-            Add materials to estimate
+          <button className="btn-amber" type="button" onClick={addToEstimate} disabled={!lines.length}>
+            Add {lines.length} materials to estimate
           </button>
         </div>
         {added ? <p className="quantities-added">{added} <Link href="/estimate-basket">Open the estimate basket</Link></p> : null}
