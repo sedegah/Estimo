@@ -10,6 +10,7 @@
 
 .quantities-title {
   margin: 10px 0 0;
+  color: #fff;
   font-size: clamp(30px, 4vw, 44px);
   line-height: 1.05;
   letter-spacing: -0.03em;

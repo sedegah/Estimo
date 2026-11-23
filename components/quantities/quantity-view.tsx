@@ -206,7 +206,7 @@ export function QuantityView(props: Props) {
           <select value={templateId} onChange={(event) => pickTemplate(event.target.value)}>
             {templatesForType.map((template) => (
               <option key={template.id} value={template.id}>
-                {template.name} — {SIZE_LABEL[template.sizeClass] ?? template.sizeClass}
+                {template.name}
               </option>
             ))}
           </select>
