@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { calculateProject, rulesByKey } from "@/lib/quantity-engine/engine";
 import { priceQuantities } from "@/lib/quantity-engine/catalogue";
 import type { PriceEntry } from "@/lib/quantity-engine/catalogue";
@@ -16,6 +16,7 @@ import type {
   SpecLevel,
 } from "@/lib/quantity-engine/types";
 import type { CatalogueMaterialInfo } from "@/lib/quantity-engine/catalogue";
+import { pricedCount, pricedTotal } from "@/lib/estimate-total";
 import { readBasket, writeBasket } from "@/lib/storage/basket";
 import { listSavedEstimates, saveEstimate, updateSavedEstimate } from "@/lib/storage/saved-estimates";
 import { pushCreate, pushUpdate } from "@/lib/api/estimates";
@@ -172,37 +173,46 @@ export function QuantityView(props: Props) {
   }, [templateId, specLevel, spaces, overrides, loads]);
   const [livePrices, setLivePrices] = useState<Record<string, PriceEntry>>(props.prices);
 
-  // Prices arrive after the page: the catalogue call is edge-cached and the page
-  // itself stays static, so the estimate opens immediately.
-  useEffect(() => {
-    if (Object.keys(props.prices).length) setLivePrices(props.prices);
-  }, [props.prices]);
+  const pricesFetched = useRef(false);
 
-  useEffect(() => {
-    if (Object.keys(livePrices).length) return;
+  /** Catalogue prices, fetched once, so a save always records real amounts. */
+  const loadPrices = useCallback(async (): Promise<Record<string, PriceEntry>> => {
+    if (Object.keys(livePrices).length) return livePrices;
     const base = process.env.NEXT_PUBLIC_ESTIMO_API_URL ?? "https://estimo-api.sedegahkimathi.workers.dev";
     const ids = new Set(Object.keys(props.catalogue));
-    if (!ids.size) return;
-    let cancelled = false;
-    void fetch(`${base}/catalogue`)
-      .then((response) => (response.ok ? response.json() : null))
-      .then((body: { items?: { id: string; price_ghs: number | null; price_brand?: string | null; price_source?: string | null; price_updated_at?: string | null }[] } | null) => {
-        if (cancelled || !body?.items) return;
-        const next: Record<string, PriceEntry> = {};
-        for (const item of body.items) {
-          if (!ids.has(item.id) || typeof item.price_ghs !== "number") continue;
-          next[item.id] = {
-            price: item.price_ghs,
-            brand: item.price_brand ?? null,
-            source: item.price_source ?? null,
-            updatedAt: item.price_updated_at ?? null,
-          };
-        }
-        setLivePrices(next);
-      })
-      .catch(() => undefined);
-    return () => { cancelled = true; };
+    if (!ids.size) return {};
+    try {
+      const response = await fetch(`${base}/catalogue`);
+      if (!response.ok) return {};
+      const body = (await response.json()) as {
+        items?: { id: string; price_ghs: number | null; price_brand?: string | null; price_source?: string | null; price_updated_at?: string | null }[];
+      };
+      const next: Record<string, PriceEntry> = {};
+      for (const item of body.items ?? []) {
+        if (!ids.has(item.id) || typeof item.price_ghs !== "number") continue;
+        next[item.id] = {
+          price: item.price_ghs,
+          brand: item.price_brand ?? null,
+          source: item.price_source ?? null,
+          updatedAt: item.price_updated_at ?? null,
+        };
+      }
+      setLivePrices(next);
+      pricesFetched.current = true;
+      return next;
+    } catch {
+      return {};
+    }
   }, [livePrices, props.catalogue]);
+
+  useEffect(() => {
+    if (Object.keys(props.prices).length) {
+      setLivePrices(props.prices);
+      return;
+    }
+    if (Object.keys(livePrices).length || pricesFetched.current) return;
+    void loadPrices();
+  }, [livePrices, props.prices, loadPrices]);
 
   const templateName =
     props.templates.find((template) => template.id === templateId)?.name ?? "Project";
@@ -260,8 +270,8 @@ export function QuantityView(props: Props) {
     [result.materialQuantities, livePrices, catalogueMap],
   );
 
-  const total = lines.reduce((sum, line) => sum + (line.amount ?? 0), 0);
-  const pricedCount = lines.filter((line) => line.amount !== null).length;
+  const total = pricedTotal(lines);
+  const pricedCountValue = pricedCount(lines);
 
   const pickProjectType = (key: string) => {
     setProjectType(key);
@@ -328,7 +338,17 @@ export function QuantityView(props: Props) {
   };
 
   /** One action: files the estimate under Saved projects and fills the basket. */
-  const saveEstimateNow = () => {
+  const saveEstimateNow = async () => {
+    if (!props.signedIn) return null;
+    const pricesNow = await loadPrices();
+    const saveLines = priceQuantities(result.materialQuantities, pricesNow, catalogueMap);
+    const saveItems = saveLines.map((line) => ({
+      name: line.catalogueName,
+      quantity: Math.max(1, Math.ceil(line.purchaseQuantity)),
+      unit: line.catalogueUnit,
+      priceGhs: line.unitPrice,
+    }));
+    const saveTotal = pricedTotal(saveItems);
     const counts = {
       lights: result.totals.lighting_points,
       sockets: result.totals.double_sockets,
@@ -344,16 +364,11 @@ export function QuantityView(props: Props) {
       name: `${templateName} estimate`,
       kind: "quick" as const,
       detail: `${templateName} · ${specLevel} · ${result.totals.floor_area_m2} m² · ${result.totals.total_final_circuits} circuits`,
-      totalGhs: total > 0 ? Math.round(total * 100) / 100 : null,
+      totalGhs: saveTotal > 0 ? saveTotal : null,
       template: props.templateCode ?? "HOME-2B",
       counts,
       quality: specLevel,
-      items: lines.map((line) => ({
-        name: line.catalogueName,
-        quantity: Math.max(1, Math.ceil(line.purchaseQuantity)),
-        unit: line.catalogueUnit,
-        priceGhs: line.unitPrice,
-      })),
+      items: saveItems,
       quantities: {
         templateId,
         specLevel,
@@ -378,8 +393,11 @@ export function QuantityView(props: Props) {
   };
 
   /** Every line goes in, priced or not, so the estimate shows the full take-off. */
-  /** Adds the take-off to the basket and files it under Saved projects in one go. */
-  const addToEstimate = () => {
+  /**
+   * Signed in: the estimate is filed under Saved projects and leaves the basket.
+   * Signed out: it stays in the basket, because there is no account to keep it.
+   */
+  const addToEstimate = async () => {
     const groupId = `qty:${templateId}:${specLevel}`;
     const groupName = `${templateName} · ${specLevel}`;
     const lines_: BasketItem[] = lines.map((line) => ({
@@ -395,21 +413,21 @@ export function QuantityView(props: Props) {
       groupId,
       groupName,
     }));
-    if (!lines_.length) return;
 
-    // only this estimate's own lines are replaced; other estimates keep theirs
+    if (props.signedIn) {
+      const saved = await saveEstimateNow();
+      if (!saved) return;
+      writeBasket(readBasket().filter((item) => item.groupId !== groupId));
+      setAdded(`${lines_.length} materials saved to your account.`);
+      return;
+    }
+
+    if (!lines_.length) return;
     const rest = readBasket().filter(
       (item) => !(item.groupId === groupId && lines_.some((line) => line.materialId === item.materialId)),
     );
     writeBasket([...rest, ...lines_]);
-
-    const saved = saveEstimateNow();
-    const where = props.signedIn ? "your account" : "this browser";
-    setAdded(
-      saved
-        ? `${lines_.length} materials added and saved to ${where}.`
-        : `${lines_.length} materials added to your estimate.`,
-    );
+    setAdded(`${lines_.length} materials added to your estimate basket.`);
   };
 
   return (
@@ -662,14 +680,14 @@ export function QuantityView(props: Props) {
 
         <div className="quantities-total">
           <div>
-            <span>{pricedCount} of {lines.length} materials priced</span>
+            <span>{pricedCountValue} of {lines.length} materials priced</span>
             <strong>{money(total)}</strong>
           </div>
           <button className="btn-amber" type="button" onClick={addToEstimate} disabled={!lines.length}>
-            Add {lines.length} materials to estimate
+            Save estimate
           </button>
         </div>
-        {added ? <p className="quantities-added">{added} <Link href="/projects">Saved estimates</Link></p> : null}
+        {added ? <p className="quantities-added">{added} <Link href={props.signedIn ? "/projects" : "/estimate-basket"}>{props.signedIn ? "Saved estimates" : "Open the basket"}</Link></p> : null}
       </section>
     </div>
   );

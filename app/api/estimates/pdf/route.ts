@@ -3,6 +3,8 @@ import { buildEstimatePdf } from "@/lib/pdf/estimate-document";
 
 export const runtime = "nodejs";
 
+type SavedLine = { name: string; quantity: number; unit: string; priceGhs: number | null };
+
 /** Streams a branded PDF for the estimate described by the query string. */
 export async function GET(request: Request) {
   const url = new URL(request.url);
@@ -25,8 +27,65 @@ export async function GET(request: Request) {
     .filter(Boolean);
   const pdf = await buildEstimatePdf({ template: type.code, quality, counts, name, specialLoads });
 
-  const filename = `${(name ?? type.label).replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase() || "estimo"}.pdf`;
+  return pdfResponse(pdf, name ?? type.label);
+}
 
+/**
+ * Renders the saved estimate exactly as the app shows it: its own priced lines,
+ * total and special loads. Used by the saved estimate page so the document and the
+ * screen can never disagree.
+ */
+export async function POST(request: Request) {
+  let body: {
+    name?: string;
+    template?: string;
+    specLevel?: string;
+    subtitle?: string;
+    items?: SavedLine[];
+    total?: number;
+    specialLoads?: string[];
+  };
+  try {
+    body = await request.json();
+  } catch {
+    return new Response("Invalid JSON", { status: 400 });
+  }
+
+  const template = body.template ?? "HOME-2B";
+  const type = projectType(template);
+  const quality: FittingQuality =
+    body.specLevel === "economy" ? "basic" : body.specLevel === "premium" ? "premium" : "standard";
+
+  const items = (body.items ?? [])
+    .filter((line) => typeof line?.name === "string" && Number.isFinite(line.quantity))
+    .slice(0, 200)
+    .map((line) => ({
+      name: line.name.slice(0, 90),
+      quantity: Math.max(0, Math.round(line.quantity)),
+      unit: typeof line.unit === "string" ? line.unit : "No.",
+      priceGhs: typeof line.priceGhs === "number" ? line.priceGhs : null,
+    }));
+
+  const known = items.reduce((sum, line) => (line.priceGhs == null ? sum : sum + line.priceGhs * line.quantity), 0);
+  const total = typeof body.total === "number" && Number.isFinite(body.total) ? body.total : known;
+  const name = body.name?.trim().slice(0, 80) || type.label;
+
+  const pdf = await buildEstimatePdf({
+    template: type.code,
+    quality,
+    counts: defaultCounts(type.code),
+    name,
+    items,
+    totalOverride: total,
+    subtitle: body.subtitle,
+    specialLoads: (body.specialLoads ?? []).filter((key) => typeof key === "string").slice(0, 20),
+  });
+
+  return pdfResponse(pdf, name);
+}
+
+function pdfResponse(pdf: Uint8Array, name: string): Response {
+  const filename = `${name.replace(/[^a-z0-9]+/gi, "-").replace(/^-|-$/g, "").toLowerCase() || "estimo"}.pdf`;
   return new Response(Buffer.from(pdf), {
     headers: {
       "Content-Type": "application/pdf",

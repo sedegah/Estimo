@@ -31,6 +31,11 @@ type Input = {
   issuedAt?: Date;
   /** Load keys confirmed outside the estimate, listed but not priced. */
   specialLoads?: string[];
+  /** When present these priced lines are printed exactly as the app shows them. */
+  items?: { name: string; quantity: number; unit: string; priceGhs: number | null }[];
+  /** Total of those lines; defaults to their sum. */
+  totalOverride?: number;
+  subtitle?: string;
 };
 
 const LOAD_LABELS: Record<string, string> = {
@@ -119,10 +124,21 @@ function fitTitle(text: string, font: PDFFont, maxWidth: number, maxLines = 2) {
   return { size, lines };
 }
 
-export async function buildEstimatePdf({ template, quality, counts, name, issuedAt = new Date(), specialLoads = [] }: Input): Promise<Uint8Array> {
+export async function buildEstimatePdf({ template, quality, counts, name, issuedAt = new Date(), specialLoads = [], items, totalOverride, subtitle }: Input): Promise<Uint8Array> {
   const type = projectType(template);
-  const total = computeEstimate(type.code, counts, quality);
-  const lines = estimateLines(total, type.code, counts);
+  const model = computeEstimate(type.code, counts, quality);
+  const quantityLines = items?.map((line) => {
+    const amount = line.priceGhs == null ? 0 : line.priceGhs * line.quantity;
+    return {
+      label: line.name,
+      quantity: line.unit === "No." ? String(line.quantity) : `${line.quantity} ${line.unit === "length" ? "lengths" : line.unit}`,
+      unitPrice: line.priceGhs ?? 0,
+      amount,
+      pending: line.priceGhs == null,
+    };
+  });
+  const total = totalOverride ?? (quantityLines ? quantityLines.reduce((sum, line) => sum + line.amount, 0) : model);
+  const lines = quantityLines ?? estimateLines(model, type.code, counts);
   const fittings = FITTINGS.find((entry) => entry.value === quality)?.label ?? "Standard";
   const spaces = totalSpaces(counts);
 
@@ -159,7 +175,7 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
   });
 
   const subtitleY = height - 126 - (title.lines.length - 1) * titleLead - 20;
-  page.drawText(`${type.label} · ${fittings} fittings · ${spaces} spaces`, {
+  page.drawText(subtitle ?? `${type.label} · ${fittings} fittings · ${spaces} spaces`, {
     x: margin,
     y: subtitleY,
     size: 10,
@@ -200,8 +216,13 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
     }
     page.drawText(line.label, { x: columns.item, y: y - 17, size: 9.5, font, color: NAVY });
     page.drawText(line.quantity, { x: columns.qty, y: y - 17, size: 9.5, font, color: MUTED });
-    rightText(page, money(line.unitPrice), columns.unit, y - 17, 9.5, font, MUTED);
-    rightStrong(page, money(line.amount), columns.amount, y - 17, 9.5, bold, NAVY);
+    if ("pending" in line && line.pending) {
+      rightText(page, "Pending", columns.unit, y - 17, 9.5, font, MUTED);
+      rightText(page, "—", columns.amount, y - 17, 9.5, font, MUTED);
+    } else {
+      rightText(page, money(line.unitPrice), columns.unit, y - 17, 9.5, font, MUTED);
+      rightStrong(page, money(line.amount), columns.amount, y - 17, 9.5, bold, NAVY);
+    }
     page.drawLine({ start: { x: margin, y: y - rowHeight }, end: { x: tableRight, y: y - rowHeight }, thickness: 0.6, color: LINE });
     y -= rowHeight;
   });

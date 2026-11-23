@@ -15,6 +15,7 @@ import {
   type SpaceItem,
 } from "@/lib/estimate-model";
 import { formatDate, formatGhs } from "@/lib/format";
+import { pricedCount, pricedTotal } from "@/lib/estimate-total";
 import {
   SAVED_EVENT,
   deleteSavedEstimate,
@@ -245,6 +246,36 @@ export default function ProjectPage() {
       (sum, space) => sum + space.length_m * space.width_m * Math.max(1, space.quantity ?? 1),
       0,
     );
+    const savedItems = project.items ?? [];
+    const savedTotal = savedItems.length ? pricedTotal(savedItems) : project.totalGhs;
+    /** The PDF is generated from this estimate's own lines, so the two always agree. */
+    const downloadPdf = async () => {
+      const items = savedItems;
+      const response = await fetch("/api/estimates/pdf", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: project.name,
+          template: project.template ?? "HOME-2B",
+          specLevel: takeOff.specLevel,
+          subtitle: `${takeOff.spaces.length} spaces · ${takeOff.specLevel} · ${Math.round(area * 10) / 10} m²`,
+          items,
+          total: savedTotal ?? undefined,
+          specialLoads: takeOff.specialLoads ?? [],
+        }),
+      });
+      if (!response.ok) return;
+      const blob = await response.blob();
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${project.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    };
+
     const resume = () => {
       try {
         localStorage.setItem(
@@ -269,17 +300,14 @@ export default function ProjectPage() {
             <p className="app-sub">
               {takeOff.spaces.length} space{takeOff.spaces.length === 1 ? "" : "s"} · {takeOff.specLevel} · {Math.round(area * 10) / 10} m²
               {project.counts?.lights != null ? ` · ${project.counts.lights} lights · ${project.counts.sockets ?? 0} sockets` : ""}
-              {project.totalGhs != null ? ` · ${formatGhs(project.totalGhs)}` : ""}
+              {savedTotal != null ? ` · ${formatGhs(savedTotal)}` : ""}
             </p>
           </div>
           <div className="settings-actions">
             <Link className="btn-outline" href="/projects">Back</Link>
-            <a
-              className="btn-outline"
-              href={`/api/estimates/pdf?template=${encodeURIComponent(project.template ?? "HOME-2B")}&quality=${takeOff.specLevel}&loads=${(takeOff.specialLoads ?? []).join(",")}`}
-            >
+            <button className="btn-outline" type="button" onClick={downloadPdf}>
               Download PDF
-            </a>
+            </button>
             <button className="btn-amber" type="button" onClick={resume}>Continue this estimate</button>
             <button
               className="link-button"
@@ -350,11 +378,9 @@ export default function ProjectPage() {
                   <th />
                   <th />
                   <th className="align-right">
-                    {project.totalGhs != null
-                      ? formatGhs(project.totalGhs)
-                      : formatGhs(project.items.reduce((sum, line) => sum + (line.priceGhs == null ? 0 : line.priceGhs * line.quantity), 0))}
+                    {savedTotal != null ? formatGhs(savedTotal) : "Pending"}
                     <small className="muted-cell" style={{ display: "block", fontWeight: 500 }}>
-                      {project.items.filter((line) => line.priceGhs != null).length} of {project.items.length} priced
+                      {pricedCount(savedItems)} of {savedItems.length} priced
                     </small>
                   </th>
                 </tr>
