@@ -224,13 +224,14 @@ export function QuantityView(props: Props) {
         projectType,
         templateId,
         overrides,
+        specialLoads: loads,
         params: props.params,
         rules,
         circuitRules: props.circuitRules,
         assemblies: props.assemblies,
         assemblyItems: props.assemblyItems,
       }),
-    [spaces, specLevel, projectType, templateId, overrides, props, rules],
+    [spaces, specLevel, projectType, templateId, overrides, loads, props, rules],
   );
 
   const auto = useMemo(

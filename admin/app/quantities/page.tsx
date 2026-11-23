@@ -7,6 +7,7 @@ import { AuthScreen } from "../auth-screen";
 import { LoadingScreen } from "../loading-screen";
 import { listCatalogue, type CatalogueItem } from "@/lib/api";
 import { calculate, listTemplates, PROJECT_TYPES, RULE_SET, SPEC_LEVELS, getTemplateSpaces } from "@/lib/quantity-engine";
+import specialLoadRows from "@/lib/data/quantity-engine/special_loads.json";
 import { CONFIDENCE_NOTE, priceQuantities } from "@/lib/quantity-engine/catalogue";
 import type { PriceEntry, CatalogueMaterialInfo } from "@/lib/quantity-engine/catalogue";
 import type { SpaceInput, SpecLevel } from "@/lib/quantity-engine/types";
@@ -24,6 +25,9 @@ export default function AdminQuantitiesPage() {
   const [specLevel, setSpecLevel] = useState<SpecLevel>("standard");
   const [spaces, setSpaces] = useState<SpaceInput[]>(() => getTemplateSpaces(first.id));
   const [items, setItems] = useState<CatalogueItem[] | null>(null);
+  const [loads, setLoads] = useState<string[]>(() =>
+    (specialLoadRows as { load_key: string; default_enabled: boolean }[]).filter((row) => row.default_enabled).map((row) => row.load_key),
+  );
 
   useEffect(() => {
     if (!isLoaded || !isSignedIn) return;
@@ -33,8 +37,8 @@ export default function AdminQuantitiesPage() {
   const templatesForType = templates.filter((template) => template.projectType === projectType);
 
   const result = useMemo(
-    () => calculate({ templateId, specLevel, spaces, projectType }),
-    [templateId, specLevel, spaces, projectType],
+    () => calculate({ templateId, specLevel, spaces, projectType, specialLoads: loads }),
+    [templateId, specLevel, spaces, projectType, loads],
   );
 
   const catalogueMap = useMemo(() => {
@@ -152,6 +156,7 @@ export default function AdminQuantitiesPage() {
             <div><span>Light points</span><strong>{result.totals.lighting_points}</strong></div>
             <div><span>Double sockets</span><strong>{result.totals.double_sockets}</strong></div>
             <div><span>Final circuits</span><strong>{result.totals.total_final_circuits}</strong></div>
+            <div><span>Special loads</span><strong>{loads.length}</strong></div>
             <div><span>Board</span><strong>{result.totals.recommended_db_ways ? `${result.totals.recommended_db_ways} way` : "Engineered"}</strong></div>
             <div><span>Conduit</span><strong>{result.totals.total_containment_m} m</strong></div>
           </section>
@@ -161,6 +166,26 @@ export default function AdminQuantitiesPage() {
               {result.warnings.map((warning) => <li key={warning}>{warning}</li>)}
             </ul>
           ) : null}
+
+          <section className="panel" style={{ marginTop: 16 }}>
+            <div className="panel-head"><h2>Special loads</h2></div>
+            <div className="aq-loads">
+              {(specialLoadRows as { load_key: string; space_context: string; default_enabled: boolean }[]).map((load) => {
+                const active = loads.includes(load.load_key);
+                return (
+                  <button
+                    key={load.load_key}
+                    type="button"
+                    className={active ? "aq-load is-active" : "aq-load"}
+                    aria-pressed={active}
+                    onClick={() => setLoads((current) => (current.includes(load.load_key) ? current.filter((key) => key !== load.load_key) : [...current, load.load_key]))}
+                  >
+                    {load.load_key.replace(/_/g, " ")}
+                  </button>
+                );
+              })}
+            </div>
+          </section>
 
           <section className="panel" style={{ marginTop: 16 }}>
             <div className="panel-head"><h2>Spaces</h2></div>

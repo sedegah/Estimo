@@ -96,6 +96,7 @@ export interface CalculateOptions {
   specLevel: SpecLevel;
   spaces?: SpaceInput[];
   overrides?: PointOverride[];
+  specialLoads?: string[];
 }
 
 export function calculate(options: CalculateOptions): EngineResult {
@@ -115,6 +116,7 @@ export function calculate(options: CalculateOptions): EngineResult {
     projectType,
     templateId: template?.template_id ?? null,
     overrides: options.overrides ?? [],
+    specialLoads: options.specialLoads ?? [],
     params,
     rules,
     circuitRules: circuitRules as unknown as CircuitRuleRow[],

@@ -557,3 +557,19 @@ button, input, select, textarea { font: inherit; color: inherit; }
 }
 .aq-total span { color: var(--muted); font-size: 12.5px; }
 .aq-total strong { font-size: 22px; font-weight: 800; letter-spacing: -0.02em; }
+/* special loads in the console */
+.aq-loads { display: flex; flex-wrap: wrap; gap: 8px; padding: 16px; }
+.aq-load {
+  padding: 9px 13px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: #fff;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  text-transform: capitalize;
+  cursor: pointer;
+}
+.aq-load:hover { border-color: #cfd4cb; background: #fbfaf6; }
+.aq-load.is-active { background: var(--navy); border-color: var(--navy); color: #fff; }
