@@ -214,6 +214,7 @@ function SetupContent() {
           <button className="btn-amber side-cta" type="button" onClick={() => router.push(estimateQuery())}>
             See estimate
           </button>
+          <Link className="btn-outline side-secondary" href={itemizedHref()}>Itemized estimate</Link>
           {saved ? (
             <Link className="link-button side-link" href="/projects">Saved — view saved projects</Link>
           ) : (
