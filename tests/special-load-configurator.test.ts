@@ -12,6 +12,7 @@ import path from "node:path";
 import test from "node:test";
 
 import {
+  acSuppressionOverrides,
   applySpecialLoads,
   configurationStatus,
   missingRequirements,
@@ -21,6 +22,7 @@ import {
   specialLoadMaterials,
   specialLoadSummary,
   specialLoadDefinition,
+  syncAcQuantity,
   type SpecialLoadInstance,
 } from "../lib/quantity-engine/special-loads.ts";
 import { calculateProject, parametersFromRows, rulesByKey } from "../lib/quantity-engine/engine.ts";
@@ -264,6 +266,62 @@ test("a load's own cost is measured, not a whole drum of cable", () => {
   const measuredTotal = measured.reduce((sum, line) => sum + (line.amount ?? 0), 0);
   const packedTotal = packed.reduce((sum, line) => sum + (line.amount ?? 0), 0);
   assert.ok(measuredTotal < packedTotal, "the measured figure is the smaller, realistic one");
+});
+
+test("ACs counted in the Points table set the AC load's quantity", () => {
+  const ac: SpecialLoadInstance = {
+    ...newSpecialLoadInstance("air_conditioner", "ac-1"),
+    capacity_hp: 1.5,
+    phase: "single",
+    route_length_m: 8,
+    route_source: "USER_OVERRIDE",
+    quantity: 1,
+  };
+
+  const synced = syncAcQuantity([ac], 4);
+  assert.equal(synced[0].quantity, 4, "the plan's count wins over the form's number");
+  assert.equal(ac.quantity, 1, "the original is untouched");
+
+  const one = materialMap(specialLoadMaterials(ac, 8));
+  const four = materialMap(specialLoadMaterials(synced[0], 8));
+  assert.equal(one.get("mcb_sp_10")?.engineering_quantity, 1);
+  assert.equal(four.get("mcb_sp_10")?.engineering_quantity, 4, "one device per air conditioner");
+  const oneRun = one.get("special_phase_1p5")?.engineering_quantity ?? 0;
+  const fourRun = four.get("special_phase_1p5")?.engineering_quantity ?? 0;
+  assert.ok(Math.abs(fourRun - oneRun * 4) <= 0.4, "the cable run multiplies too");
+
+  // four air conditioners buy four ways and four circuits
+  assert.equal(applySpecialLoads(engine(), synced, {}).specialLoadTotals.circuits, 4);
+});
+
+test("the generic AC point is switched off when the configurator covers it", () => {
+  const unconfigured = newSpecialLoadInstance("air_conditioner", "ac-raw");
+  assert.deepEqual(acSuppressionOverrides(PLAN, [unconfigured]), [], "an unfinished AC leaves the plan alone");
+
+  const configured: SpecialLoadInstance = {
+    ...unconfigured,
+    capacity_hp: 1.5,
+    phase: "single",
+    route_length_m: 8,
+  };
+  const overrides = acSuppressionOverrides(PLAN, [configured]);
+  assert.equal(overrides.length, PLAN.length);
+  assert.ok(overrides.every((entry) => entry.point_type === "ac" && entry.value === 0));
+});
+
+test("phase and neutral of one run are one drum, not two", () => {
+  const fridge: SpecialLoadInstance = {
+    ...newSpecialLoadInstance("refrigerator", "fridge-drum"),
+    phase: "single",
+    rated_power_kw: 0.5,
+    route_length_m: 7.2,
+    route_source: "USER_OVERRIDE",
+  };
+  const packed = priceQuantities(specialLoadMaterials(fridge, 8), prices, catalogue);
+  const copper = packed.find((line) => line.catalogueId === "mat-cab-sc-cu-1p5");
+  assert.ok(copper, "the 1.5 mm² conductor line exists");
+  assert.ok(copper.engineeringQuantity > 18 && copper.engineeringQuantity < 20, "about 19 m measured");
+  assert.equal(copper.quantity, 100, "one 100 m drum, not one per conductor");
 });
 
 test("a plug-in appliance shares a circuit instead of buying its own device", () => {

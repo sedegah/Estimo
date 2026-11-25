@@ -18,6 +18,7 @@ import type {
 import type { CatalogueMaterialInfo } from "@/lib/quantity-engine/catalogue";
 import {
   STATUS_LABEL,
+  acSuppressionOverrides,
   applySpecialLoads,
   autoRouteForSpace,
   configurationStatus,
@@ -27,6 +28,7 @@ import {
   specialLoadDefinition,
   specialLoadLabels,
   specialLoadSummary,
+  syncAcQuantity,
   type SpaceRouteRow,
   type SpecialLoadInstance,
 } from "@/lib/quantity-engine/special-loads";
@@ -416,14 +418,23 @@ export function QuantityView(props: Props) {
    * The engine counts points and circuits; the special-load configurator adds the
    * configured loads' own circuits and materials on top. Keeping the two apart means a
    * change to load sizing can never move the golden quantity outputs.
+   *
+   * An AC load reuses the counts from the Points table, so the engine's generic AC points
+   * are switched off while the configured AC covers them; otherwise the same air
+   * conditioner would be costed twice.
    */
+  const engineOverrides = useMemo(() => {
+    const suppression = acSuppressionOverrides(spaces, instances);
+    return suppression.length ? [...overrides, ...suppression] : overrides;
+  }, [spaces, overrides, instances]);
+
   const result = useMemo(() => {
     const base = calculateProject({
       spaces,
       specLevel,
       projectType,
       templateId,
-      overrides,
+      overrides: engineOverrides,
       specialLoads: [],
       params: props.params,
       rules,
@@ -439,7 +450,7 @@ export function QuantityView(props: Props) {
       bendPerM: props.params.bend_per_conduit_m,
       drawBoxPerM: props.params.drawbox_per_conduit_m,
     });
-  }, [spaces, specLevel, projectType, templateId, overrides, instances, props, rules]);
+  }, [spaces, specLevel, projectType, templateId, engineOverrides, instances, props, rules]);
 
   const auto = useMemo(
     () =>
@@ -456,6 +467,30 @@ export function QuantityView(props: Props) {
       }),
     [spaces, specLevel, projectType, templateId, props, rules],
   );
+
+  /**
+   * Air conditioners counted in the Points table, overrides included. The AC load takes
+   * this as its quantity, so its circuit, materials and price multiply with the plan.
+   */
+  const acPointTotal = useMemo(() => {
+    const total = auto.spaces.reduce((sum, space) => {
+      const override = overrides.find(
+        (entry) => entry.space_id === space.space_id && entry.point_type === "ac" && entry.source === "user_override",
+      );
+      return sum + (override ? override.value : space.ac_points);
+    }, 0);
+    return Math.max(0, Math.round(total));
+  }, [auto.spaces, overrides]);
+
+  useEffect(() => {
+    setInstances((current) => {
+      if (!current.some((instance) => instance.load_key === "air_conditioner")) return current;
+      // no air conditioners counted means nothing for the AC card to price
+      if (acPointTotal === 0) return current.filter((instance) => instance.load_key !== "air_conditioner");
+      const next = syncAcQuantity(current, acPointTotal);
+      return next.some((instance, index) => instance !== current[index]) ? next : current;
+    });
+  }, [acPointTotal]);
 
   const catalogueMap = useMemo(() => new Map(Object.entries(props.catalogue)), [props.catalogue]);
   const lines = useMemo(
@@ -1024,6 +1059,12 @@ export function QuantityView(props: Props) {
                       <div className="quantities-material">
                         <Link href={`/catalogue/${line.catalogueId}`}>{line.catalogueName}</Link>
                         <span className={`quantities-confidence is-${line.confidence}`}>{line.confidence}</span>
+                        {line.origins.length ? (
+                          <span className="quantities-material-origin">
+                            {line.mixed ? "incl. " : "from "}
+                            {line.origins.join(", ")}
+                          </span>
+                        ) : null}
                       </div>
                     </td>
                     <td className="is-num">
@@ -1064,6 +1105,7 @@ export function QuantityView(props: Props) {
           spaces={spaces.map((space) => ({ value: space.id, label: space.space_name }))}
           routeForSpace={(spaceId) => autoRouteForSpace(props.spaceRoutes ?? [], templateId, spaceId)}
           cost={loadCosts.get(openInstance.id) ?? null}
+          lockedQuantity={openInstance.load_key === "air_conditioner" ? acPointTotal : undefined}
           onApply={applyLoad}
           onRemove={() => removeLoad(openInstance.id)}
           onClose={() => setOpenLoadId(null)}

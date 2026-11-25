@@ -16,7 +16,7 @@
  * materials, so a special load can never invent money on its own.
  */
 
-import type { EngineResult, MaterialQuantity } from "./types";
+import type { EngineResult, MaterialQuantity, PointOverride, SpaceInput } from "./types";
 
 export type Phase = "single" | "three";
 export type InstallationMethod = "conduit" | "trunking" | "surface" | "concealed";
@@ -553,7 +553,7 @@ export const SPECIAL_LOAD_DEFINITIONS: SpecialLoadDefinition[] = [
     containment: "conduit",
     fallbackPowerKw: 1.35,
     fallbackCapacityHp: 1.5,
-    required: ["quantity", "phase"],
+    required: ["quantity", "capacity_hp", "phase"],
     fields: [
       field.quantity(),
       field.capacityHp(),
@@ -1192,7 +1192,8 @@ export function specialLoadMaterials(
     );
   }
 
-  return rows;
+  // the bill tags these rows, so a technician can see which load bought what
+  return rows.map((row) => ({ ...row, origins: [definition.name] }));
 }
 
 /** A one-line summary for the chip, built only from what the person entered. */
@@ -1423,6 +1424,43 @@ export interface SpaceRouteRow {
   space_no: number;
   db_key?: string;
   route_distance_from_db_m: number;
+}
+
+/**
+ * The AC count on the plan is the quantity of the AC load.
+ *
+ * A person counts air conditioners per space in the Points table; that count is what the
+ * configured AC's circuit, materials and price must multiply by. The instance keeps its
+ * own rating, route and manufacturer figures; only the quantity comes from the plan.
+ */
+export function syncAcQuantity(instances: SpecialLoadInstance[], acCount: number): SpecialLoadInstance[] {
+  const quantity = Math.max(0, Math.round(acCount));
+  return instances.map((instance) =>
+    instance.load_key === "air_conditioner" && instance.quantity !== quantity
+      ? { ...instance, quantity }
+      : instance,
+  );
+}
+
+/**
+ * Point overrides that stop the engine costing bare AC points while a configured AC load
+ * covers them. Without this the plan's AC count would be costed twice: once by the generic
+ * `ac_point` assembly and once by the configurator.
+ */
+export function acSuppressionOverrides(
+  spaces: SpaceInput[],
+  instances: SpecialLoadInstance[],
+): PointOverride[] {
+  const configured = instances.some(
+    (instance) => instance.load_key === "air_conditioner" && isConfigured(instance),
+  );
+  if (!configured) return [];
+  return spaces.map((space) => ({
+    space_id: space.id,
+    point_type: "ac" as const,
+    value: 0,
+    source: "user_override" as const,
+  }));
 }
 
 /**

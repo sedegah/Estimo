@@ -182,6 +182,8 @@ export interface MaterialQuantity {
   pack_size: number | null;
   trace: string[];
   confidence: "high" | "medium" | "estimated";
+  /** Set when the row came from configured special loads, so the bill can say so. */
+  origins?: string[];
 }
 
 export interface EngineResult {

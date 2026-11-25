@@ -27,6 +27,11 @@ interface Props {
   routeForSpace: (spaceId: string | null) => number | null;
   /** Priced cost of this load's materials, and how many lines have no price yet. */
   cost: { total: number; unpriced: number } | null;
+  /**
+   * When the plan already decides the quantity (air conditioners counted in the Points
+   * table), this is that count and the quantity field becomes read-only.
+   */
+  lockedQuantity?: number;
   onApply: (next: SpecialLoadInstance) => void;
   onRemove: () => void;
   onClose: () => void;
@@ -86,6 +91,7 @@ export function SpecialLoadConfigurator({
   spaces,
   routeForSpace,
   cost,
+  lockedQuantity,
   onApply,
   onRemove,
   onClose,
@@ -298,7 +304,13 @@ export function SpecialLoadConfigurator({
                       {definition.required.includes(field.key) ? <i className="load-required">required</i> : null}
                     </span>
 
-                    {field.kind === "textarea" ? (
+                    {field.key === "quantity" && lockedQuantity !== undefined ? (
+                      // the plan already counts these; typing a number here would contradict it
+                      <p className="load-locked">
+                        <strong>{lockedQuantity}</strong> air conditioner{lockedQuantity === 1 ? "" : "s"} counted
+                        in the Points table.
+                      </p>
+                    ) : field.kind === "textarea" ? (
                       <textarea
                         id={`${titleId}-${field.key}`}
                         rows={2}

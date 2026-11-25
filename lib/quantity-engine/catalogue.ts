@@ -161,6 +161,10 @@ export interface PricedLine {
   brand: string | null;
   confidence: MaterialQuantity["confidence"];
   trace: string[];
+  /** Special loads whose materials this line includes, for the bill to show. */
+  origins: string[];
+  /** True when the line also carries materials that no special load asked for. */
+  mixed: boolean;
 }
 
 export interface CatalogueMaterialInfo {
@@ -187,7 +191,22 @@ export function priceQuantities(
   catalogue: Map<string, CatalogueMaterialInfo>,
   options: PriceOptions = {},
 ): PricedLine[] {
-  const merged = new Map<string, PricedLine>();
+  interface Collected {
+    material: MaterialQuantity;
+    info: CatalogueMaterialInfo;
+    engineering: number;
+    pack: number | null;
+    unitLength: number;
+    convert: boolean;
+    trace: string[];
+    origins: string[];
+    mixed: boolean;
+  }
+
+  // First pass: merge by catalogue material and add up what the job measures. Rounding
+  // happens once, after the merge: phase, neutral and earth of one run are one drum, not
+  // three, and two short appliance runs do not each buy their own.
+  const collected = new Map<string, Collected>();
 
   for (const material of materials) {
     const link = MATERIAL_CATALOGUE[material.material_key];
@@ -195,48 +214,62 @@ export function priceQuantities(
     const info = catalogue.get(link.id);
     if (!info) continue;
 
-    // Everything a person sees is in catalogue units: lengths of conduit, metres of
-    // cable, pieces of accessories. The engineering quantity stays in metres.
-    const unitLength = link.unitLength ?? 3;
-    const convert = link.convert === "metres-to-lengths";
-    const quantity = convert
-      ? Math.ceil(material.engineering_quantity / unitLength)
-      : options.measured
-        ? Math.round(material.engineering_quantity * 10) / 10
-        : material.purchase_quantity;
-    const purchase = quantity;
-
-    const existing = merged.get(link.id);
+    const existing = collected.get(link.id);
     if (existing) {
-      existing.quantity = Math.round((existing.quantity + quantity) * 10) / 10;
-      existing.engineeringQuantity = Math.round((existing.engineeringQuantity + material.engineering_quantity) * 10) / 10;
-      existing.purchaseQuantity = Math.round((existing.purchaseQuantity + purchase) * 10) / 10;
-      // a merged line (phase + neutral, for example) must total both runs
-      existing.amount =
-        existing.unitPrice == null ? null : Math.round(existing.unitPrice * existing.quantity * 100) / 100;
-      existing.trace = [...existing.trace, ...material.trace];
+      existing.engineering = Math.round((existing.engineering + material.engineering_quantity) * 10) / 10;
+      existing.pack = existing.pack ?? material.pack_size ?? null;
+      existing.trace = [...existing.trace, ...material.trace].slice(0, 8);
+      if (!material.origins?.length) existing.mixed = true;
+      for (const name of material.origins ?? []) {
+        if (!existing.origins.includes(name)) existing.origins.push(name);
+      }
       continue;
     }
 
-    const price = prices[link.id];
-    merged.set(link.id, {
-      materialKey: material.material_key,
-      name: material.name,
-      catalogueId: link.id,
-      catalogueName: info.name,
-      catalogueUnit: info.unit,
-      quantity,
-      engineeringQuantity: material.engineering_quantity,
-      purchaseQuantity: purchase,
-      unitPrice: price ? price.price : null,
-      amount: price ? Math.round(price.price * quantity * 100) / 100 : null,
-      brand: price?.brand ?? null,
-      confidence: material.confidence,
+    collected.set(link.id, {
+      material,
+      info,
+      engineering: material.engineering_quantity,
+      pack: material.pack_size ?? null,
+      unitLength: link.unitLength ?? 3,
+      convert: link.convert === "metres-to-lengths",
       trace: [...material.trace],
+      origins: [...(material.origins ?? [])],
+      mixed: !material.origins?.length,
     });
   }
 
-  return Array.from(merged.values()).sort((a, b) => a.catalogueName.localeCompare(b.catalogueName));
+  const lines: PricedLine[] = [];
+  for (const [catalogueId, entry] of collected) {
+    const price = prices[catalogueId];
+    const quantity = entry.convert
+      ? Math.ceil(entry.engineering / entry.unitLength)
+      : options.measured
+        ? entry.engineering
+        : entry.pack
+          ? Math.ceil(entry.engineering / entry.pack) * entry.pack
+          : Math.ceil(entry.engineering);
+
+    lines.push({
+      materialKey: entry.material.material_key,
+      name: entry.material.name,
+      catalogueId,
+      catalogueName: entry.info.name,
+      catalogueUnit: entry.info.unit,
+      quantity,
+      engineeringQuantity: entry.engineering,
+      purchaseQuantity: quantity,
+      unitPrice: price ? price.price : null,
+      amount: price ? Math.round(price.price * quantity * 100) / 100 : null,
+      brand: price?.brand ?? null,
+      confidence: entry.material.confidence,
+      trace: entry.trace,
+      origins: entry.origins,
+      mixed: entry.mixed,
+    });
+  }
+
+  return lines.sort((a, b) => a.catalogueName.localeCompare(b.catalogueName));
 }
 
 export const CONFIDENCE_NOTE =
