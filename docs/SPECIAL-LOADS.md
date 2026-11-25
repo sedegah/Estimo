@@ -93,7 +93,12 @@ A special load is not costed until its material quantities reach `project_materi
 `priceQuantities` then prices them from the catalogue exactly like the rest of the take-off.
 A row with no published price stays on the bill marked Pending and is excluded from the
 total: a missing price is never treated as GHS 0. Each load card shows its own subtotal and
-how many of its lines are unpriced; the section header shows the total the loads add.
+how many of its lines are unpriced; the section header sums those cards.
+
+The bill buys cable in 100 m drums and conduit in 3 m lengths, so a card is priced for what
+the load *measures*, not for a drum of its own: a fridge with a 7 m run costs its cable by
+the metre, not GHS 5,500 of drum. The estimate still rounds to packs, which is why adding a
+load can move the total by less (or occasionally more) than the card's own figure.
 
 ## Persistence
 

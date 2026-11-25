@@ -152,6 +152,16 @@ function seedSpecialLoads(
   });
 }
 
+/** One card per load type: the quantity field covers multiples of the same load. */
+function dedupeLoads(instances: SpecialLoadInstance[]): SpecialLoadInstance[] {
+  const seen = new Set<string>();
+  return instances.filter((instance) => {
+    if (seen.has(instance.load_key)) return false;
+    seen.add(instance.load_key);
+    return true;
+  });
+}
+
 /** Names stay readable: one master bedroom, the rest numbered per room type. */
 /** Dimensions and quantities may be cleared while typing; values commit when valid. */
 function NumberCell({ value, min, step, onCommit }: { value: number; min: number; step: number; onCommit: (next: number) => void }) {
@@ -280,7 +290,7 @@ export function QuantityView(props: Props) {
         setSpaces(draftSpaces);
         setOverrides(draft.overrides ?? []);
         // new drafts carry whole instances; older ones only carried load keys
-        const stored = parseSpecialLoadInstances(draft.specialLoadInstances);
+        const stored = dedupeLoads(parseSpecialLoadInstances(draft.specialLoadInstances));
         if (stored.length) setInstances(stored);
         else if (Array.isArray(draft.loads)) {
           setInstances(seedSpecialLoads(draft.loads, draftSpaces, props.spaceRoutes ?? [], draft.templateId));
@@ -551,7 +561,11 @@ export function QuantityView(props: Props) {
 
   /** Applying is the only path from the form into the estimate. */
   const applyLoad = (next: SpecialLoadInstance) => {
-    setInstances((current) => current.map((instance) => (instance.id === next.id ? next : instance)));
+    setInstances((current) =>
+      current.some((instance) => instance.id === next.id)
+        ? current.map((instance) => (instance.id === next.id ? next : instance))
+        : dedupeLoads([...current, next]),
+    );
     setOpenLoadId(null);
     setAdded("");
   };
