@@ -150,20 +150,34 @@ function SetupContent() {
         specLevel,
         spaces: planSpaces,
         prices: (prices ?? {}) as Parameters<typeof liveEstimate>[0]["prices"],
+        overrides: carried?.overrides,
+        specialLoadInstances: carried?.instances,
       }),
-    [templateId, specLevel, planSpaces, prices],
+    [templateId, specLevel, planSpaces, prices, carried],
   );
 
   const total = live.total;
   const fittingsLabel = FITTINGS.find((entry) => entry.value === quality)?.label ?? "Standard";
   const spaces = planSpaces.length;
 
-  /** The itemized screen opens with exactly this plan, so the totals match. */
+  /**
+   * The itemized screen restores this exact plan: spaces, point overrides and the special
+   * loads, so the two screens cannot drift apart on the way there or on the way back.
+   */
   const openItemized = () => {
-    const plan = encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(planSpaces)))));
-    router.push(
-      `/itemized?template=${encodeURIComponent(type.code)}&quality=${quality}&plan=${plan}`,
-    );
+    try {
+      localStorage.setItem(
+        "estimo_estimate_draft_v1",
+        JSON.stringify({
+          templateId,
+          specLevel,
+          spaces: planSpaces,
+          overrides: carried?.overrides ?? [],
+          specialLoadInstances: carried?.instances ?? [],
+        }),
+      );
+    } catch {}
+    router.push(`/itemized?template=${encodeURIComponent(type.code)}&quality=${quality}`);
   };
 
   const estimateQuery = () => {
@@ -224,6 +238,8 @@ function SetupContent() {
   };
 
   const changeSpace = (key: string, delta: number) => {
+    // editing the counters means going back to the counter-built plan
+    setCarried(null);
     setCounts((current) => ({ ...current, [key]: clampRoom((current[key] ?? 0) + delta) }));
   };
 
