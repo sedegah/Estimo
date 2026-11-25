@@ -211,6 +211,8 @@ type CatalogueRow = {
 };
 
 async function listCatalogue(env: Env): Promise<Response> {
+  // the price list changes rarely: the edge serves it for five minutes and refreshes
+  // behind a request, so estimate pages do not wait on a cold worker
   const { results } = await env.DB
     .prepare(
       `SELECT i.id, i.code, i.name, i.category, i.unit, i.spec, i.tier, i.relevance, i.keywords, i.image_key,
@@ -221,7 +223,7 @@ async function listCatalogue(env: Env): Promise<Response> {
        FROM catalogue_items i WHERE i.active = 1 ORDER BY i.name LIMIT 500`,
     )
     .all<CatalogueRow>();
-  return json({ ok: true, items: results ?? [] }, 200, "public, max-age=60, stale-while-revalidate=300");
+  return json({ ok: true, items: results ?? [] }, 200, "public, max-age=60, s-maxage=300, stale-while-revalidate=600");
 }
 
 const IMAGE_TYPES: Record<string, string> = {
