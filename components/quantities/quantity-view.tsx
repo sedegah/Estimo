@@ -969,6 +969,13 @@ export function QuantityView(props: Props) {
           </ul>
         ) : null}
 
+        {instances.length ? (
+          <p className="quantities-load-note">
+            These are the materials each load measures. The bill prices cable and conduit in
+            packs, so the estimate rounds up from these figures.
+          </p>
+        ) : null}
+
         {result.specialLoadTotals.unconfigured ? (
           <p className="quantities-load-warning">
             {result.specialLoadTotals.unconfigured} selected load

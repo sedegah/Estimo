@@ -241,6 +241,31 @@ test("H. the route starts from the board the load is served from", () => {
   assert.ok(phase.trace.some((line) => /DB2/.test(line)), "the basis names the serving board");
 });
 
+test("a load's own cost is measured, not a whole drum of cable", () => {
+  const fridge: SpecialLoadInstance = {
+    ...newSpecialLoadInstance("refrigerator", "fridge-1"),
+    phase: "single",
+    rated_power_kw: 0.5,
+    route_length_m: 7.2,
+    route_source: "USER_OVERRIDE",
+  };
+  const rows = specialLoadMaterials(fridge, 8);
+
+  const measured = priceQuantities(rows, prices, catalogue, { measured: true });
+  const cable = measured.find((line) => line.catalogueId === "mat-cab-sc-cu-1p5");
+  assert.ok(cable, "the phase and neutral conductors are priced together");
+  assert.ok(cable.quantity < 50, `a 7 m run is priced in metres, got ${cable?.quantity}`);
+
+  // the bill still buys cables in drums, and rounds each conductor separately
+  const packed = priceQuantities(rows, prices, catalogue);
+  const packedCable = packed.find((line) => line.catalogueId === "mat-cab-sc-cu-1p5");
+  assert.ok((packedCable?.quantity ?? 0) >= 100, "the priced bill buys drum multiples");
+
+  const measuredTotal = measured.reduce((sum, line) => sum + (line.amount ?? 0), 0);
+  const packedTotal = packed.reduce((sum, line) => sum + (line.amount ?? 0), 0);
+  assert.ok(measuredTotal < packedTotal, "the measured figure is the smaller, realistic one");
+});
+
 test("a plug-in appliance shares a circuit instead of buying its own device", () => {
   const plugIn: SpecialLoadInstance = {
     ...newSpecialLoadInstance("freezer", "fz-plug"),
