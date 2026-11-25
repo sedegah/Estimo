@@ -485,8 +485,7 @@ export function QuantityView(props: Props) {
   useEffect(() => {
     setInstances((current) => {
       if (!current.some((instance) => instance.load_key === "air_conditioner")) return current;
-      // no air conditioners counted means nothing for the AC card to price
-      if (acPointTotal === 0) return current.filter((instance) => instance.load_key !== "air_conditioner");
+      // zero counted is a legitimate state: the card waits as "configuration required"
       const next = syncAcQuantity(current, acPointTotal);
       return next.some((instance, index) => instance !== current[index]) ? next : current;
     });

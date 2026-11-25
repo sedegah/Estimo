@@ -830,6 +830,11 @@ export function missingRequirements(instance: SpecialLoadInstance): SpecialLoadF
   const missing: SpecialLoadFieldKey[] = [];
 
   for (const key of definition.required) {
+    // a load with no units cannot be priced, whatever else is filled in
+    if (key === "quantity" && !(instance.quantity >= 1)) {
+      missing.push(key);
+      continue;
+    }
     if (key === "rated_power_kw") {
       // either a power rating or a current reading makes the circuit workable
       if (instance.rated_power_kw === null && instance.rated_current_a === null && instance.capacity_hp === null) {
@@ -1044,7 +1049,8 @@ export function specialLoadMaterials(
 
   const definition = specialLoadDefinition(instance.load_key);
   const sizing = sizeSpecialLoad(instance);
-  const units = Math.max(1, Math.round(instance.quantity));
+  const units = Math.round(instance.quantity);
+  if (units < 1) return [];
   const perUnitRoute = routeLengthFor(instance, defaultRouteM);
   const cableWaste = 1 + (options.cableWastePct ?? 7.5) / 100;
   const containmentWaste = 1 + (options.containmentWastePct ?? 10) / 100;
@@ -1322,7 +1328,7 @@ export function applySpecialLoads(
     } else {
       totals.configured += 1;
       // a shared supply draws no new way on the board
-      if (instance.dedicated_circuit !== false) totals.circuits += Math.max(1, Math.round(instance.quantity));
+      if (instance.dedicated_circuit !== false) totals.circuits += Math.max(0, Math.round(instance.quantity));
       if (status === "PROVISIONAL") totals.provisional += 1;
       if (status === "VERIFIED") totals.verified += 1;
       if (status === "OVERRIDDEN") totals.overridden += 1;
