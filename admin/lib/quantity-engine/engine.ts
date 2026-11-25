@@ -386,9 +386,16 @@ function aggregateMaterials(args: {
     "switch_point",
     "earthing_basic_residential",
   ]);
-  const known = new Set(
-    assemblies.filter((assembly) => CORE_ASSEMBLIES.has(assembly.assembly_key)).map((assembly) => assembly.assembly_key),
-  );
+  const loadCounts = new Map<string, number>();
+  for (const load of args.specialLoadRows ?? []) {
+    if (!args.selectedLoads?.includes(String(load.load_key))) continue;
+    const key = String(load.assembly_key ?? "");
+    if (key) loadCounts.set(key, (loadCounts.get(key) ?? 0) + 1);
+  }
+  const known = new Set([
+    ...assemblies.filter((assembly) => CORE_ASSEMBLIES.has(assembly.assembly_key)).map((assembly) => assembly.assembly_key),
+    ...Array.from(loadCounts.keys()),
+  ]);
   const rows = new Map<string, MaterialQuantity>();
   const engineered = new Map<string, number>();
 
@@ -399,12 +406,6 @@ function aggregateMaterials(args: {
     switch_point: totals.switch_positions,
     ac_point: totals.ac_points,
   };
-  const loadCounts = new Map<string, number>();
-  for (const load of args.specialLoadRows ?? []) {
-    if (!args.selectedLoads?.includes(String(load.load_key))) continue;
-    const key = String(load.assembly_key ?? "");
-    if (key) loadCounts.set(key, (loadCounts.get(key) ?? 0) + 1);
-  }
 
   // route-driven quantities, before assemblies see them
   engineered.set("2.5mm2_phase_conductor", totals.socket_conductor_est_m);
