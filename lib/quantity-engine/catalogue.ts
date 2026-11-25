@@ -169,11 +169,23 @@ export interface CatalogueMaterialInfo {
   unit: string;
 }
 
+export interface PriceOptions {
+  /**
+   * Price what the job measures rather than what it buys.
+   *
+   * The bill rounds cable into 100 m rolls and conduit into 3 m lengths, because that is
+   * what leaves the merchant. Attributing a whole roll to one appliance would say a fridge
+   * costs more than the cable for the house, so a per-load figure is priced by the metre.
+   */
+  measured?: boolean;
+}
+
 /** Aggregates engine lines that point at the same catalogue material. */
 export function priceQuantities(
   materials: MaterialQuantity[],
   prices: Record<string, PriceEntry>,
   catalogue: Map<string, CatalogueMaterialInfo>,
+  options: PriceOptions = {},
 ): PricedLine[] {
   const merged = new Map<string, PricedLine>();
 
@@ -189,7 +201,9 @@ export function priceQuantities(
     const convert = link.convert === "metres-to-lengths";
     const quantity = convert
       ? Math.ceil(material.engineering_quantity / unitLength)
-      : material.purchase_quantity;
+      : options.measured
+        ? Math.round(material.engineering_quantity * 10) / 10
+        : material.purchase_quantity;
     const purchase = quantity;
 
     const existing = merged.get(link.id);

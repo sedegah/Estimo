@@ -460,7 +460,8 @@ export function QuantityView(props: Props) {
   const loadCosts = useMemo(() => {
     const costs = new Map<string, { total: number; unpriced: number }>();
     for (const entry of result.specialLoadBreakdown) {
-      const priced = priceQuantities(entry.materials, livePrices, catalogueMap);
+      // measured, not whole rolls: a short run must not carry a 100 m drum of cable
+      const priced = priceQuantities(entry.materials, livePrices, catalogueMap, { measured: true });
       costs.set(entry.instanceId, {
         total: pricedTotal(priced),
         unpriced: priced.filter((line) => line.unitPrice === null).length,
@@ -892,7 +893,7 @@ export function QuantityView(props: Props) {
           {instances.length ? (
             <span className="quantities-load-total">
               {loadCostTotal > 0
-                ? `${money(loadCostTotal)} added`
+                ? `${money(loadCostTotal)} of materials`
                 : loadUnpricedTotal
                   ? "Prices pending"
                   : money(0) + " added"}

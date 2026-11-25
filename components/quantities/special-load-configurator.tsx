@@ -15,7 +15,7 @@ import {
   type SpecialLoadValues,
   type SizingSource,
 } from "@/lib/quantity-engine/special-loads";
-import { formatGhs } from "@/lib/format";
+
 
 interface Props {
   instance: SpecialLoadInstance;
@@ -63,6 +63,10 @@ const SOURCES: { value: SizingSource; label: string; hint: string }[] = [
     hint: "A qualified person has decided the circuit; the estimate says so.",
   },
 ];
+
+/** The estimate prints cedis as "GHS"; the configurator matches it rather than the locale symbol. */
+const money = (value: number) =>
+  `GHS ${value.toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
 const manufacturerField = (key: SpecialLoadFieldKey) =>
   key === "manufacturer_cable_size_mm2" || key === "manufacturer_breaker_rating_a";
@@ -398,7 +402,7 @@ export function SpecialLoadConfigurator({
                 <p className="load-preview-line">
                   {materialLines.length} material line{materialLines.length === 1 ? "" : "s"} will be added to the
                   bill of quantities.
-                  {cost ? ` This load is ${formatGhs(cost.total)} in the estimate so far.` : ""}
+                  {cost && cost.total > 0 ? ` This load is ${money(cost.total)} in the estimate so far.` : ""}
                   {cost && cost.unpriced ? ` ${cost.unpriced} line${cost.unpriced === 1 ? " has" : "s have"} no price yet.` : ""}
                 </p>
               </>
