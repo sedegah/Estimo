@@ -46,9 +46,11 @@ export type SpecialLoadFieldKey =
   | "supply_voltage_v"
   | "phase"
   | "serving_db_id"
+  | "target_space_id"
   | "route_length_m"
   | "installation_method"
   | "local_isolator_required"
+  | "dedicated_circuit"
   | "manufacturer_cable_size_mm2"
   | "manufacturer_breaker_rating_a"
   | "manufacturer_rcd_requirement"
@@ -64,10 +66,14 @@ export interface SpecialLoadValues {
   supply_voltage_v: number | null;
   phase: Phase | null;
   serving_db_id: string | null;
+  /** The space the circuit feeds, when the plan knows it. */
+  target_space_id: string | null;
   route_length_m: number | null;
   route_source: RouteSource;
   installation_method: InstallationMethod | null;
   local_isolator_required: boolean | null;
+  /** False when the appliance shares an existing circuit instead of getting its own. */
+  dedicated_circuit: boolean | null;
   manufacturer_cable_size_mm2: number | null;
   manufacturer_breaker_rating_a: number | null;
   manufacturer_rcd_requirement: RcdRequirement | null;
@@ -87,7 +93,7 @@ export interface SpecialLoadInstance extends SpecialLoadValues {
 export type SpecialLoadFieldKind = "number" | "select" | "boolean" | "text" | "textarea";
 
 /** Lists the UI resolves at render time, because they depend on the project. */
-export type SpecialLoadOptionsFrom = "boards" | "cable_sizes" | "breaker_ratings";
+export type SpecialLoadOptionsFrom = "boards" | "spaces" | "cable_sizes" | "breaker_ratings";
 
 export interface SpecialLoadFieldOption {
   value: string;
@@ -264,6 +270,16 @@ const field = {
   phase(): SpecialLoadField {
     return { key: "phase", label: "Supply", kind: "select", group: "load", options: PHASE_OPTIONS };
   },
+  space(): SpecialLoadField {
+    return {
+      key: "target_space_id",
+      label: "Space it serves",
+      kind: "select",
+      group: "route",
+      optionsFrom: "spaces",
+      help: "Picks the ESTIMO distance to that space. Type over it when the real run differs.",
+    };
+  },
   board(): SpecialLoadField {
     return {
       key: "serving_db_id",
@@ -289,6 +305,19 @@ const field = {
   },
   method(): SpecialLoadField {
     return { key: "installation_method", label: "Installation method", kind: "select", group: "route", options: METHOD_OPTIONS };
+  },
+  dedicated(): SpecialLoadField {
+    return {
+      key: "dedicated_circuit",
+      label: "Own circuit",
+      kind: "select",
+      group: "load",
+      options: [
+        { value: "yes", label: "Yes, a dedicated circuit" },
+        { value: "no", label: "No, shares an existing circuit" },
+      ],
+      help: "A shared supply still gets its outlet and run, but no breaker or isolator of its own.",
+    };
   },
   isolator(): SpecialLoadField {
     return { key: "local_isolator_required", label: "Local isolator required", kind: "select", group: "manufacturer", options: YES_NO_OPTIONS };
@@ -326,10 +355,10 @@ const field = {
   },
 };
 
-const CUSTOM_PRESET: SpecialLoadPreset[] = [{ code: "CUSTOM", name: "Custom" }];
+const CUSTOM_PRESET: SpecialLoadPreset[] = [{ code: "CUSTOM", name: "Custom", values: {} }];
 
 /** The fields every load shares: what it draws, where it sits and what it hangs off. */
-function circuitFields(): SpecialLoadField[] {
+function circuitFields(options: { dedicated?: boolean } = {}): SpecialLoadField[] {
   return [
     field.quantity(),
     field.power(),
@@ -337,8 +366,10 @@ function circuitFields(): SpecialLoadField[] {
     field.voltage(),
     field.phase(),
     field.board(),
+    field.space(),
     field.route(),
     field.method(),
+    ...(options.dedicated ? [field.dedicated()] : []),
     field.isolator(),
     field.cableSize(),
     field.breaker(),
@@ -380,10 +411,10 @@ export const SPECIAL_LOAD_DEFINITIONS: SpecialLoadDefinition[] = [
     containment: "conduit",
     fallbackPowerKw: 0.8,
     required: ["quantity", "phase"],
-    fields: circuitFields(),
+    fields: circuitFields({ dedicated: true }),
     presets: [
-      { code: "PLUG_IN", name: "Standard plug-in freezer", values: { protection: undefined, phase: "single" } as Partial<SpecialLoadValues> },
-      { code: "DEDICATED", name: "Dedicated freezer supply", values: { phase: "single" } },
+      { code: "PLUG_IN", name: "Standard plug-in freezer", values: { phase: "single", dedicated_circuit: false } },
+      { code: "DEDICATED", name: "Dedicated freezer supply", values: { phase: "single", dedicated_circuit: true } },
       ...CUSTOM_PRESET,
     ],
     provisionalNote: "A plug-in freezer rarely needs its own breaker. Use the dedicated preset when the design gives it one.",
@@ -531,6 +562,7 @@ export const SPECIAL_LOAD_DEFINITIONS: SpecialLoadDefinition[] = [
       field.voltage(),
       field.phase(),
       field.board(),
+      field.space(),
       field.route(),
       field.method(),
       field.isolator(),
@@ -701,10 +733,12 @@ export function defaultSpecialLoadValues(): SpecialLoadValues {
     supply_voltage_v: null,
     phase: "single",
     serving_db_id: "DB1",
+    target_space_id: null,
     route_length_m: null,
     route_source: "AUTO",
     installation_method: "conduit",
     local_isolator_required: null,
+    dedicated_circuit: null,
     manufacturer_cable_size_mm2: null,
     manufacturer_breaker_rating_a: null,
     manufacturer_rcd_requirement: "unknown",
@@ -764,11 +798,13 @@ export function parseSpecialLoadInstance(value: unknown): SpecialLoadInstance | 
     supply_voltage_v: numberOrNull(row.supply_voltage_v),
     phase,
     serving_db_id: typeof row.serving_db_id === "string" ? row.serving_db_id : null,
+    target_space_id: typeof row.target_space_id === "string" ? row.target_space_id : null,
     route_length_m: numberOrNull(row.route_length_m),
     route_source: row.route_source === "USER_OVERRIDE" ? "USER_OVERRIDE" : "AUTO",
     installation_method: method,
     local_isolator_required:
       typeof row.local_isolator_required === "boolean" ? row.local_isolator_required : null,
+    dedicated_circuit: typeof row.dedicated_circuit === "boolean" ? row.dedicated_circuit : null,
     manufacturer_cable_size_mm2: numberOrNull(row.manufacturer_cable_size_mm2),
     manufacturer_breaker_rating_a: numberOrNull(row.manufacturer_breaker_rating_a),
     manufacturer_rcd_requirement:
@@ -815,6 +851,10 @@ export function isConfigured(instance: SpecialLoadInstance): boolean {
 /** The confidence label the chip and the estimate show. */
 export function configurationStatus(instance: SpecialLoadInstance): ConfigurationStatus {
   if (!isConfigured(instance)) return "NOT_CONFIGURED";
+  // manufacturer figures for the whole circuit beat any judgement call about the source
+  if (instance.manufacturer_breaker_rating_a !== null && instance.manufacturer_cable_size_mm2 !== null) {
+    return "VERIFIED";
+  }
   if (instance.sizing_source === "MANUFACTURER") return "VERIFIED";
   if (instance.sizing_source === "USER_OVERRIDE") return "OVERRIDDEN";
   return "PROVISIONAL";
@@ -836,8 +876,6 @@ export interface SpecialLoadSizing {
   assumedPower: boolean;
   basis: string[];
 }
-
-const ceilTo = (value: number, step: number) => Math.ceil(value / step) * step;
 
 function nextBreakerRating(currentA: number): number {
   return BREAKER_RATINGS.find((rating) => rating >= currentA) ?? BREAKER_RATINGS[BREAKER_RATINGS.length - 1];
@@ -875,7 +913,10 @@ export function sizeSpecialLoad(instance: SpecialLoadInstance): SpecialLoadSizin
   const designCurrentA = loadCurrentA * (definition.motorLoad ? 1.25 : 1);
 
   const fromManufacturer = instance.manufacturer_breaker_rating_a;
-  const protectiveDeviceA = fromManufacturer ?? nextBreakerRating(designCurrentA);
+  const rawDevice = fromManufacturer ?? nextBreakerRating(designCurrentA);
+  // 63 A is the largest single-circuit device the catalogue prices; beyond it the
+  // circuit needs an engineered protective device, which the basis says.
+  const protectiveDeviceA = Math.min(63, rawDevice);
   const cableSizeMm2 = instance.manufacturer_cable_size_mm2 ?? cableFor(protectiveDeviceA, method);
   const cpcSizeMm2 = cpcFor(cableSizeMm2);
   const containmentMm = cableSizeMm2 <= 4 ? 20 : cableSizeMm2 <= 10 ? 25 : 32;
@@ -909,6 +950,11 @@ export function sizeSpecialLoad(instance: SpecialLoadInstance): SpecialLoadSizin
       ? `Protective device taken from the manufacturer at ${protectiveDeviceA} A.`
       : `${protectiveDeviceA} A device chosen from the standard ratings.`,
   );
+  if (rawDevice > protectiveDeviceA) {
+    basis.push(
+      `${rawDevice} A is beyond the largest stocked single-circuit device; the circuit needs an engineered protective device.`,
+    );
+  }
   basis.push(
     instance.manufacturer_cable_size_mm2
       ? `Cable size taken from the manufacturer at ${cableSizeMm2} mm².`
@@ -1010,9 +1056,11 @@ export function specialLoadMaterials(
   const add = (row: MaterialQuantity) => rows.push(row);
 
   const basisRoute = `${perUnitRoute} m route from ${instance.serving_db_id ?? "the board"}`;
+  // a shared supply gets its outlet and its run, but no board device of its own
+  const dedicated = instance.dedicated_circuit !== false;
 
   // protection and control
-  if (definition.protection === "mcb") {
+  if (definition.protection === "mcb" && dedicated) {
     const word = instance.phase === "three" ? "tp" : "sp";
     add(
       material(
@@ -1021,13 +1069,13 @@ export function specialLoadMaterials(
         "each",
         units,
         null,
-        `${definitions(instance)} protective device per circuit`,
+        `${definition.name} protective device per circuit`,
         "medium",
       ),
     );
   }
 
-  if (sizing.rcdRequired) {
+  if (sizing.rcdRequired && dedicated) {
     const word = instance.phase === "three" ? "4p" : "2p";
     add(
       material(
@@ -1042,7 +1090,7 @@ export function specialLoadMaterials(
     );
   }
 
-  if (sizing.isolatorRatingA) {
+  if (sizing.isolatorRatingA && dedicated) {
     const word = instance.phase === "three" ? "tpn" : "dp";
     add(
       material(
@@ -1075,8 +1123,10 @@ export function specialLoadMaterials(
   add(cableMaterial("neutral", sizing.cableSizeMm2, runPerUnit * units, `${basisRoute}; neutral`));
   add(cableMaterial("cpc", sizing.cpcSizeMm2, runPerUnit * units, `${basisRoute}; protective conductor`));
 
-  // containment
-  if (definition.containment === "trunking") {
+  // containment: the person's installation method wins over the load's default family
+  const containmentFamily =
+    instance.installation_method === "trunking" ? "trunking" : definition.containment;
+  if (containmentFamily === "trunking") {
     const trunking = sizing.cableSizeMm2 <= 6 ? "trunking_38x25" : "trunking_50x50";
     add(
       material(
@@ -1127,24 +1177,22 @@ export function specialLoadMaterials(
   }
 
   // terminations: two lugs per circuit, sized with the protective conductor
-  const lug = sizing.cpcSizeMm2 <= 6 ? 6 : sizing.cpcSizeMm2 <= 10 ? 10 : 16;
-  add(
-    material(
-      `termination_lug_${lug}`,
-      `${lug} mm² copper cable lug`,
-      "each",
-      units * 2,
-      null,
-      "One termination at each end of the circuit",
-      "medium",
-    ),
-  );
+  if (dedicated) {
+    const lug = sizing.cpcSizeMm2 <= 6 ? 6 : sizing.cpcSizeMm2 <= 10 ? 10 : 16;
+    add(
+      material(
+        `termination_lug_${lug}`,
+        `${lug} mm² copper cable lug`,
+        "each",
+        units * 2,
+        null,
+        "One termination at each end of the circuit",
+        "medium",
+      ),
+    );
+  }
 
   return rows;
-}
-
-function definitions(instance: SpecialLoadInstance): string {
-  return specialLoadDefinition(instance.load_key).name;
 }
 
 /** A one-line summary for the chip, built only from what the person entered. */
@@ -1157,9 +1205,14 @@ export function specialLoadSummary(instance: SpecialLoadInstance, defaultRouteM 
 
   const sizing = sizeSpecialLoad(instance);
   const route = Math.round(routeLengthFor(instance, defaultRouteM) * 10) / 10;
+  const definition = specialLoadDefinition(instance.load_key);
   const parts = [`${sizing.powerKw} kW`];
   if (instance.capacity_hp) parts.unshift(`${instance.capacity_hp} HP`);
-  parts.push(`${route} m`, `${sizing.protectiveDeviceA} A`, `${sizing.cableSizeMm2} mm²`);
+  parts.push(`${route} m`);
+  // a plug-in appliance has no device of its own, so the summary must not imply one
+  if (definition.protection === "mcb") parts.push(`${sizing.protectiveDeviceA} A`);
+  parts.push(`${sizing.cableSizeMm2} mm²`);
+  if (instance.dedicated_circuit === false) parts.push("existing circuit");
   if (instance.quantity > 1) parts.unshift(`${instance.quantity} ×`);
   return parts.join(" · ");
 }
@@ -1172,9 +1225,11 @@ const FIELD_LABELS: Record<SpecialLoadFieldKey, string> = {
   supply_voltage_v: "supply voltage",
   phase: "supply phase",
   serving_db_id: "serving board",
+  target_space_id: "serving space",
   route_length_m: "route length",
   installation_method: "installation method",
   local_isolator_required: "isolator choice",
+  dedicated_circuit: "dedicated circuit",
   manufacturer_cable_size_mm2: "manufacturer cable size",
   manufacturer_breaker_rating_a: "manufacturer breaker rating",
   manufacturer_rcd_requirement: "RCD requirement",
@@ -1265,7 +1320,8 @@ export function applySpecialLoads(
       );
     } else {
       totals.configured += 1;
-      totals.circuits += Math.max(1, Math.round(instance.quantity));
+      // a shared supply draws no new way on the board
+      if (instance.dedicated_circuit !== false) totals.circuits += Math.max(1, Math.round(instance.quantity));
       if (status === "PROVISIONAL") totals.provisional += 1;
       if (status === "VERIFIED") totals.verified += 1;
       if (status === "OVERRIDDEN") totals.overridden += 1;
@@ -1284,7 +1340,8 @@ export function applySpecialLoads(
       const existing = merged.get(row.material_key);
       if (existing) {
         existing.engineering_quantity = Math.round((existing.engineering_quantity + row.engineering_quantity) * 10) / 10;
-        existing.purchase_quantity = Math.round((existing.purchase_quantity + row.purchase_quantity) * 10) / 10;
+        // the pack round-up is worked out again below, from the merged length
+        existing.purchase_quantity = existing.engineering_quantity;
         existing.trace = [...existing.trace, ...row.trace].slice(0, 4);
         continue;
       }
@@ -1306,6 +1363,13 @@ export function applySpecialLoads(
     warnings.push(...instanceWarnings);
   }
 
+  // merged lengths are pack-rounded once, so two short runs buy one roll, not two
+  for (const row of merged.values()) {
+    if (row.pack_size) {
+      row.purchase_quantity = Math.ceil(row.engineering_quantity / row.pack_size) * row.pack_size;
+    }
+  }
+
   // Circuits and the board follow the configured loads, not the raw selection.
   const totalsPatch = {
     ...result.totals,
@@ -1318,9 +1382,9 @@ export function applySpecialLoads(
   totalsPatch.db_design_ways = designWays;
   totalsPatch.recommended_db_ways = recommendedWays;
 
-  const keptWarnings = result.warnings.filter(
-    (warning) => !/special load|load-based cable|machine circuits need/i.test(warning),
-  );
+  // the engine's generic "special loads are not sized" caution is replaced by the
+  // per-load cautions above, which know what was actually entered
+  const keptWarnings = result.warnings.filter((warning) => !/special load/i.test(warning));
   if (totals.unconfigured) {
     warnings.push(
       `${totals.unconfigured} special load${totals.unconfigured === 1 ? " is" : "s are"} selected but not configured, so ${totals.unconfigured === 1 ? "it is" : "they are"} not in the total yet.`,
@@ -1405,4 +1469,8 @@ export function specialLoadLabels(instances: SpecialLoadInstance[], defaultRoute
   return instances.map((instance) => specialLoadLabel(instance, defaultRouteM));
 }
 
-export { ceilTo };
+
+
+
+
+

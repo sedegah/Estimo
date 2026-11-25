@@ -114,6 +114,7 @@ export async function POST(request: Request) {
     items?: SavedLine[];
     total?: number;
     specialLoads?: string[];
+    specialLoadSummaries?: string[];
   };
   try {
     body = JSON.parse(raw);
@@ -150,6 +151,10 @@ export async function POST(request: Request) {
     subtitle: typeof body.subtitle === "string" ? body.subtitle.slice(0, 120) : undefined,
     specialLoads: (Array.isArray(body.specialLoads) ? body.specialLoads : [])
       .filter((key) => typeof key === "string")
+      .slice(0, 20),
+    specialLoadSummaries: (Array.isArray(body.specialLoadSummaries) ? body.specialLoadSummaries : [])
+      .filter((line): line is string => typeof line === "string" && line.trim().length > 0)
+      .map((line) => line.slice(0, 160))
       .slice(0, 20),
   });
 

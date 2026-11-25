@@ -1,5 +1,7 @@
 /** Domain types shared across the ESTIMO app. */
 
+import type { SpecialLoadInstance } from "@/lib/quantity-engine/special-loads";
+
 export type CatalogueMaterial = {
   id: string;
   code: string;
@@ -58,6 +60,8 @@ export type SavedQuantities = {
   }[];
   overrides?: { space_id: string; point_type: string; value: number; source: string }[];
   specialLoads?: string[];
+  /** The configured loads behind those keys, so a reopened estimate keeps its sizing. */
+  specialLoadInstances?: SpecialLoadInstance[];
 };
 
 export type SavedEstimate = {

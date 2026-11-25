@@ -24,6 +24,13 @@ import {
   updateSavedEstimate,
 } from "@/lib/storage/saved-estimates";
 import { pushDelete, pushUpdate } from "@/lib/api/estimates";
+import {
+  STATUS_LABEL,
+  configurationStatus,
+  specialLoadDefinition,
+  specialLoadLabels,
+  specialLoadSummary,
+} from "@/lib/quantity-engine/special-loads";
 import type { SavedEstimate } from "@/lib/types";
 
 const clamp = (value: number) => Math.max(0, Math.min(20, Math.round(value)));
@@ -263,6 +270,7 @@ export default function ProjectPage() {
           items,
           total: savedTotal ?? undefined,
           specialLoads: takeOff.specialLoads ?? [],
+          specialLoadSummaries: specialLoadLabels(takeOff.specialLoadInstances ?? []),
         }),
       });
       if (response.status === 401) {
@@ -290,6 +298,7 @@ export default function ProjectPage() {
             specLevel: takeOff.specLevel,
             spaces: takeOff.spaces,
             overrides: takeOff.overrides ?? [],
+            specialLoadInstances: takeOff.specialLoadInstances ?? [],
           }),
         );
       } catch {}
@@ -400,22 +409,31 @@ export default function ProjectPage() {
         ) : (
           <p className="settings-note">This estimate was saved before its material list was recorded.</p>
         )}
-        {takeOff.specialLoads?.length ? (
+        {(takeOff.specialLoadInstances?.length ?? 0) > 0 || (takeOff.specialLoads?.length ?? 0) > 0 ? (
           <section className="table-card" style={{ marginTop: 16 }}>
             <table className="data-table">
               <thead>
                 <tr>
                   <th>Special load</th>
-                  <th>Confirmation</th>
+                  <th>Sizing</th>
                 </tr>
               </thead>
               <tbody>
-                {takeOff.specialLoads.map((key) => (
-                  <tr key={key}>
-                    <td>{loadName(key)}</td>
-                    <td className="muted-cell">Concluded by phone call or WhatsApp</td>
-                  </tr>
-                ))}
+                {takeOff.specialLoadInstances?.length
+                  ? takeOff.specialLoadInstances.map((instance) => (
+                      <tr key={instance.id}>
+                        <td>{specialLoadDefinition(instance.load_key).name}</td>
+                        <td className="muted-cell">
+                          {specialLoadSummary(instance)} · {STATUS_LABEL[configurationStatus(instance)]}
+                        </td>
+                      </tr>
+                    ))
+                  : (takeOff.specialLoads ?? []).map((key) => (
+                      <tr key={key}>
+                        <td>{loadName(key)}</td>
+                        <td className="muted-cell">Concluded by phone call or WhatsApp</td>
+                      </tr>
+                    ))}
               </tbody>
             </table>
           </section>
@@ -584,3 +602,4 @@ export default function ProjectPage() {
     </>
   );
 }
+

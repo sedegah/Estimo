@@ -16,6 +16,21 @@ import type {
   SpecLevel,
 } from "@/lib/quantity-engine/types";
 import type { CatalogueMaterialInfo } from "@/lib/quantity-engine/catalogue";
+import {
+  STATUS_LABEL,
+  applySpecialLoads,
+  autoRouteForSpace,
+  configurationStatus,
+  dbKeyForSpace,
+  newSpecialLoadInstance,
+  parseSpecialLoadInstances,
+  specialLoadDefinition,
+  specialLoadLabels,
+  specialLoadSummary,
+  type SpaceRouteRow,
+  type SpecialLoadInstance,
+} from "@/lib/quantity-engine/special-loads";
+import { SpecialLoadConfigurator } from "./special-load-configurator";
 import { pricedCount, pricedTotal } from "@/lib/estimate-total";
 import { unitLabel } from "@/lib/format";
 import { readBasket, writeBasket } from "@/lib/storage/basket";
@@ -51,6 +66,8 @@ interface Props {
   catalogue: Record<string, CatalogueMaterialInfo>;
   prices: Record<string, PriceEntry>;
   specialLoads?: { load_key: string; space_context: string; selection_mode: string; default_enabled: boolean; circuit_policy: string; notes: string }[];
+  /** Published DB-to-space distances, so a load's route starts from the real plan. */
+  spaceRoutes?: SpaceRouteRow[];
 }
 
 const SPECS: { key: SpecLevel; label: string }[] = [
@@ -95,22 +112,45 @@ const UNIT_LABEL: Record<string, string> = {
   "pair": "pairs",
 };
 
-const LOAD_LABELS: Record<string, string> = {
-  refrigerator: "Fridge",
-  freezer: "Freezer",
-  microwave: "Microwave",
-  electric_cooker: "Electric cooker",
-  dishwasher: "Dishwasher",
-  washing_machine: "Washing machine",
-  extractor: "Extractor",
-  water_heater: "Water heater",
-  air_conditioner: "Air conditioner",
-  water_pump: "Water pump",
-  gate_motor: "Gate motor",
-  ev_charger: "EV charger",
-  workshop_machine: "Workshop machine",
-  refrigeration_equipment: "Refrigeration plant",
+/** Room types that satisfy a rulebook space context, for picking the space a load serves. */
+const CONTEXT_ROOM_TYPES: Record<string, string[]> = {
+  kitchen: ["kitchen"],
+  kitchen_or_utility: ["kitchen", "utility_room"],
+  kitchen_or_bathroom: ["kitchen", "bathroom", "wc"],
+  bathroom: ["bathroom", "wc"],
+  habitable_room: ["bedroom", "living_room", "dining_room", "private_office", "meeting_room", "reception"],
+  workshop: ["workshop"],
+  shop_or_workshop: ["shop_floor", "store", "workshop"],
+  external: ["porch_veranda", "external_area"],
+  garage: ["garage"],
+  building: [],
 };
+
+/**
+ * A selected load starts from the plan, not from a blank form: the space it serves and
+ * the ESTIMO distance to that space are filled in, so the first number a person sees is
+ * the project's own route rather than an 8 m placeholder.
+ */
+function seedSpecialLoads(
+  loadKeys: string[],
+  spaces: SpaceInput[],
+  routes: SpaceRouteRow[],
+  templateId: string,
+): SpecialLoadInstance[] {
+  return loadKeys.map((loadKey) => {
+    const instance = newSpecialLoadInstance(loadKey);
+    const context = specialLoadDefinition(loadKey).spaceContext;
+    const wanted = CONTEXT_ROOM_TYPES[context] ?? [];
+    const target = spaces.find((space) => wanted.includes(space.room_type)) ?? spaces[0] ?? null;
+    const targetId = target?.id ?? null;
+    return {
+      ...instance,
+      target_space_id: targetId,
+      serving_db_id: dbKeyForSpace(routes, templateId, targetId) ?? "DB1",
+      route_length_m: autoRouteForSpace(routes, templateId, targetId),
+    };
+  });
+}
 
 /** Names stay readable: one master bedroom, the rest numbered per room type. */
 /** Dimensions and quantities may be cleared while typing; values commit when valid. */
@@ -168,6 +208,13 @@ const money = (value: number | null) =>
     ? "—"
     : `GHS ${value.toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
+/** A load whose lines are all unpriced is "pending", never GHS 0.00. */
+const loadCostLabel = (cost: { total: number; unpriced: number } | undefined) => {
+  if (!cost) return "—";
+  if (cost.total === 0 && cost.unpriced > 0) return "Pending";
+  return money(cost.total);
+};
+
 export function QuantityView(props: Props) {
   const firstTemplate =
     props.templates.find((template) => template.id === props.initialTemplateId) ??
@@ -181,9 +228,15 @@ export function QuantityView(props: Props) {
   );
   const [overrides, setOverrides] = useState<PointOverride[]>([]);
   const [added, setAdded] = useState("");
-  const [loads, setLoads] = useState<string[]>(() =>
-    (props.specialLoads ?? []).filter((load) => load.default_enabled).map((load) => load.load_key),
+  const [instances, setInstances] = useState<SpecialLoadInstance[]>(() =>
+    seedSpecialLoads(
+      (props.specialLoads ?? []).filter((load) => load.default_enabled).map((load) => load.load_key),
+      props.initialSpaces?.length ? props.initialSpaces : (props.spacesByTemplate[firstTemplate.id] ?? []),
+      props.spaceRoutes ?? [],
+      firstTemplate.id,
+    ),
   );
+  const [openLoadId, setOpenLoadId] = useState<string | null>(null);
 
   /** Loads offered for the rooms in this plan, per the rulebook's space_context. */
   const availableLoads = useMemo(() => {
@@ -213,12 +266,25 @@ export function QuantityView(props: Props) {
     try {
       const raw = localStorage.getItem("estimo_estimate_draft_v1");
       if (!raw) return;
-      const draft = JSON.parse(raw) as { templateId?: string; specLevel?: SpecLevel; spaces?: SpaceInput[]; overrides?: PointOverride[]; loads?: string[] };
+      const draft = JSON.parse(raw) as {
+        templateId?: string;
+        specLevel?: SpecLevel;
+        spaces?: SpaceInput[];
+        overrides?: PointOverride[];
+        loads?: string[];
+        specialLoadInstances?: unknown[];
+      };
       if (draft.templateId === templateId && draft.spaces?.length) {
+        const draftSpaces = tidyNames(draft.spaces);
         setSpecLevel(draft.specLevel ?? "standard");
-        setSpaces(tidyNames(draft.spaces));
+        setSpaces(draftSpaces);
         setOverrides(draft.overrides ?? []);
-        if (Array.isArray(draft.loads)) setLoads(draft.loads);
+        // new drafts carry whole instances; older ones only carried load keys
+        const stored = parseSpecialLoadInstances(draft.specialLoadInstances);
+        if (stored.length) setInstances(stored);
+        else if (Array.isArray(draft.loads)) {
+          setInstances(seedSpecialLoads(draft.loads, draftSpaces, props.spaceRoutes ?? [], draft.templateId));
+        }
         if (props.initialSpecLevel) setSpecLevel(props.initialSpecLevel);
       }
     } catch {}
@@ -227,9 +293,39 @@ export function QuantityView(props: Props) {
 
   useEffect(() => {
     try {
-      localStorage.setItem("estimo_estimate_draft_v1", JSON.stringify({ templateId, specLevel, spaces, overrides, loads }));
+      localStorage.setItem(
+        "estimo_estimate_draft_v1",
+        JSON.stringify({ templateId, specLevel, spaces, overrides, specialLoadInstances: instances }),
+      );
     } catch {}
-  }, [templateId, specLevel, spaces, overrides, loads]);
+  }, [templateId, specLevel, spaces, overrides, instances]);
+
+  /**
+   * An automatic route follows the space it serves, until a person types one. When the
+   * plan changes under a load (a different template, a removed space), the load is
+   * pointed at the closest space the new plan has instead of keeping an orphan id.
+   */
+  useEffect(() => {
+    if (!spaces.length) return;
+    const routes = props.spaceRoutes ?? [];
+    setInstances((current) =>
+      current.map((instance) => {
+        const known = spaces.some((space) => space.id === instance.target_space_id);
+        const replacement = known
+          ? null
+          : seedSpecialLoads([instance.load_key], spaces, routes, templateId)[0];
+        const targetId = replacement ? replacement.target_space_id : instance.target_space_id;
+        const distance = autoRouteForSpace(routes, templateId, targetId);
+        return {
+          ...instance,
+          target_space_id: targetId,
+          serving_db_id: replacement ? replacement.serving_db_id : instance.serving_db_id,
+          route_length_m:
+            instance.route_source === "AUTO" ? (distance ?? instance.route_length_m) : instance.route_length_m,
+        };
+      }),
+    );
+  }, [spaces, templateId, props.spaceRoutes]);
   const [livePrices, setLivePrices] = useState<Record<string, PriceEntry>>(props.prices);
 
   const pricesFetched = useRef(false);
@@ -306,23 +402,34 @@ export function QuantityView(props: Props) {
     [props.rules, specLevel],
   );
 
-  const result = useMemo(
-    () =>
-      calculateProject({
-        spaces,
-        specLevel,
-        projectType,
-        templateId,
-        overrides,
-        specialLoads: loads,
-        params: props.params,
-        rules,
-        circuitRules: props.circuitRules,
-        assemblies: props.assemblies,
-        assemblyItems: props.assemblyItems,
-      }),
-    [spaces, specLevel, projectType, templateId, overrides, loads, props, rules],
-  );
+  /**
+   * The engine counts points and circuits; the special-load configurator adds the
+   * configured loads' own circuits and materials on top. Keeping the two apart means a
+   * change to load sizing can never move the golden quantity outputs.
+   */
+  const result = useMemo(() => {
+    const base = calculateProject({
+      spaces,
+      specLevel,
+      projectType,
+      templateId,
+      overrides,
+      specialLoads: [],
+      params: props.params,
+      rules,
+      circuitRules: props.circuitRules,
+      assemblies: props.assemblies,
+      assemblyItems: props.assemblyItems,
+    });
+    return applySpecialLoads(base, instances, {
+      spareCapacityPct: props.params.db_spare_capacity_pct,
+      cableWastePct: props.params.cable_waste_pct,
+      containmentWastePct: props.params.containment_waste_pct,
+      couplerPerM: props.params.coupler_per_conduit_m,
+      bendPerM: props.params.bend_per_conduit_m,
+      drawBoxPerM: props.params.drawbox_per_conduit_m,
+    });
+  }, [spaces, specLevel, projectType, templateId, overrides, instances, props, rules]);
 
   const auto = useMemo(
     () =>
@@ -348,6 +455,28 @@ export function QuantityView(props: Props) {
 
   const total = pricedTotal(lines);
   const pricedCountValue = pricedCount(lines);
+
+  /** What each configured load costs on its own, and how much of it has no price yet. */
+  const loadCosts = useMemo(() => {
+    const costs = new Map<string, { total: number; unpriced: number }>();
+    for (const entry of result.specialLoadBreakdown) {
+      const priced = priceQuantities(entry.materials, livePrices, catalogueMap);
+      costs.set(entry.instanceId, {
+        total: pricedTotal(priced),
+        unpriced: priced.filter((line) => line.unitPrice === null).length,
+      });
+    }
+    return costs;
+  }, [result.specialLoadBreakdown, livePrices, catalogueMap]);
+
+  const loadCostTotal = useMemo(
+    () => Array.from(loadCosts.values()).reduce((sum, entry) => sum + entry.total, 0),
+    [loadCosts],
+  );
+  const loadUnpricedTotal = useMemo(
+    () => Array.from(loadCosts.values()).reduce((sum, entry) => sum + entry.unpriced, 0),
+    [loadCosts],
+  );
 
   const pickProjectType = (key: string) => {
     setProjectType(key);
@@ -413,6 +542,19 @@ export function QuantityView(props: Props) {
     });
   };
 
+  const removeLoad = (id: string) => {
+    setInstances((current) => current.filter((instance) => instance.id !== id));
+    setOpenLoadId((current) => (current === id ? null : current));
+    setAdded("");
+  };
+
+  /** Applying is the only path from the form into the estimate. */
+  const applyLoad = (next: SpecialLoadInstance) => {
+    setInstances((current) => current.map((instance) => (instance.id === next.id ? next : instance)));
+    setOpenLoadId(null);
+    setAdded("");
+  };
+
   /** One action: files the estimate under Saved projects and fills the basket. */
   const saveEstimateNow = async () => {
     if (!props.signedIn) return null;
@@ -451,7 +593,8 @@ export function QuantityView(props: Props) {
         ruleSet: "ESTIMO-GH-QTY-v1.0",
         spaces,
         overrides,
-        specialLoads: loads,
+        specialLoads: instances.map((instance) => instance.load_key),
+        specialLoadInstances: instances,
       },
     };
     const saved = existing ? updateSavedEstimate(existing.id, payload) : saveEstimate(payload);
@@ -482,7 +625,9 @@ export function QuantityView(props: Props) {
         priceGhs: line.unitPrice,
       })),
       total: pricedTotal(lines),
-      specialLoads: loads,
+      // keys stay for older readers; the summaries are what the document prints
+      specialLoads: instances.map((instance) => instance.load_key),
+      specialLoadSummaries: specialLoadLabels(instances),
     });
 
     const save = async (blob: Blob) => {
@@ -557,6 +702,17 @@ export function QuantityView(props: Props) {
     setAdded(`${lines_.length} materials added to your estimate basket.`);
   };
 
+  /** Boards a load can leave from: the plan's own DB keys, main board first. */
+  const boards = useMemo(() => {
+    const keys = new Set<string>(["DB1"]);
+    for (const route of props.spaceRoutes ?? []) if (route.db_key) keys.add(route.db_key);
+    return Array.from(keys)
+      .sort()
+      .map((key) => ({ value: key, label: key === "DB1" ? "Main board (DB1)" : key }));
+  }, [props.spaceRoutes]);
+
+  const openInstance = instances.find((instance) => instance.id === openLoadId) ?? null;
+
   return (
     <div className="quantities">
       <section className="quantities-controls">
@@ -602,7 +758,7 @@ export function QuantityView(props: Props) {
         <div><span>Light points</span><strong>{result.totals.lighting_points}</strong></div>
         <div><span>Double sockets</span><strong>{result.totals.double_sockets}</strong></div>
         <div><span>Final circuits</span><strong>{result.totals.total_final_circuits}</strong></div>
-        <div><span>Special loads</span><strong>{loads.length}</strong></div>
+        <div><span>Special loads</span><strong>{instances.length}</strong></div>
         <div><span>Board</span><strong>{result.totals.recommended_db_ways ? `${result.totals.recommended_db_ways} way` : "Engineered"}</strong></div>
         <div><span>Conduit</span><strong>{result.totals.total_containment_m} m</strong></div>
       </section>
@@ -731,29 +887,94 @@ export function QuantityView(props: Props) {
       </section>
 
       <section className="quantities-section">
-        <div className="quantities-section-head">
+        <div className="quantities-section-head is-inline">
           <h2>Special loads</h2>
+          {instances.length ? (
+            <span className="quantities-load-total">
+              {loadCostTotal > 0
+                ? `${money(loadCostTotal)} added`
+                : loadUnpricedTotal
+                  ? "Prices pending"
+                  : money(0) + " added"}
+              {loadCostTotal > 0 && loadUnpricedTotal ? ` · ${loadUnpricedTotal} unpriced` : ""}
+            </span>
+          ) : null}
         </div>
+        <p className="quantities-load-help">
+          Choose the loads this job has. Each one opens its own form, and nothing joins the
+          total until the form is filled in.
+        </p>
         <div className="quantities-loads">
           {availableLoads.map((load) => {
-            const active = loads.includes(load.load_key);
+            const instance = instances.find((entry) => entry.load_key === load.load_key);
+            const status = instance ? configurationStatus(instance) : null;
             return (
               <button
                 key={load.load_key}
                 type="button"
-                className={active ? "quantities-load is-active" : "quantities-load"}
-                aria-pressed={active}
+                className={instance ? "quantities-load is-active" : "quantities-load"}
+                aria-pressed={Boolean(instance)}
                 onClick={() => {
-                  setLoads((current) => (current.includes(load.load_key) ? current.filter((key) => key !== load.load_key) : [...current, load.load_key]));
+                  if (instance) {
+                    setOpenLoadId(instance.id);
+                    return;
+                  }
+                  const [created] = seedSpecialLoads([load.load_key], spaces, props.spaceRoutes ?? [], templateId);
+                  setInstances((current) => [...current, created]);
+                  setOpenLoadId(created.id);
                   setAdded("");
                 }}
               >
-                <span>{LOAD_LABELS[load.load_key] ?? load.load_key.replace(/_/g, " ")}</span>
-                <small>{load.space_context.replace(/_/g, " ")}</small>
+                <span>{specialLoadDefinition(load.load_key).name}</span>
+                <small className={status ? `is-${status.toLowerCase().replace(/_/g, "-")}` : undefined}>
+                  {status ? STATUS_LABEL[status] : load.space_context.replace(/_/g, " ")}
+                </small>
               </button>
             );
           })}
         </div>
+
+        {instances.length ? (
+          <ul className="quantities-load-cards">
+            {instances.map((instance) => {
+              const status = configurationStatus(instance);
+              const cost = loadCosts.get(instance.id);
+              const breakdown = result.specialLoadBreakdown.find((entry) => entry.instanceId === instance.id);
+              const name = specialLoadDefinition(instance.load_key).name;
+              return (
+                <li key={instance.id} className={`quantities-load-card is-${status.toLowerCase().replace(/_/g, "-")}`}>
+                  <button type="button" className="quantities-load-card-main" onClick={() => setOpenLoadId(instance.id)}>
+                    <strong>{name}</strong>
+                    <span className="quantities-load-card-summary">
+                      {breakdown ? breakdown.summary : specialLoadSummary(instance)}
+                    </span>
+                  </button>
+                  <span className="quantities-load-card-status">{STATUS_LABEL[status]}</span>
+                  <span className="quantities-load-card-cost">
+                    {status === "NOT_CONFIGURED" ? "—" : loadCostLabel(cost)}
+                    {cost && cost.unpriced ? <small>{cost.unpriced} unpriced</small> : null}
+                  </span>
+                  <button
+                    type="button"
+                    className="quantities-icon-btn is-danger"
+                    aria-label={`Remove ${name}`}
+                    onClick={() => removeLoad(instance.id)}
+                  >
+                    ×
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        ) : null}
+
+        {result.specialLoadTotals.unconfigured ? (
+          <p className="quantities-load-warning">
+            {result.specialLoadTotals.unconfigured} selected load
+            {result.specialLoadTotals.unconfigured === 1 ? " is" : "s are"} not configured yet, so
+            {result.specialLoadTotals.unconfigured === 1 ? " it is" : " they are"} not in the total.
+          </p>
+        ) : null}
       </section>
 
       <section className="quantities-section">
@@ -799,20 +1020,6 @@ export function QuantityView(props: Props) {
           </table>
         </div>
 
-        {loads.length ? (
-          <div className="quantities-loads-summary">
-            <div>
-              <h3>Special loads</h3>
-              <p>Concluded by phone call or WhatsApp.</p>
-            </div>
-            <ul>
-              {loads.map((key) => (
-                <li key={key}>{LOAD_LABELS[key] ?? key.replace(/_/g, " ")}</li>
-              ))}
-            </ul>
-          </div>
-        ) : null}
-
         <div className="quantities-total">
           <div>
             <span>{pricedCountValue} of {lines.length} materials priced</span>
@@ -827,6 +1034,20 @@ export function QuantityView(props: Props) {
         </div>
         {added ? <p className="quantities-added">{added} <Link href={props.signedIn ? "/projects" : "/estimate-basket"}>{props.signedIn ? "Saved estimates" : "Open the basket"}</Link></p> : null}
       </section>
+
+      {openInstance ? (
+        <SpecialLoadConfigurator
+          instance={openInstance}
+          boards={boards}
+          spaces={spaces.map((space) => ({ value: space.id, label: space.space_name }))}
+          routeForSpace={(spaceId) => autoRouteForSpace(props.spaceRoutes ?? [], templateId, spaceId)}
+          cost={loadCosts.get(openInstance.id) ?? null}
+          onApply={applyLoad}
+          onRemove={() => removeLoad(openInstance.id)}
+          onClose={() => setOpenLoadId(null)}
+        />
+      ) : null}
     </div>
   );
 }
+

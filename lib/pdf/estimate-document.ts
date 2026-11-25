@@ -32,6 +32,8 @@ type Input = {
   issuedAt?: Date;
   /** Load keys confirmed outside the estimate, listed but not priced. */
   specialLoads?: string[];
+  /** Configured loads as "Water heater · 4.5 kW · 18 m". Printed when present. */
+  specialLoadSummaries?: string[];
   /** When present these priced lines are printed exactly as the app shows them. */
   items?: { name: string; quantity: number; unit: string; priceGhs: number | null }[];
   /** Total of those lines; defaults to their sum. */
@@ -125,7 +127,7 @@ function fitTitle(text: string, font: PDFFont, maxWidth: number, maxLines = 2) {
   return { size, lines };
 }
 
-export async function buildEstimatePdf({ template, quality, counts, name, issuedAt = new Date(), specialLoads = [], items, totalOverride, subtitle }: Input): Promise<Uint8Array> {
+export async function buildEstimatePdf({ template, quality, counts, name, issuedAt = new Date(), specialLoads = [], specialLoadSummaries = [], items, totalOverride, subtitle }: Input): Promise<Uint8Array> {
   const type = projectType(template);
   const model = computeEstimate(type.code, counts, quality);
   const quantityLines = items?.map((line) => {
@@ -318,3 +320,4 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
   drawFooter(page);
   return pdf.save();
 }
+

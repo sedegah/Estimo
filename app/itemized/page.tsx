@@ -10,6 +10,7 @@ import circuitRules from "@/lib/data/quantity-engine/circuit_rules.json";
 import assemblies from "@/lib/data/quantity-engine/assemblies.json";
 import assemblyItems from "@/lib/data/quantity-engine/assembly_items.json";
 import specialLoads from "@/lib/data/quantity-engine/special_loads.json";
+import spaceRoutes from "@/lib/data/quantity-engine/template_space_routes.json";
 import { parametersFromRows } from "@/lib/quantity-engine/engine";
 import type { AssemblyItemRow, AssemblyRow, RoomRuleRow } from "@/lib/quantity-engine/types";
 import { QuantityView } from "@/components/quantities/quantity-view";
@@ -127,6 +128,7 @@ export default async function QuickEstimatePage({
           catalogue={catalogue}
           prices={prices}
           specialLoads={specialLoads}
+          spaceRoutes={spaceRoutes as unknown as { template_id: string; space_no: number; db_key?: string; route_distance_from_db_m: number }[]}
         />
       </div>
     </main>
