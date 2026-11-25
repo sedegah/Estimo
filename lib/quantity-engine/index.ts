@@ -124,6 +124,8 @@ export function calculate(options: CalculateOptions): EngineResult {
         (row) => row.template_id === options.templateId,
       ) ?? null,
     multiDbRules: multiDbRules as unknown as Record<string, unknown>[],
+    specialLoadRows: specialLoads as unknown as Record<string, unknown>[],
+    loadRouteM: 8,
     params,
     rules,
     circuitRules: circuitRules as unknown as CircuitRuleRow[],
