@@ -37,6 +37,7 @@ interface Props {
   templateCode?: string;
   initialTemplateId?: string;
   initialSpecLevel?: SpecLevel;
+  initialSpaces?: SpaceInput[];
   /** Priced-estimate editor link, so the classic flow stays reachable. */
   estimateHref?: string;
   projectTypes: { key: string; label: string }[];
@@ -124,7 +125,9 @@ export function QuantityView(props: Props) {
   const [projectType, setProjectType] = useState(firstTemplate.projectType);
   const [templateId, setTemplateId] = useState(firstTemplate.id);
   const [specLevel, setSpecLevel] = useState<SpecLevel>(props.initialSpecLevel ?? "standard");
-  const [spaces, setSpaces] = useState<SpaceInput[]>(props.spacesByTemplate[firstTemplate.id] ?? []);
+  const [spaces, setSpaces] = useState<SpaceInput[]>(
+    props.initialSpaces?.length ? props.initialSpaces : (props.spacesByTemplate[firstTemplate.id] ?? []),
+  );
   const [overrides, setOverrides] = useState<PointOverride[]>([]);
   const [added, setAdded] = useState("");
   const [loads, setLoads] = useState<string[]>(() =>
@@ -154,6 +157,8 @@ export function QuantityView(props: Props) {
 
   // The working estimate is kept in this browser, signed in or not.
   useEffect(() => {
+    // an explicit plan from the simple screen wins over whatever was drafted
+    if (props.initialSpaces?.length) return;
     try {
       const raw = localStorage.getItem("estimo_estimate_draft_v1");
       if (!raw) return;

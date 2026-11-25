@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useRef, useState } from "react";
+import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   FITTINGS,
   PROJECT_LABELS,
@@ -15,6 +15,14 @@ import {
   type SpaceItem,
 } from "@/lib/estimate-model";
 import { formatGhs } from "@/lib/format";
+import {
+  fetchLivePrices,
+  liveEstimate,
+  spacesFromCounts,
+  specLevelForQuality,
+  TEMPLATE_FOR_CODE,
+  templateForCode,
+} from "@/lib/estimate-live";
 import { saveEstimate } from "@/lib/storage/saved-estimates";
 import { saveDraft } from "@/lib/storage/draft";
 import { pushCreate } from "@/lib/api/estimates";
@@ -75,13 +83,51 @@ function SetupContent() {
     saveDraft({ template: type.code, counts, quality });
   }, [type.code, counts, quality]);
 
-  const total = computeEstimate(type.code, counts, quality);
-  const fittingsLabel = FITTINGS.find((entry) => entry.value === quality)?.label ?? "Standard";
-  const spaces = totalSpaces(counts);
+  const templateId = TEMPLATE_FOR_CODE[type.code] ?? "T011";
+  const specLevel = specLevelForQuality(quality);
+  const planSpaces = useMemo(
+    () => spacesFromCounts(templateId, counts),
+    [templateId, counts],
+  );
 
-  const itemizedHref = () => {
-    const params = new URLSearchParams({ template: type.code, quality });
-    return `/itemized?${params.toString()}`;
+  // prices come from the same catalogue call the itemized screen makes
+  const [prices, setPrices] = useState<Record<string, never> | null>(null);
+  const [priceError, setPriceError] = useState("");
+  useEffect(() => {
+    let cancelled = false;
+    void fetchLivePrices()
+      .then((live) => {
+        if (!cancelled) setPrices(live as Record<string, never>);
+      })
+      .catch((error: unknown) => {
+        if (!cancelled) setPriceError(String(error));
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const live = useMemo(
+    () =>
+      liveEstimate({
+        templateId,
+        specLevel,
+        spaces: planSpaces,
+        prices: (prices ?? {}) as Parameters<typeof liveEstimate>[0]["prices"],
+      }),
+    [templateId, specLevel, planSpaces, prices],
+  );
+
+  const total = live.total;
+  const fittingsLabel = FITTINGS.find((entry) => entry.value === quality)?.label ?? "Standard";
+  const spaces = planSpaces.length;
+
+  /** The itemized screen opens with exactly this plan, so the totals match. */
+  const openItemized = () => {
+    const plan = encodeURIComponent(btoa(unescape(encodeURIComponent(JSON.stringify(planSpaces)))));
+    router.push(
+      `/itemized?template=${encodeURIComponent(type.code)}&quality=${quality}&plan=${plan}`,
+    );
   };
 
   const estimateQuery = () => {
@@ -103,7 +149,7 @@ function SetupContent() {
       name: `${type.label} estimate`,
       kind: "quick",
       detail: `${type.label} · ${fittingsLabel} fittings · ${spaces} spaces`,
-      totalGhs: total,
+      totalGhs: total > 0 ? total : null,
       template: type.code,
       counts,
       quality,
@@ -210,11 +256,10 @@ function SetupContent() {
           <div className="side-divider" />
           <span className="side-label">Estimated total</span>
           <strong className="side-total">{formatGhs(total, 0)}</strong>
-          <p className="side-note">Updates as you change the spaces.</p>
-          <button className="btn-amber side-cta" type="button" onClick={() => router.push(estimateQuery())}>
-            See estimate
+          <p className="side-note">{live.pricedCount} of {live.lines.length} priced · {Object.keys(prices ?? {}).length} prices · {process.env.NEXT_PUBLIC_ESTIMO_API_URL ?? "no-url"} · updates as you change the spaces.</p>
+          <button className="btn-amber side-cta" type="button" onClick={openItemized}>
+            Itemized estimate
           </button>
-          <Link className="btn-outline side-secondary" href={itemizedHref()}>Itemized estimate</Link>
           {saved ? (
             <Link className="link-button side-link" href="/projects">Saved — view saved projects</Link>
           ) : (

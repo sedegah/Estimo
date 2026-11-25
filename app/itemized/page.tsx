@@ -49,9 +49,9 @@ const PROJECT_TYPE_FOR_CODE: Record<string, string> = {
 export default async function QuickEstimatePage({
   searchParams,
 }: {
-  searchParams: Promise<{ template?: string; quality?: string }>;
+  searchParams: Promise<{ template?: string; quality?: string; plan?: string }>;
 }) {
-  const { template, quality } = await searchParams;
+  const { template, quality, plan } = await searchParams;
   const signedIn = await hasSessionCookie();
   const code = template ?? "HOME-2B";
   const templateId = TEMPLATE_FOR_CODE[code] ?? "T011";
@@ -62,6 +62,17 @@ export default async function QuickEstimatePage({
   );
 
   const specLevelFromQuality = quality === "premium" ? "premium" : quality === "basic" ? "economy" : "standard";
+
+  // A plan from the simple screen travels in the URL; anything malformed is ignored.
+  let planSpaces: unknown[] = [];
+  if (plan) {
+    try {
+      const decoded = JSON.parse(Buffer.from(decodeURIComponent(plan), "base64").toString("utf8"));
+      if (Array.isArray(decoded)) planSpaces = decoded;
+    } catch {
+      planSpaces = [];
+    }
+  }
   const projectType = PROJECT_TYPE_FOR_CODE[code] ?? "two_bedroom";
   const projectLabel = PROJECT_TYPES.find((type) => type.key === projectType)?.label ?? "2-Bedroom Home";
   const templateLabel = templates.find((entry) => entry.id === templateId)?.name ?? "";
@@ -101,6 +112,7 @@ export default async function QuickEstimatePage({
         <QuantityView
           signedIn={signedIn}
           initialSpecLevel={specLevelFromQuality}
+          initialSpaces={planSpaces as never}
           templateCode={code}
           initialTemplateId={templateId}
           estimateHref={`/estimate?template=${encodeURIComponent(code)}`}
