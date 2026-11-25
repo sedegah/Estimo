@@ -10,7 +10,7 @@ export function SiteHeader({ signedIn = false }: { signedIn?: boolean }) {
   const pathname = usePathname();
 
   const isActive = (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href));
-  const isHeroPage = pathname === "/" || pathname.startsWith("/quick-estimate");
+  const isHeroPage = pathname === "/" || pathname.startsWith("/itemized");
   const isAuthRoute = pathname === "/signin" || pathname === "/signup";
   const isAppRoute = ["/dashboard", "/estimates", "/projects", "/settings"].some(
     (route) => pathname === route || pathname.startsWith(`${route}/`),

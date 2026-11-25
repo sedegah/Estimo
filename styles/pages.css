@@ -684,3 +684,19 @@
 .basket-group .estimate-basket-item:last-child { border-bottom: 0; }
 .btn-ghost { background: transparent; border-color: transparent; color: var(--muted); }
 .btn-ghost:hover { color: var(--ink); background: #f1efe7; }
+/* simple estimate header: back link on the left, itemized view on the right */
+.setup-topline {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+/* the itemized view sits under the main action, beside Save for later */
+.side-secondary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin-top: 10px;
+}

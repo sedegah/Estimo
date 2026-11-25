@@ -36,6 +36,7 @@ interface Props {
   signedIn?: boolean;
   templateCode?: string;
   initialTemplateId?: string;
+  initialSpecLevel?: SpecLevel;
   /** Priced-estimate editor link, so the classic flow stays reachable. */
   estimateHref?: string;
   projectTypes: { key: string; label: string }[];
@@ -122,7 +123,7 @@ export function QuantityView(props: Props) {
     props.templates[0];
   const [projectType, setProjectType] = useState(firstTemplate.projectType);
   const [templateId, setTemplateId] = useState(firstTemplate.id);
-  const [specLevel, setSpecLevel] = useState<SpecLevel>("standard");
+  const [specLevel, setSpecLevel] = useState<SpecLevel>(props.initialSpecLevel ?? "standard");
   const [spaces, setSpaces] = useState<SpaceInput[]>(props.spacesByTemplate[firstTemplate.id] ?? []);
   const [overrides, setOverrides] = useState<PointOverride[]>([]);
   const [added, setAdded] = useState("");
@@ -162,6 +163,7 @@ export function QuantityView(props: Props) {
         setSpaces(draft.spaces);
         setOverrides(draft.overrides ?? []);
         if (Array.isArray(draft.loads)) setLoads(draft.loads);
+        if (props.initialSpecLevel) setSpecLevel(props.initialSpecLevel);
       }
     } catch {}
     // eslint-disable-next-line react-hooks/exhaustive-deps
