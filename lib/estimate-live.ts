@@ -1,6 +1,7 @@
 import { calculateProject, parametersFromRows, rulesByKey } from "@/lib/quantity-engine/engine";
 import { MATERIAL_CATALOGUE, priceQuantities, type PriceEntry } from "@/lib/quantity-engine/catalogue";
-import { CATALOGUE_MATERIALS, type CatalogueMaterial } from "@/lib/data/catalogue";
+import { CATALOGUE_MATERIALS } from "@/lib/data/catalogue";
+import type { CatalogueMaterial } from "@/lib/types";
 import globalParameters from "@/lib/data/quantity-engine/global_parameters.json";
 import roomRules from "@/lib/data/quantity-engine/room_rules.json";
 import circuitRules from "@/lib/data/quantity-engine/circuit_rules.json";
@@ -11,6 +12,7 @@ import structureTemplates from "@/lib/data/quantity-engine/structure_templates.j
 import type {
   AssemblyItemRow,
   AssemblyRow,
+  PointOverride,
   RoomRuleRow,
   SpaceInput,
   SpecLevel,
@@ -157,7 +159,7 @@ export async function fetchLivePrices(): Promise<Record<string, PriceEntry>> {
 }
 
 export const catalogueMap = new Map(
-  (CATALOGUE_MATERIALS as CatalogueMaterial[])
+  (CATALOGUE_MATERIALS as unknown as CatalogueMaterial[])
     .filter((material) => Object.values(MATERIAL_CATALOGUE).some((link) => link.id === material.id))
     .map((material) => [material.id, { id: material.id, name: material.name, unit: material.unit }]),
 );
@@ -175,7 +177,7 @@ export function liveEstimate(options: {
   spaces: SpaceInput[];
   prices: Record<string, PriceEntry>;
   specialLoads?: string[];
-  overrides?: { space_id: string; point_type: string; value: number; source: "auto" | "template" | "user_override" }[];
+  overrides?: PointOverride[];
 }): LiveEstimate {
   const template = templates.find((row) => row.template_id === options.templateId);
   const result = calculateProject({
@@ -193,7 +195,7 @@ export function liveEstimate(options: {
   });
 
   const lines = priceQuantities(result.materialQuantities, options.prices, catalogueMap);
-  const total = Math.round(lines.reduce((sum, line) => sum + (line.price === undefined ? 0 : (line.amount ?? 0)), 0) * 100) / 100;
+  const total = Math.round(lines.reduce((sum, line) => sum + (line.amount ?? 0), 0) * 100) / 100;
 
   return { total, pricedCount: lines.filter((line) => line.unitPrice !== null).length, lines, result };
 }
