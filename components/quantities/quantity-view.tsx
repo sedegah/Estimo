@@ -112,6 +112,8 @@ const LOAD_LABELS: Record<string, string> = {
   refrigeration_equipment: "Refrigeration plant",
 };
 
+const tidyNames = (list: SpaceInput[]): SpaceInput[] =>
+  list.map((space) => ({ ...space, space_name: space.space_name.replace(/\s(\d+)\s(\d+)$/, " $2") }));
 const money = (value: number | null) =>
   value === null || value === undefined
     ? "—"
@@ -126,7 +128,7 @@ export function QuantityView(props: Props) {
   const [templateId, setTemplateId] = useState(firstTemplate.id);
   const [specLevel, setSpecLevel] = useState<SpecLevel>(props.initialSpecLevel ?? "standard");
   const [spaces, setSpaces] = useState<SpaceInput[]>(
-    props.initialSpaces?.length ? props.initialSpaces : (props.spacesByTemplate[firstTemplate.id] ?? []),
+    tidyNames(props.initialSpaces?.length ? props.initialSpaces : (props.spacesByTemplate[firstTemplate.id] ?? [])),
   );
   const [overrides, setOverrides] = useState<PointOverride[]>([]);
   const [added, setAdded] = useState("");
@@ -165,7 +167,7 @@ export function QuantityView(props: Props) {
       const draft = JSON.parse(raw) as { templateId?: string; specLevel?: SpecLevel; spaces?: SpaceInput[]; overrides?: PointOverride[]; loads?: string[] };
       if (draft.templateId === templateId && draft.spaces?.length) {
         setSpecLevel(draft.specLevel ?? "standard");
-        setSpaces(draft.spaces);
+        setSpaces(tidyNames(draft.spaces));
         setOverrides(draft.overrides ?? []);
         if (Array.isArray(draft.loads)) setLoads(draft.loads);
         if (props.initialSpecLevel) setSpecLevel(props.initialSpecLevel);
