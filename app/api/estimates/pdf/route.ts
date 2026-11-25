@@ -115,6 +115,9 @@ export async function POST(request: Request) {
     total?: number;
     specialLoads?: string[];
     specialLoadSummaries?: string[];
+    specialLoadsDetail?: { name?: string; sizing?: string; status?: string; costGhs?: number | null }[];
+    specialLoadsSubtotal?: number | null;
+    specialLoadsPending?: number;
   };
   try {
     body = JSON.parse(raw);
@@ -156,6 +159,23 @@ export async function POST(request: Request) {
       .filter((line): line is string => typeof line === "string" && line.trim().length > 0)
       .map((line) => line.slice(0, 160))
       .slice(0, 20),
+    specialLoadsDetail: (Array.isArray(body.specialLoadsDetail) ? body.specialLoadsDetail : [])
+      .filter((row) => row && typeof row.name === "string")
+      .slice(0, 20)
+      .map((row) => ({
+        name: String(row.name).slice(0, 60),
+        sizing: typeof row.sizing === "string" ? row.sizing.slice(0, 90) : "",
+        status: typeof row.status === "string" ? row.status.slice(0, 40) : "",
+        costGhs: typeof row.costGhs === "number" && Number.isFinite(row.costGhs) ? row.costGhs : null,
+      })),
+    specialLoadsSubtotal:
+      typeof body.specialLoadsSubtotal === "number" && Number.isFinite(body.specialLoadsSubtotal)
+        ? body.specialLoadsSubtotal
+        : null,
+    specialLoadsPending:
+      typeof body.specialLoadsPending === "number" && Number.isFinite(body.specialLoadsPending)
+        ? Math.max(0, Math.round(body.specialLoadsPending))
+        : 0,
   });
 
   return pdfResponse(pdf, name);

@@ -673,9 +673,16 @@ export function QuantityView(props: Props) {
         priceGhs: line.unitPrice,
       })),
       total: pricedTotal(lines),
-      // keys stay for older readers; the summaries are what the document prints
+      // the document prints the same configured loads, sizes and costs the screen shows
       specialLoads: instances.map((instance) => instance.load_key),
-      specialLoadSummaries: specialLoadLabels(instances),
+      specialLoadsDetail: result.specialLoadBreakdown.map((entry) => ({
+        name: entry.name,
+        sizing: entry.summary,
+        status: entry.statusLabel,
+        costGhs: loadCosts.get(entry.instanceId)?.total ?? null,
+      })),
+      specialLoadsSubtotal: loadCostTotal,
+      specialLoadsPending: loadUnpricedTotal,
     });
 
     const save = async (blob: Blob) => {
