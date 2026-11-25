@@ -380,7 +380,6 @@ function aggregateMaterials(args: {
 }): MaterialQuantity[] {
   const { totals, assemblies, assemblyItems } = args;
   const CORE_ASSEMBLIES = new Set([
-    "ac_point",
     "double_socket_point",
     "lighting_point",
     "switch_point",
@@ -421,10 +420,12 @@ function aggregateMaterials(args: {
     const fixed = item.quantity_mode === "fixed" ? (item.quantity ?? 1) * (pointCounts[item.assembly_key] ?? loadCounts.get(item.assembly_key) ?? 0) : 0;
     const routeDriven = engineered.get(item.material_key) ?? 0;
     let value = item.quantity_mode === "fixed" ? fixed : routeDriven;
-    if (item.quantity_mode === "route_driven" && !routeDriven) {
+    if (loadCounts.has(item.assembly_key) && item.quantity_mode !== "fixed") {
       // a load route: the DB-to-space distance from the V1.2 route table
       const route = args.loadRouteM ?? 8;
-      value = route * 1 * (loadCounts.get(item.assembly_key) ?? 0);
+      value = route * (loadCounts.get(item.assembly_key) ?? 0);
+    } else if (item.quantity_mode === "route_driven") {
+      value = routeDriven;
     }
     if (!value) continue;
     void count;
