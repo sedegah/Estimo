@@ -343,7 +343,10 @@ function SetupContent() {
           <div className="side-divider" />
           <span className="side-label">Estimated total</span>
           <strong className="side-total">{formatGhs(total, 0)}</strong>
-          <p className="side-note">{live.pricedCount} of {live.lines.length} priced · updates as you change the spaces.</p>
+          <p className="side-note">
+            {live.pricedCount} of {live.lines.length} priced ·{" "}
+            {carried ? "carried over from the itemized bill" : "updates as you change the spaces"}.
+          </p>
           <button className="btn-outline side-secondary" type="button" onClick={() => void downloadSimplePdf()}>
             Download PDF
           </button>
