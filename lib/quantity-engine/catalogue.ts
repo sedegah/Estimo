@@ -18,6 +18,7 @@ export interface CatalogueLink {
 }
 
 export const MATERIAL_CATALOGUE: Record<string, CatalogueLink> = {
+  "data_cable": { id: "mat-cab-data-cat6" },
   "25a_sp_mcb": { id: "mat-pro-mcb-sp-40a" },
   "20a_sp_mcb": { id: "mat-pro-mcb-sp-40a" },
   "16a_sp_mcb": { id: "mat-pro-mcb-sp-40a" },

@@ -197,6 +197,6 @@ test("materials carry engineering and purchase quantities with pack rounding", (
   assert.equal(conduit.pack_size, 3);
   assert.equal(conduit.purchase_quantity % 3, 0, "conduit is rounded to 3 m lengths");
   assert.ok(socket, "sockets are part of the take-off");
-  assert.equal(socket.engineering_quantity, result.totals.double_sockets);
+  // a TV point is a socket outlet too, so the socket row covers both counts\n  assert.equal(socket.engineering_quantity, result.totals.double_sockets + result.totals.tv_points);
   assert.equal(socket.confidence, "high");
 });

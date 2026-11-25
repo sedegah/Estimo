@@ -209,6 +209,8 @@ export interface CalculateArgs {
   specialLoads?: string[];
   dbLocation?: Record<string, unknown> | null;
   multiDbRules?: Record<string, unknown>[];
+  specialLoadRows?: Record<string, unknown>[];
+  loadRouteM?: number;
   params: Record<string, number>;
   rules: Map<string, RoomRuleRow>;
   circuitRules?: CircuitRuleRow[];
@@ -325,6 +327,9 @@ export function calculateProject(args: CalculateArgs): EngineResult {
     calculated,
     assemblies,
     assemblyItems,
+    specialLoadRows: args.specialLoadRows,
+    selectedLoads: specialLoads,
+    loadRouteM: args.loadRouteM ?? 8,
   });
 
   const location = args.dbLocation ?? null;
@@ -369,9 +374,13 @@ function aggregateMaterials(args: {
   calculated: SpaceEstimate[];
   assemblies: AssemblyRow[];
   assemblyItems: AssemblyItemRow[];
+  specialLoadRows?: Record<string, unknown>[];
+  selectedLoads?: string[];
+  loadRouteM?: number;
 }): MaterialQuantity[] {
   const { totals, assemblies, assemblyItems } = args;
   const CORE_ASSEMBLIES = new Set([
+    "ac_point",
     "double_socket_point",
     "lighting_point",
     "switch_point",
@@ -388,7 +397,14 @@ function aggregateMaterials(args: {
     double_socket_point: totals.double_sockets,
     lighting_point: totals.lighting_points,
     switch_point: totals.switch_positions,
+    ac_point: totals.ac_points,
   };
+  const loadCounts = new Map<string, number>();
+  for (const load of args.specialLoadRows ?? []) {
+    if (!args.selectedLoads?.includes(String(load.load_key))) continue;
+    const key = String(load.assembly_key ?? "");
+    if (key) loadCounts.set(key, (loadCounts.get(key) ?? 0) + 1);
+  }
 
   // route-driven quantities, before assemblies see them
   engineered.set("2.5mm2_phase_conductor", totals.socket_conductor_est_m);
@@ -400,10 +416,15 @@ function aggregateMaterials(args: {
 
   for (const item of assemblyItems) {
     if (!known.has(item.assembly_key)) continue;
-    const count = pointCounts[item.assembly_key] ?? 1;
-    const fixed = item.quantity_mode === "fixed" ? (item.quantity ?? 1) * (pointCounts[item.assembly_key] ?? 1) : 0;
+    const count = pointCounts[item.assembly_key] ?? loadCounts.get(item.assembly_key) ?? 0;
+    const fixed = item.quantity_mode === "fixed" ? (item.quantity ?? 1) * (pointCounts[item.assembly_key] ?? loadCounts.get(item.assembly_key) ?? 0) : 0;
     const routeDriven = engineered.get(item.material_key) ?? 0;
-    const value = item.quantity_mode === "fixed" ? fixed : routeDriven;
+    let value = item.quantity_mode === "fixed" ? fixed : routeDriven;
+    if (item.quantity_mode === "route_driven" && !routeDriven) {
+      // a load route: the DB-to-space distance from the V1.2 route table
+      const route = args.loadRouteM ?? 8;
+      value = route * 1 * (loadCounts.get(item.assembly_key) ?? 0);
+    }
     if (!value) continue;
     void count;
     const existing = rows.get(item.material_key);
@@ -420,6 +441,49 @@ function aggregateMaterials(args: {
         trace: [],
         confidence: item.quantity_mode === "fixed" ? "high" : "estimated",
       });
+    }
+  }
+
+  // TV, data and fan points: no assembly in the handoff, so they are costed here from
+  // the same material family as the point they belong to.
+  const extraPoints: { key: string; count: number; fixed: string[]; route: string[] }[] = [
+    { key: "tv_point", count: totals.tv_points, fixed: ["double_13a_socket", "socket_mounting_box"], route: ["2.5mm2_phase_conductor", "2.5mm2_neutral_conductor", "cpc_conductor", "20mm_conduit"] },
+    { key: "data_point", count: totals.data_points, fixed: ["socket_mounting_box"], route: ["data_cable"] },
+    { key: "fan_point", count: totals.fan_points, fixed: ["switch_mechanism", "switch_mounting_box"], route: ["lighting_conductors", "20mm_conduit"] },
+  ];
+  const pointRouteM = args.loadRouteM ?? 8;
+  for (const group of extraPoints) {
+    if (!group.count) continue;
+    for (const key of group.fixed) {
+      const existing = rows.get(key);
+      if (existing) existing.engineering_quantity = round1(existing.engineering_quantity + group.count);
+      else
+        rows.set(key, {
+          material_key: key,
+          name: MATERIAL_LABELS[key] ?? key,
+          unit: "each",
+          engineering_quantity: group.count,
+          purchase_quantity: 0,
+          pack_size: null,
+          trace: [`${group.count} ${group.key.replace("_", " ")} point${group.count === 1 ? "" : "s"}`],
+          confidence: "medium",
+        });
+    }
+    for (const key of group.route) {
+      const amount = round1(pointRouteM * group.count);
+      const existing = rows.get(key);
+      if (existing) existing.engineering_quantity = round1(existing.engineering_quantity + amount);
+      else
+        rows.set(key, {
+          material_key: key,
+          name: MATERIAL_LABELS[key] ?? key,
+          unit: key === "20mm_conduit" ? "m" : "m",
+          engineering_quantity: amount,
+          purchase_quantity: 0,
+          pack_size: null,
+          trace: [`${pointRouteM} m route per ${group.key.replace("_", " ")}`],
+          confidence: "estimated",
+        });
     }
   }
 
