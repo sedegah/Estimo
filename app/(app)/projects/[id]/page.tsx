@@ -14,12 +14,15 @@ import {
   type SpaceItem,
 } from "@/lib/estimate-model";
 import {
+  catalogueMap,
   fetchLivePrices,
   liveEstimate,
   spacesFromCounts,
   specLevelForQuality,
   TEMPLATE_FOR_CODE,
 } from "@/lib/estimate-live";
+import { priceQuantities } from "@/lib/quantity-engine/catalogue";
+import type { PointOverride, SpaceInput, SpecLevel } from "@/lib/quantity-engine/types";
 import type { PriceEntry } from "@/lib/quantity-engine/catalogue";
 import { formatDate, formatGhs } from "@/lib/format";
 import { pricedCount, pricedTotal } from "@/lib/estimate-total";
@@ -135,6 +138,25 @@ export default function ProjectPage() {
     [templateId, quality, planSpaces, livePrices],
   );
   const total = livePrices ? live.total : null;
+
+  /**
+   * A saved take-off is re-priced with the same engine and the same catalogue as the
+   * itemized bill. Its stored snapshot was taken under whatever rules and prices were
+   * live that day, so showing it beside a freshly priced bill would print two numbers
+   * for one project.
+   */
+  const savedPlanLive = useMemo(() => {
+    const quantities = project?.quantities;
+    if (!quantities?.spaces?.length) return null;
+    return liveEstimate({
+      templateId: quantities.templateId,
+      specLevel: quantities.specLevel as SpecLevel,
+      spaces: quantities.spaces as SpaceInput[],
+      overrides: quantities.overrides as PointOverride[] | undefined,
+      specialLoadInstances: quantities.specialLoadInstances ?? [],
+      prices: livePrices ?? {},
+    });
+  }, [project, livePrices]);
 
   const changeSpace = (key: string, delta: number) => {
     setCounts((current) => ({ ...current, [key]: clamp((current[key] ?? 0) + delta) }));
@@ -339,10 +361,34 @@ export default function ProjectPage() {
       0,
     );
     const savedItems = project.items ?? [];
+    /** The stored snapshot is only a fallback for when prices cannot be fetched. */
     const savedTotal = savedItems.length ? pricedTotal(savedItems) : project.totalGhs;
+    const liveItems =
+      savedPlanLive?.lines.map((line) => ({
+        name: line.catalogueName,
+        quantity: Math.max(1, Math.ceil(line.purchaseQuantity)),
+        unit: line.catalogueUnit,
+        priceGhs: line.unitPrice,
+      })) ?? [];
+    const items = livePrices && liveItems.length ? liveItems : savedItems;
+    const displayTotal = livePrices && savedPlanLive ? savedPlanLive.total : savedTotal;
+    const loadDetail = (takeOff.specialLoadInstances ?? []).map((instance) => {
+      const entry = savedPlanLive?.result.specialLoadBreakdown.find((row) => row.instanceId === instance.id);
+      const pricedMaterials = entry ? priceQuantities(entry.materials, livePrices ?? {}, catalogueMap) : [];
+      return {
+        name: specialLoadDefinition(instance.load_key).name,
+        sizing: entry?.summary ?? specialLoadSummary(instance),
+        status: STATUS_LABEL[configurationStatus(instance)],
+        costGhs: entry ? pricedTotal(pricedMaterials) : null,
+        unpriced: pricedMaterials.filter((line) => line.unitPrice === null).length,
+      };
+    });
+    const loadSubtotal = loadDetail.length
+      ? Math.round(loadDetail.reduce((sum, entry) => sum + (entry.costGhs ?? 0), 0) * 100) / 100
+      : null;
+    const loadPending = loadDetail.reduce((sum, entry) => sum + entry.unpriced, 0);
     /** The PDF is generated from this estimate's own lines, so the two always agree. */
     const downloadPdf = async () => {
-      const items = savedItems;
       const response = await fetch("/api/estimates/pdf", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -352,9 +398,11 @@ export default function ProjectPage() {
           specLevel: takeOff.specLevel,
           subtitle: `${takeOff.spaces.length} spaces · ${takeOff.specLevel} · ${Math.round(area * 10) / 10} m²`,
           items,
-          total: savedTotal ?? undefined,
+          total: displayTotal ?? undefined,
           specialLoads: takeOff.specialLoads ?? [],
-          specialLoadSummaries: specialLoadLabels(takeOff.specialLoadInstances ?? []),
+          specialLoadsDetail: loadDetail.map(({ unpriced: _unpriced, ...row }) => row),
+          specialLoadsSubtotal: loadSubtotal,
+          specialLoadsPending: loadPending,
         }),
       });
       if (response.status === 401) {
@@ -399,7 +447,7 @@ export default function ProjectPage() {
             <p className="app-sub">
               {takeOff.spaces.length} space{takeOff.spaces.length === 1 ? "" : "s"} · {takeOff.specLevel} · {Math.round(area * 10) / 10} m²
               {project.counts?.lights != null ? ` · ${project.counts.lights} lights · ${project.counts.sockets ?? 0} sockets` : ""}
-              {savedTotal != null ? ` · ${formatGhs(savedTotal)}` : ""}
+              {displayTotal != null ? ` · ${formatGhs(displayTotal)}` : ""}
             </p>
           </div>
           <div className="settings-actions">
@@ -448,9 +496,14 @@ export default function ProjectPage() {
           </table>
         </section>
 
-        {project.items?.length ? (
+        {items.length ? (
           <section className="table-card" style={{ marginTop: 16 }}>
-            <div className="panel-head" style={{ padding: "14px 16px" }}><h2 style={{ margin: 0, fontSize: 15 }}>Saved materials</h2></div>
+            <div className="panel-head" style={{ padding: "14px 16px" }}>
+              <h2 style={{ margin: 0, fontSize: 15 }}>Materials</h2>
+              <p className="muted-cell" style={{ margin: "4px 0 0", fontSize: 12.5 }}>
+                Priced as the itemized bill prices them.
+              </p>
+            </div>
             <table className="data-table">
               <thead>
                 <tr>
@@ -461,7 +514,7 @@ export default function ProjectPage() {
                 </tr>
               </thead>
               <tbody>
-                {project.items.map((line) => (
+                {items.map((line) => (
                   <tr key={line.name}>
                     <td>{line.name}</td>
                     <td className="muted-cell">{line.quantity} {unitLabel(line.unit)}</td>
@@ -476,15 +529,15 @@ export default function ProjectPage() {
                   <th />
                   <th />
                   <th className="align-right">
-                    {savedTotal != null ? formatGhs(savedTotal) : "Pending"}
+                    {displayTotal != null ? formatGhs(displayTotal) : "Pending"}
                     <small className="muted-cell" style={{ display: "block", fontWeight: 500 }}>
-                      {pricedCount(savedItems)} of {savedItems.length} priced
+                      {pricedCount(items)} of {items.length} priced
                     </small>
                   </th>
                 </tr>
               </tfoot>
             </table>
-            {project.items.some((line) => line.priceGhs == null) ? (
+            {items.some((line) => line.priceGhs == null) ? (
               <p className="settings-note" style={{ padding: "10px 16px" }}>
                 Lines marked Pending still wait for a catalogue price.
               </p>

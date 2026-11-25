@@ -137,7 +137,7 @@ function fitTitle(text: string, font: PDFFont, maxWidth: number, maxLines = 2) {
   return { size, lines };
 }
 
-export async function buildEstimatePdf({ template, quality, counts, name, issuedAt = new Date(), specialLoads = [], specialLoadSummaries = [], items, totalOverride, subtitle }: Input): Promise<Uint8Array> {
+export async function buildEstimatePdf({ template, quality, counts, name, issuedAt = new Date(), specialLoads = [], specialLoadSummaries = [], specialLoadsDetail = [], specialLoadsSubtotal = null, specialLoadsPending = 0, items, totalOverride, subtitle }: Input): Promise<Uint8Array> {
   const type = projectType(template);
   const model = computeEstimate(type.code, counts, quality);
   const quantityLines = items?.map((line) => {
