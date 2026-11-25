@@ -14,6 +14,9 @@ export type PdfLinkPayload = {
   name?: string;
   counts: Record<string, number>;
   loads?: string[];
+  items?: { name: string; quantity: number; unit: string; priceGhs: number | null }[];
+  total?: number;
+  subtitle?: string;
   /** Unix seconds. */
   exp: number;
 };

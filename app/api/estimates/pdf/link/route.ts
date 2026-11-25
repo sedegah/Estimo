@@ -20,6 +20,9 @@ export async function POST(request: Request) {
     name?: string;
     counts?: Record<string, unknown>;
     loads?: unknown[];
+    items?: { name?: unknown; quantity?: unknown; unit?: unknown; priceGhs?: unknown }[];
+    total?: number;
+    subtitle?: string;
   };
   try {
     body = JSON.parse(raw);
@@ -46,7 +49,26 @@ export async function POST(request: Request) {
 
   const name = typeof body.name === "string" ? body.name.trim().slice(0, 80) : undefined;
 
-  const token = signPdfToken({ template: type.code, quality, name, counts, loads });
+  const items = (Array.isArray(body.items) ? body.items : [])
+    .filter((line) => typeof line?.name === "string" && Number.isFinite(Number(line.quantity)))
+    .slice(0, 200)
+    .map((line) => ({
+      name: String(line.name).slice(0, 90),
+      quantity: Math.max(0, Math.round(Number(line.quantity))),
+      unit: typeof line.unit === "string" ? line.unit.slice(0, 20) : "No.",
+      priceGhs: typeof line.priceGhs === "number" ? line.priceGhs : null,
+    }));
+
+  const token = signPdfToken({
+    template: type.code,
+    quality,
+    name,
+    counts,
+    loads,
+    items: items.length ? items : undefined,
+    total: typeof body.total === "number" && Number.isFinite(body.total) ? body.total : undefined,
+    subtitle: typeof body.subtitle === "string" ? body.subtitle.slice(0, 120) : undefined,
+  });
   return Response.json(
     { url: `/api/estimates/pdf?token=${encodeURIComponent(token)}`, expiresInSeconds: 600 },
     { headers: { "Cache-Control": "no-store" } },

@@ -40,6 +40,22 @@ export async function GET(request: Request) {
 
   if (link) {
     const linkedType = projectType(link.template);
+
+    if (link.items?.length) {
+      const known = link.items.reduce((sum, line) => (line.priceGhs == null ? sum : sum + line.priceGhs * line.quantity), 0);
+      const linkedPdf = await buildEstimatePdf({
+        template: linkedType.code,
+        quality: link.quality,
+        counts: defaultCounts(linkedType.code),
+        name: link.name,
+        items: link.items,
+        totalOverride: link.total ?? known,
+        subtitle: link.subtitle,
+        specialLoads: link.loads ?? [],
+      });
+      return pdfResponse(linkedPdf, link.name ?? linkedType.label);
+    }
+
     const counts = defaultCounts(linkedType.code);
     for (const field of linkedType.fields) {
       const value = Number(link.counts[field.key] ?? counts[field.key] ?? 0);

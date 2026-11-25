@@ -468,6 +468,57 @@ export function QuantityView(props: Props) {
     return space ? Number(space[key]) : 0;
   };
 
+  /** Downloads the current take-off as a PDF, signed in or as a short-lived link. */
+  const downloadEstimatePdf = async () => {
+    const body = JSON.stringify({
+      name: `${templateName} estimate`,
+      template: props.templateCode ?? "HOME-2B",
+      specLevel,
+      subtitle: `${spaces.length} spaces · ${specLevel}`,
+      items: lines.map((line) => ({
+        name: line.catalogueName,
+        quantity: Math.max(1, Math.ceil(line.purchaseQuantity)),
+        unit: line.catalogueUnit,
+        priceGhs: line.unitPrice,
+      })),
+      total: pricedTotal(lines),
+      specialLoads: loads,
+    });
+
+    const save = async (blob: Blob) => {
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = `${(props.templateCode ?? "estimo").toLowerCase()}-estimate.pdf`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      URL.revokeObjectURL(url);
+    };
+
+    const direct = await fetch("/api/estimates/pdf", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+    });
+    if (direct.ok) {
+      await save(await direct.blob());
+      return;
+    }
+    if (direct.status !== 401) return;
+
+    const linkResponse = await fetch("/api/estimates/pdf/link", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+    });
+    if (!linkResponse.ok) return;
+    const signed = (await linkResponse.json()) as { url?: string };
+    if (!signed.url) return;
+    const linked = await fetch(signed.url);
+    if (linked.ok) await save(await linked.blob());
+  };
+
   /** Every line goes in, priced or not, so the estimate shows the full take-off. */
   /**
    * Signed in: the estimate is filed under Saved projects and leaves the basket.
@@ -767,6 +818,9 @@ export function QuantityView(props: Props) {
             <span>{pricedCountValue} of {lines.length} materials priced</span>
             <strong>{money(total)}</strong>
           </div>
+          <button className="btn-outline" type="button" onClick={() => void downloadEstimatePdf()} disabled={!lines.length}>
+            Download PDF
+          </button>
           <button className="btn-amber" type="button" onClick={addToEstimate} disabled={!lines.length}>
             Save estimate
           </button>
