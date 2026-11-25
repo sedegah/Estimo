@@ -13,6 +13,7 @@ import specialLoads from "@/lib/data/quantity-engine/special_loads.json";
 import spaceRoutes from "@/lib/data/quantity-engine/template_space_routes.json";
 import { parametersFromRows } from "@/lib/quantity-engine/engine";
 import type { AssemblyItemRow, AssemblyRow, RoomRuleRow } from "@/lib/quantity-engine/types";
+import { spacesFromCounts } from "@/lib/estimate-live";
 import { QuantityView } from "@/components/quantities/quantity-view";
 import { hasSessionCookie } from "@/lib/auth-cookie";
 
@@ -50,9 +51,9 @@ const PROJECT_TYPE_FOR_CODE: Record<string, string> = {
 export default async function QuickEstimatePage({
   searchParams,
 }: {
-  searchParams: Promise<{ template?: string; quality?: string; plan?: string }>;
+  searchParams: Promise<{ template?: string; quality?: string; plan?: string; counts?: string }>;
 }) {
-  const { template, quality, plan } = await searchParams;
+  const { template, quality, plan, counts: countsParam } = await searchParams;
   const signedIn = await hasSessionCookie();
   const code = template ?? "HOME-2B";
   const templateId = TEMPLATE_FOR_CODE[code] ?? "T011";
@@ -70,6 +71,22 @@ export default async function QuickEstimatePage({
     try {
       const decoded = JSON.parse(Buffer.from(decodeURIComponent(plan), "base64").toString("utf8"));
       if (Array.isArray(decoded)) planSpaces = decoded;
+    } catch {
+      planSpaces = [];
+    }
+  }
+
+  // A saved project stores room counts rather than a full plan; the itemized bill for it
+  // is the same template with those counts applied.
+  if (!planSpaces.length && countsParam) {
+    try {
+      const parsed = JSON.parse(countsParam) as Record<string, number>;
+      const clean = Object.fromEntries(
+        Object.entries(parsed)
+          .filter(([, value]) => typeof value === "number" && Number.isFinite(value))
+          .map(([key, value]) => [key, Math.max(0, Math.min(99, Math.round(value)))]),
+      );
+      planSpaces = spacesFromCounts(templateId, clean);
     } catch {
       planSpaces = [];
     }

@@ -141,8 +141,8 @@ export default function ProjectPage() {
 
   const viewEstimateHref = () => {
     const search = new URLSearchParams({ template: type.code, quality });
-    for (const field of type.fields) search.set(field.key, String(counts[field.key] ?? 0));
-    return `/estimate?${search.toString()}`;
+    search.set("counts", JSON.stringify(counts));
+    return `/itemized?${search.toString()}`;
   };
 
   if (!ready) {
@@ -302,7 +302,8 @@ export default function ProjectPage() {
           }),
         );
       } catch {}
-      router.push(`/quick-estimate?template=${encodeURIComponent(project.template ?? "HOME-2B")}`);
+      // the itemized bill is this same take-off, editable and priced line by line
+      router.push(`/itemized?template=${encodeURIComponent(project.template ?? "HOME-2B")}`);
     };
 
     return (
@@ -318,11 +319,10 @@ export default function ProjectPage() {
             </p>
           </div>
           <div className="settings-actions">
-            <Link className="btn-outline" href="/projects">Back</Link>
             <button className="btn-outline" type="button" onClick={downloadPdf}>
               Download PDF
             </button>
-            <button className="btn-amber" type="button" onClick={resume}>Continue this estimate</button>
+            <button className="btn-amber" type="button" onClick={resume}>Open itemized bill</button>
             <button
               className="link-button"
               type="button"
@@ -457,11 +457,8 @@ export default function ProjectPage() {
           </p>
         </div>
         <div className="settings-actions">
-          <Link className="btn-outline" href="/projects">Back</Link>
           <a className="btn-outline" href={pdfHref()}>Download PDF</a>
-          <button className="btn-amber" type="button" onClick={save}>
-            {savedMessage ? "Saved" : "Save changes"}
-          </button>
+          <Link className="btn-amber" href={viewEstimateHref()}>Itemized bill</Link>
         </div>
       </header>
 
@@ -584,7 +581,7 @@ export default function ProjectPage() {
           <button className="btn-amber side-cta" type="button" onClick={save}>
             {savedMessage ? "Saved" : "Save changes"}
           </button>
-          <Link className="link-button side-link" href={viewEstimateHref()}>View estimate</Link>
+          <Link className="link-button side-link" href={viewEstimateHref()}>View itemized bill</Link>
           <button
             className="link-button side-link"
             type="button"
