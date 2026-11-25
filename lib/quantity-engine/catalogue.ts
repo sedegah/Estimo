@@ -173,29 +173,16 @@ export interface CatalogueMaterialInfo {
   unit: string;
 }
 
-export interface PriceOptions {
-  /**
-   * Price what the job measures rather than what it buys.
-   *
-   * The bill rounds cable into 100 m rolls and conduit into 3 m lengths, because that is
-   * what leaves the merchant. Attributing a whole roll to one appliance would say a fridge
-   * costs more than the cable for the house, so a per-load figure is priced by the metre.
-   */
-  measured?: boolean;
-}
-
 /** Aggregates engine lines that point at the same catalogue material. */
 export function priceQuantities(
   materials: MaterialQuantity[],
   prices: Record<string, PriceEntry>,
   catalogue: Map<string, CatalogueMaterialInfo>,
-  options: PriceOptions = {},
 ): PricedLine[] {
   interface Collected {
     material: MaterialQuantity;
     info: CatalogueMaterialInfo;
     engineering: number;
-    pack: number | null;
     unitLength: number;
     convert: boolean;
     trace: string[];
@@ -217,7 +204,6 @@ export function priceQuantities(
     const existing = collected.get(link.id);
     if (existing) {
       existing.engineering = Math.round((existing.engineering + material.engineering_quantity) * 10) / 10;
-      existing.pack = existing.pack ?? material.pack_size ?? null;
       existing.trace = [...existing.trace, ...material.trace].slice(0, 8);
       if (!material.origins?.length) existing.mixed = true;
       for (const name of material.origins ?? []) {
@@ -230,7 +216,6 @@ export function priceQuantities(
       material,
       info,
       engineering: material.engineering_quantity,
-      pack: material.pack_size ?? null,
       unitLength: link.unitLength ?? 3,
       convert: link.convert === "metres-to-lengths",
       trace: [...material.trace],
@@ -242,13 +227,12 @@ export function priceQuantities(
   const lines: PricedLine[] = [];
   for (const [catalogueId, entry] of collected) {
     const price = prices[catalogueId];
+    // Priced on the measured quantity, rounded up to what is ordered: conduit in 3 m
+    // lengths, everything else in whole units. Buying packs is a purchasing step; rounding
+    // here would hide a load's cost inside a drum the plan has already paid for.
     const quantity = entry.convert
       ? Math.ceil(entry.engineering / entry.unitLength)
-      : options.measured
-        ? entry.engineering
-        : entry.pack
-          ? Math.ceil(entry.engineering / entry.pack) * entry.pack
-          : Math.ceil(entry.engineering);
+      : Math.ceil(entry.engineering);
 
     lines.push({
       materialKey: entry.material.material_key,

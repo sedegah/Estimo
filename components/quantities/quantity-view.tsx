@@ -504,8 +504,7 @@ export function QuantityView(props: Props) {
   const loadCosts = useMemo(() => {
     const costs = new Map<string, { total: number; unpriced: number }>();
     for (const entry of result.specialLoadBreakdown) {
-      // measured, not whole rolls: a short run must not carry a 100 m drum of cable
-      const priced = priceQuantities(entry.materials, livePrices, catalogueMap, { measured: true });
+      const priced = priceQuantities(entry.materials, livePrices, catalogueMap);
       costs.set(entry.instanceId, {
         total: pricedTotal(priced),
         unpriced: priced.filter((line) => line.unitPrice === null).length,
@@ -953,6 +952,12 @@ export function QuantityView(props: Props) {
           Choose the loads this job has. Each one opens its own form, and nothing joins the
           total until the form is filled in.
         </p>
+        {acPointTotal > 0 && !instances.some((instance) => instance.load_key === "air_conditioner") ? (
+          <p className="quantities-load-hint">
+            {acPointTotal} air conditioner{acPointTotal === 1 ? "" : "s"} counted in the Points table.
+            Add the Air conditioner load to price {acPointTotal === 1 ? "it" : "them"}.
+          </p>
+        ) : null}
         <div className="quantities-loads">
           {availableLoads.map((load) => {
             const instance = instances.find((entry) => entry.load_key === load.load_key);
@@ -1019,8 +1024,8 @@ export function QuantityView(props: Props) {
 
         {instances.length ? (
           <p className="quantities-load-note">
-            These are the materials each load measures. The bill prices cable and conduit in
-            packs, so the estimate rounds up from these figures.
+            Each card is the materials that load adds, priced exactly as the bill prices them,
+            so the cards and the Materials table always agree.
           </p>
         ) : null}
 

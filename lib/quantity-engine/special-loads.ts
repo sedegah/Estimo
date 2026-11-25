@@ -1350,6 +1350,10 @@ export function applySpecialLoads(
         // the pack round-up is worked out again below, from the merged length
         existing.purchase_quantity = existing.engineering_quantity;
         existing.trace = [...existing.trace, ...row.trace].slice(0, 4);
+        // two loads can share a material (1.5 mm² conductors, conduit): keep both names
+        if (row.origins?.length) {
+          existing.origins = Array.from(new Set([...(existing.origins ?? []), ...row.origins]));
+        }
         continue;
       }
       merged.set(row.material_key, { ...row, trace: [...row.trace] });

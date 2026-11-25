@@ -243,7 +243,7 @@ test("H. the route starts from the board the load is served from", () => {
   assert.ok(phase.trace.some((line) => /DB2/.test(line)), "the basis names the serving board");
 });
 
-test("a load's own cost is measured, not a whole drum of cable", () => {
+test("a load's own cost is measured by the metre, not by the drum", () => {
   const fridge: SpecialLoadInstance = {
     ...newSpecialLoadInstance("refrigerator", "fridge-1"),
     phase: "single",
@@ -253,19 +253,42 @@ test("a load's own cost is measured, not a whole drum of cable", () => {
   };
   const rows = specialLoadMaterials(fridge, 8);
 
-  const measured = priceQuantities(rows, prices, catalogue, { measured: true });
-  const cable = measured.find((line) => line.catalogueId === "mat-cab-sc-cu-1p5");
+  const lines = priceQuantities(rows, prices, catalogue);
+  const cable = lines.find((line) => line.catalogueId === "mat-cab-sc-cu-1p5");
   assert.ok(cable, "the phase and neutral conductors are priced together");
   assert.ok(cable.quantity < 50, `a 7 m run is priced in metres, got ${cable?.quantity}`);
+  assert.ok(
+    Math.abs(cable.quantity - Math.ceil(cable.engineeringQuantity)) <= 1,
+    "quantity is the measured length rounded up to a whole metre",
+  );
 
-  // the bill still buys cables in drums, and rounds each conductor separately
-  const packed = priceQuantities(rows, prices, catalogue);
-  const packedCable = packed.find((line) => line.catalogueId === "mat-cab-sc-cu-1p5");
-  assert.ok((packedCable?.quantity ?? 0) >= 100, "the priced bill buys drum multiples");
+  // the card and the bill are the same arithmetic, so the two cannot disagree
+  const cardTotal = lines.reduce((sum, line) => sum + (line.amount ?? 0), 0);
+  assert.ok(cardTotal > 0 && cardTotal < 1_000, `a fridge is materials money, got ${cardTotal}`);
+});
 
-  const measuredTotal = measured.reduce((sum, line) => sum + (line.amount ?? 0), 0);
-  const packedTotal = packed.reduce((sum, line) => sum + (line.amount ?? 0), 0);
-  assert.ok(measuredTotal < packedTotal, "the measured figure is the smaller, realistic one");
+test("the bill says which loads a shared material line belongs to", () => {
+  const fridge: SpecialLoadInstance = {
+    ...newSpecialLoadInstance("refrigerator", "origin-fridge"),
+    phase: "single",
+    rated_power_kw: 0.5,
+    route_length_m: 7.2,
+    route_source: "USER_OVERRIDE",
+  };
+  const ac: SpecialLoadInstance = {
+    ...newSpecialLoadInstance("air_conditioner", "origin-ac"),
+    capacity_hp: 1.5,
+    phase: "single",
+    route_length_m: 7.2,
+    route_source: "USER_OVERRIDE",
+  };
+
+  const outcome = applySpecialLoads(engine(), [fridge, ac], {});
+  const pair = priceQuantities(outcome.materialQuantities, prices, catalogue);
+  const copper = pair.find((line) => line.catalogueId === "mat-cab-sc-cu-1p5");
+  assert.ok(copper, "the shared 1.5 mm² line exists");
+  assert.deepEqual([...copper.origins].sort(), ["Air conditioner", "Fridge"]);
+  assert.equal(copper.mixed, false, "only the loads use this size, so it is theirs");
 });
 
 test("ACs counted in the Points table set the AC load's quantity", () => {
@@ -309,19 +332,22 @@ test("the generic AC point is switched off when the configurator covers it", () 
   assert.ok(overrides.every((entry) => entry.point_type === "ac" && entry.value === 0));
 });
 
-test("phase and neutral of one run are one drum, not two", () => {
+test("phase and neutral of one run are priced once, at their combined length", () => {
   const fridge: SpecialLoadInstance = {
-    ...newSpecialLoadInstance("refrigerator", "fridge-drum"),
+    ...newSpecialLoadInstance("refrigerator", "fridge-run"),
     phase: "single",
     rated_power_kw: 0.5,
     route_length_m: 7.2,
     route_source: "USER_OVERRIDE",
   };
-  const packed = priceQuantities(specialLoadMaterials(fridge, 8), prices, catalogue);
-  const copper = packed.find((line) => line.catalogueId === "mat-cab-sc-cu-1p5");
+  const lines = priceQuantities(specialLoadMaterials(fridge, 8), prices, catalogue);
+  const copper = lines.find((line) => line.catalogueId === "mat-cab-sc-cu-1p5");
   assert.ok(copper, "the 1.5 mm² conductor line exists");
   assert.ok(copper.engineeringQuantity > 18 && copper.engineeringQuantity < 20, "about 19 m measured");
-  assert.equal(copper.quantity, 100, "one 100 m drum, not one per conductor");
+  // nine metres of phase plus nine of neutral is nineteen metres of cable, not two drums
+  assert.ok(copper.quantity <= 20, `expected the measured run, got ${copper.quantity}`);
+  assert.equal(copper.unitPrice !== null, true);
+  assert.equal(copper.amount, Math.round((copper.unitPrice ?? 0) * copper.quantity * 100) / 100);
 });
 
 test("a plug-in appliance shares a circuit instead of buying its own device", () => {

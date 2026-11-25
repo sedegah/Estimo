@@ -95,10 +95,11 @@ A row with no published price stays on the bill marked Pending and is excluded f
 total: a missing price is never treated as GHS 0. Each load card shows its own subtotal and
 how many of its lines are unpriced; the section header sums those cards.
 
-The bill buys cable in 100 m drums and conduit in 3 m lengths, so a card is priced for what
-the load *measures*, not for a drum of its own: a fridge with a 7 m run costs its cable by
-the metre, not GHS 5,500 of drum. The estimate still rounds to packs, which is why adding a
-load can move the total by less (or occasionally more) than the card's own figure.
+The bill is priced on measured quantities: a metre of cable costs a metre, and conduit is
+rounded up to the 3 m lengths it is sold in. Pack sizes exist in the engine (`pack_size`)
+for purchasing, but they never multiply the estimate, so a load's cost is never hidden
+inside a drum the plan had already paid for. The card and the table therefore use the same
+arithmetic and reconcile.
 
 ## Persistence
 

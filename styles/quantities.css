@@ -337,6 +337,7 @@
 /* special loads: cards a technician opens and fills in */
 .quantities-load-total { font-size: 12.5px; font-weight: 700; color: #5f6b7a; }
 .quantities-load-help { margin: 0; padding: 0 20px 4px; color: #6b7684; font-size: 13px; }
+.quantities-load-hint { margin: 0; padding: 0 20px 10px; color: #8a6a1f; font-size: 12.5px; }
 .quantities-load small.is-not-configured { color: #8a6a1f; }
 .quantities-load small.is-provisional { color: #2b4b8f; }
 .quantities-load small.is-verified { color: #1d6b3a; }
