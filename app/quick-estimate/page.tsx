@@ -99,9 +99,7 @@ function SetupContent() {
       .then((live) => {
         if (!cancelled) setPrices(live as Record<string, never>);
       })
-      .catch((error: unknown) => {
-        if (!cancelled) setPriceError(String(error));
-      });
+      .catch(() => undefined);
     return () => {
       cancelled = true;
     };
@@ -256,7 +254,7 @@ function SetupContent() {
           <div className="side-divider" />
           <span className="side-label">Estimated total</span>
           <strong className="side-total">{formatGhs(total, 0)}</strong>
-          <p className="side-note">{live.pricedCount} of {live.lines.length} priced · {Object.keys(prices ?? {}).length} prices · {process.env.NEXT_PUBLIC_ESTIMO_API_URL ?? "no-url"} · updates as you change the spaces.</p>
+          <p className="side-note">{live.pricedCount} of {live.lines.length} priced · updates as you change the spaces.</p>
           <button className="btn-amber side-cta" type="button" onClick={openItemized}>
             Itemized estimate
           </button>

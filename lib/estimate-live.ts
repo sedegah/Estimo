@@ -138,15 +138,10 @@ export function spacesFromCounts(templateId: string, counts: Record<string, numb
 export async function fetchLivePrices(): Promise<Record<string, PriceEntry>> {
   try {
     const response = await fetch(`${API_URL}/catalogue`);
-    const debug = { url: `${API_URL}/catalogue`, status: response.status, items: 0, sample: null as unknown, error: "" };
-    if (typeof window !== "undefined") (window as unknown as { __priceDebug?: unknown }).__priceDebug = debug;
     if (!response.ok) return {};
     const body = (await response.json()) as {
       items?: { id: string; price_ghs: number | null; price_brand?: string | null; price_source?: string | null; price_updated_at?: string | null }[];
     };
-    debug.items = (body.items ?? []).length;
-    debug.sample = body.items?.[0] ?? null;
-    if (typeof window !== "undefined") (window as unknown as { __priceDebug?: unknown }).__priceDebug = debug;
     const prices: Record<string, PriceEntry> = {};
     for (const item of body.items ?? []) {
       if (typeof item.price_ghs !== "number") continue;
@@ -158,8 +153,7 @@ export async function fetchLivePrices(): Promise<Record<string, PriceEntry>> {
       };
     }
     return prices;
-  } catch (error) {
-    if (typeof window !== "undefined") (window as unknown as { __priceDebug?: unknown }).__priceDebug = { error: String(error) };
+  } catch {
     return {};
   }
 }
