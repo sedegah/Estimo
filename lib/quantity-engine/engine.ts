@@ -209,6 +209,8 @@ export interface CalculateArgs {
   specialLoads?: string[];
   dbLocation?: Record<string, unknown> | null;
   multiDbRules?: Record<string, unknown>[];
+  specialLoadRows?: Record<string, unknown>[];
+  loadRouteM?: number;
   params: Record<string, number>;
   rules: Map<string, RoomRuleRow>;
   circuitRules?: CircuitRuleRow[];
@@ -325,6 +327,9 @@ export function calculateProject(args: CalculateArgs): EngineResult {
     calculated,
     assemblies,
     assemblyItems,
+    specialLoadRows: args.specialLoadRows,
+    selectedLoads: specialLoads,
+    loadRouteM: args.loadRouteM ?? 8,
   });
 
   const location = args.dbLocation ?? null;
@@ -369,9 +374,13 @@ function aggregateMaterials(args: {
   calculated: SpaceEstimate[];
   assemblies: AssemblyRow[];
   assemblyItems: AssemblyItemRow[];
+  specialLoadRows?: Record<string, unknown>[];
+  selectedLoads?: string[];
+  loadRouteM?: number;
 }): MaterialQuantity[] {
   const { totals, assemblies, assemblyItems } = args;
   const CORE_ASSEMBLIES = new Set([
+    "ac_point",
     "double_socket_point",
     "lighting_point",
     "switch_point",
@@ -388,7 +397,14 @@ function aggregateMaterials(args: {
     double_socket_point: totals.double_sockets,
     lighting_point: totals.lighting_points,
     switch_point: totals.switch_positions,
+    ac_point: totals.ac_points,
   };
+  const loadCounts = new Map<string, number>();
+  for (const load of args.specialLoadRows ?? []) {
+    if (!args.selectedLoads?.includes(String(load.load_key))) continue;
+    const key = String(load.assembly_key ?? "");
+    if (key) loadCounts.set(key, (loadCounts.get(key) ?? 0) + 1);
+  }
 
   // route-driven quantities, before assemblies see them
   engineered.set("2.5mm2_phase_conductor", totals.socket_conductor_est_m);
@@ -400,10 +416,15 @@ function aggregateMaterials(args: {
 
   for (const item of assemblyItems) {
     if (!known.has(item.assembly_key)) continue;
-    const count = pointCounts[item.assembly_key] ?? 1;
-    const fixed = item.quantity_mode === "fixed" ? (item.quantity ?? 1) * (pointCounts[item.assembly_key] ?? 1) : 0;
+    const count = pointCounts[item.assembly_key] ?? loadCounts.get(item.assembly_key) ?? 0;
+    const fixed = item.quantity_mode === "fixed" ? (item.quantity ?? 1) * (pointCounts[item.assembly_key] ?? loadCounts.get(item.assembly_key) ?? 0) : 0;
     const routeDriven = engineered.get(item.material_key) ?? 0;
-    const value = item.quantity_mode === "fixed" ? fixed : routeDriven;
+    let value = item.quantity_mode === "fixed" ? fixed : routeDriven;
+    if (item.quantity_mode === "route_driven" && !routeDriven) {
+      // a load route: the DB-to-space distance from the V1.2 route table
+      const route = args.loadRouteM ?? 8;
+      value = route * 1 * (loadCounts.get(item.assembly_key) ?? 0);
+    }
     if (!value) continue;
     void count;
     const existing = rows.get(item.material_key);
