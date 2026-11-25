@@ -170,10 +170,57 @@ export default function ProjectPage() {
     }
   };
 
-  const pdfHref = () => {
-    const params = new URLSearchParams({ template: type.code, quality, name });
-    for (const field of type.fields) params.set(field.key, String(counts[field.key] ?? 0));
-    return `/api/estimates/pdf?${params.toString()}`;
+  /** The document is the itemized bill: same lines and total as the screen. */
+  const downloadItemizedPdf = async () => {
+    if (!project) return;
+    if (!livePrices) return;
+    const specLevel = specLevelForQuality(quality);
+    const body = JSON.stringify({
+      name: name.trim() || project.name,
+      template: type.code,
+      specLevel,
+      subtitle: `${spaces} spaces · ${specLevel}`,
+      items: live.lines.map((line) => ({
+        name: line.catalogueName,
+        quantity: Math.max(1, Math.ceil(line.purchaseQuantity)),
+        unit: line.catalogueUnit,
+        priceGhs: line.unitPrice,
+      })),
+      total: live.total,
+    });
+
+    const save = async (blob: Blob) => {
+      const url = URL.createObjectURL(blob);
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = `${project.name.replace(/[^a-z0-9]+/gi, "-").toLowerCase()}.pdf`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      anchor.remove();
+      URL.revokeObjectURL(url);
+    };
+
+    const direct = await fetch("/api/estimates/pdf", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+    });
+    if (direct.ok) {
+      await save(await direct.blob());
+      return;
+    }
+    if (direct.status !== 401) return;
+
+    const linkResponse = await fetch("/api/estimates/pdf/link", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body,
+    });
+    if (!linkResponse.ok) return;
+    const signed = (await linkResponse.json()) as { url?: string };
+    if (!signed.url) return;
+    const linked = await fetch(signed.url);
+    if (linked.ok) await save(await linked.blob());
   };
 
   const viewEstimateHref = () => {
@@ -494,7 +541,9 @@ export default function ProjectPage() {
           </p>
         </div>
         <div className="settings-actions">
-          <a className="btn-outline" href={pdfHref()}>Download PDF</a>
+          <button className="btn-outline" type="button" onClick={() => void downloadItemizedPdf()}>
+            Download PDF
+          </button>
           <Link className="btn-amber" href={viewEstimateHref()}>Itemized bill</Link>
         </div>
       </header>
@@ -613,8 +662,10 @@ export default function ProjectPage() {
           </dl>
           <div className="side-divider" />
           <span className="side-label">Estimated total</span>
-          <strong className="side-total">{formatGhs(total, 0)}</strong>
-          <p className="side-note">Adjust the spaces and save to update this project.</p>
+          <strong className="side-total">{total === null ? "—" : formatGhs(total, 0)}</strong>
+          <p className="side-note">
+            Price of the materials in this plan, priced as the itemized bill prices them.
+          </p>
           <button className="btn-amber side-cta" type="button" onClick={save}>
             {savedMessage ? "Saved" : "Save changes"}
           </button>
