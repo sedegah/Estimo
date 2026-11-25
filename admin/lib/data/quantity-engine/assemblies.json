@@ -18,22 +18,88 @@
     "description": "Switch + box + vertical drop + conductors"
   },
   {
+    "assembly_key": "refrigerator_point",
+    "name": "Refrigerator appliance point",
+    "assembly_type": "load",
+    "description": "Appliance outlet + route; protection per circuit policy"
+  },
+  {
+    "assembly_key": "freezer_point",
+    "name": "Freezer appliance point",
+    "assembly_type": "load",
+    "description": "Appliance outlet + route; protection per circuit policy"
+  },
+  {
+    "assembly_key": "microwave_point",
+    "name": "Microwave appliance point",
+    "assembly_type": "load",
+    "description": "Appliance outlet + route; protection per circuit policy"
+  },
+  {
     "assembly_key": "ac_point",
     "name": "AC dedicated point",
     "assembly_type": "load",
-    "description": "Dedicated circuit, isolator, protection, cable and containment"
+    "description": "Dedicated breaker, isolator, cable and containment from DB"
   },
   {
     "assembly_key": "water_heater_point",
     "name": "Water heater dedicated point",
     "assembly_type": "load",
-    "description": "Dedicated circuit and control"
+    "description": "Dedicated breaker/control, cable and containment from DB"
   },
   {
     "assembly_key": "cooker_point",
     "name": "Electric cooker point",
     "assembly_type": "load",
-    "description": "Cooker control/outlet + dedicated circuit"
+    "description": "Cooker control/outlet + dedicated breaker + route from DB"
+  },
+  {
+    "assembly_key": "dishwasher_point",
+    "name": "Dishwasher dedicated point",
+    "assembly_type": "load",
+    "description": "Dedicated appliance outlet, breaker, cable and containment"
+  },
+  {
+    "assembly_key": "washing_machine_point",
+    "name": "Washing machine dedicated point",
+    "assembly_type": "load",
+    "description": "Dedicated appliance outlet, breaker, cable and containment"
+  },
+  {
+    "assembly_key": "extractor_point",
+    "name": "Extractor point",
+    "assembly_type": "load",
+    "description": "FCU/control + route-driven cable and containment"
+  },
+  {
+    "assembly_key": "water_pump_point",
+    "name": "Water pump point",
+    "assembly_type": "load",
+    "description": "Dedicated breaker/isolator + route-driven feeder"
+  },
+  {
+    "assembly_key": "gate_motor_point",
+    "name": "Gate motor point",
+    "assembly_type": "load",
+    "description": "Protection/isolator + external route-driven feeder"
+  },
+  {
+    "assembly_key": "ev_charger_point",
+    "name": "EV charger provision",
+    "assembly_type": "load",
+    "description": "Dedicated protection + load-sized feeder + containment"
+  },
+  {
+    "assembly_key": "workshop_machine_point",
+    "name": "Workshop machine feeder",
+    "assembly_type": "load",
+    "description": "Machine isolator/protection + load-sized feeder"
+  },
+  {
+    "assembly_key": "refrigeration_equipment_point",
+    "name": "Refrigeration equipment feeder",
+    "assembly_type": "load",
+    "description": "Dedicated breaker/isolator + route-driven feeder"
   },
   {
     "assembly_key": "earthing_basic_residential",

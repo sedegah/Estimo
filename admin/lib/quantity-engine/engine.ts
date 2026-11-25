@@ -29,7 +29,7 @@ import type {
   StructureTemplateRow,
 } from "./types";
 
-export const RULE_SET = "ESTIMO-GH-QTY-v1.0";
+export const RULE_SET = "ESTIMO-GH-QTY-v1.2";
 
 /** Commercial distribution board ways; a requirement beyond these is engineered. */
 export const DB_SIZES = [4, 6, 8, 12, 18, 24];
@@ -207,6 +207,8 @@ export interface CalculateArgs {
   templateId?: string | null;
   overrides?: PointOverride[];
   specialLoads?: string[];
+  dbLocation?: Record<string, unknown> | null;
+  multiDbRules?: Record<string, unknown>[];
   params: Record<string, number>;
   rules: Map<string, RoomRuleRow>;
   circuitRules?: CircuitRuleRow[];
@@ -325,6 +327,19 @@ export function calculateProject(args: CalculateArgs): EngineResult {
     assemblyItems,
   });
 
+  const location = args.dbLocation ?? null;
+  const multiDb = multiDbAdvice({
+    projectType: args.projectType,
+    totals,
+    rules: args.multiDbRules ?? [],
+    spaceCount: calculated.length,
+  });
+  if (multiDb.recommended) {
+    warnings.push(
+      `${multiDb.triggers.length} trigger${multiDb.triggers.length === 1 ? "" : "s"} for a sub-DB: ${multiDb.triggers.join(", ")}. V1.2 recommends ${multiDb.suggestedCount} sub-DB${multiDb.suggestedCount === 1 ? "" : "s"}; feeder sizing is load-designed.`,
+    );
+  }
+
   return {
     ruleSet: args.templateId ? RULE_SET : RULE_SET,
     templateId: args.templateId ?? null,
@@ -336,6 +351,15 @@ export function calculateProject(args: CalculateArgs): EngineResult {
     totals,
     materialQuantities,
     specialLoads,
+    dbLocation: location
+      ? {
+          dbKey: String(location.db_key),
+          spaceName: String(location.default_space_name),
+          locationLabel: String(location.location_label),
+          routeMethod: String(location.route_method),
+        }
+      : null,
+    multiDb,
     warnings,
   };
 }
@@ -347,7 +371,15 @@ function aggregateMaterials(args: {
   assemblyItems: AssemblyItemRow[];
 }): MaterialQuantity[] {
   const { totals, assemblies, assemblyItems } = args;
-  const known = new Set(assemblies.map((assembly) => assembly.assembly_key));
+  const CORE_ASSEMBLIES = new Set([
+    "double_socket_point",
+    "lighting_point",
+    "switch_point",
+    "earthing_basic_residential",
+  ]);
+  const known = new Set(
+    assemblies.filter((assembly) => CORE_ASSEMBLIES.has(assembly.assembly_key)).map((assembly) => assembly.assembly_key),
+  );
   const rows = new Map<string, MaterialQuantity>();
   const engineered = new Map<string, number>();
 
@@ -430,4 +462,60 @@ export function templateOf(
   templateId: string,
 ): StructureTemplateRow | undefined {
   return templates.find((template) => template.template_id === templateId);
+}
+
+
+/** V1.2 thresholds: does this project want a sub-DB, and why. Advisory only. */
+function multiDbAdvice(args: {
+  projectType: string;
+  totals: ProjectTotals;
+  rules: Record<string, unknown>[];
+  spaceCount: number;
+}): { recommended: boolean; suggestedCount: number; triggers: string[] } {
+  const context =
+    args.projectType === "office"
+      ? "office"
+      : args.projectType === "shop_retail"
+        ? "shop"
+        : args.projectType === "workshop_small_factory"
+          ? "workshop"
+          : args.projectType === "container_kiosk"
+            ? "container"
+            : "residential";
+
+  const aliases: Record<string, string[]> = {
+    residential: ["residential"],
+    office: ["office"],
+    shop: ["shop", "retail"],
+    workshop: ["workshop"],
+    container: ["container", "kiosk"],
+  };
+  const row = args.rules.find((rule) =>
+    aliases[context].some((word) => String(rule.project_context ?? "").toLowerCase().includes(word)),
+  );
+  if (!row) return { recommended: false, suggestedCount: 0, triggers: [] };
+
+  const maxCircuits = Number(row.preferred_max_final_circuits ?? 12);
+  const areaTrigger = Number(row.zone_area_trigger_m2 ?? 180);
+  const maxWays = Number(row.preferred_max_db_ways ?? 18);
+
+  const triggers: string[] = [];
+  if (args.totals.total_final_circuits > maxCircuits) {
+    triggers.push(`${args.totals.total_final_circuits} final circuits exceed ${maxCircuits}`);
+  }
+  if (args.totals.floor_area_m2 > areaTrigger) {
+    triggers.push(`${args.totals.floor_area_m2} m² exceeds ${areaTrigger} m²`);
+  }
+  if (args.totals.db_design_ways > maxWays) {
+    triggers.push(`${args.totals.db_design_ways} board ways exceed ${maxWays}`);
+  }
+  if (args.totals.machine_count >= Number(row.machine_cluster_trigger ?? 6)) {
+    triggers.push(`${args.totals.machine_count} machines cluster`);
+  }
+
+  return {
+    recommended: triggers.length > 0,
+    suggestedCount: triggers.length ? 1 : 0,
+    triggers,
+  };
 }

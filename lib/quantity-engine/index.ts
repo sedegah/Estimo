@@ -13,6 +13,8 @@ import templateSpacesData from "@/lib/data/quantity-engine/template_spaces.json"
 import assemblies from "@/lib/data/quantity-engine/assemblies.json";
 import assemblyItems from "@/lib/data/quantity-engine/assembly_items.json";
 import specialLoads from "@/lib/data/quantity-engine/special_loads.json";
+import templateDbLocations from "@/lib/data/quantity-engine/template_db_locations.json";
+import multiDbRules from "@/lib/data/quantity-engine/multi_db_rules.json";
 
 import { calculateProject, parametersFromRows, rulesByKey, templateSpaces } from "./engine";
 import type {
@@ -117,6 +119,11 @@ export function calculate(options: CalculateOptions): EngineResult {
     templateId: template?.template_id ?? null,
     overrides: options.overrides ?? [],
     specialLoads: options.specialLoads ?? [],
+    dbLocation:
+      (templateDbLocations as unknown as Record<string, unknown>[]).find(
+        (row) => row.template_id === options.templateId,
+      ) ?? null,
+    multiDbRules: multiDbRules as unknown as Record<string, unknown>[],
     params,
     rules,
     circuitRules: circuitRules as unknown as CircuitRuleRow[],

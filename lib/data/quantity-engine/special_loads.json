@@ -4,24 +4,42 @@
     "space_context": "kitchen",
     "selection_mode": "optional",
     "default_enabled": true,
-    "circuit_policy": "dedicated_or_design_rule",
-    "notes": "General kitchen appliance; dedicated depending load/installation"
+    "circuit_policy": "dedicated_or_general",
+    "assembly_key": "refrigerator_point",
+    "default_power_kw": 0.5,
+    "default_phase": "single",
+    "default_cable_family": "2.5mm2_single_core",
+    "default_breaker_a": 20,
+    "requires_user_rating": false,
+    "notes": "Adds outlet/route materials. May share general circuit depending final design."
   },
   {
     "load_key": "freezer",
-    "space_context": "kitchen",
+    "space_context": "kitchen_or_shop",
     "selection_mode": "optional",
     "default_enabled": false,
-    "circuit_policy": "dedicated_or_design_rule",
-    "notes": ""
+    "circuit_policy": "dedicated_or_general",
+    "assembly_key": "freezer_point",
+    "default_power_kw": 0.8,
+    "default_phase": "single",
+    "default_cable_family": "2.5mm2_single_core",
+    "default_breaker_a": 20,
+    "requires_user_rating": false,
+    "notes": "Adds outlet and route; dedicated circuit can be enabled by design rule."
   },
   {
     "load_key": "microwave",
     "space_context": "kitchen",
     "selection_mode": "optional",
     "default_enabled": false,
-    "circuit_policy": "dedicated_or_design_rule",
-    "notes": ""
+    "circuit_policy": "dedicated_or_general",
+    "assembly_key": "microwave_point",
+    "default_power_kw": 1.5,
+    "default_phase": "single",
+    "default_cable_family": "2.5mm2_single_core",
+    "default_breaker_a": 20,
+    "requires_user_rating": false,
+    "notes": "Adds dedicated/general appliance outlet and route."
   },
   {
     "load_key": "electric_cooker",
@@ -29,7 +47,13 @@
     "selection_mode": "user_select",
     "default_enabled": false,
     "circuit_policy": "dedicated",
-    "notes": "Requires load-based cable and breaker sizing"
+    "assembly_key": "cooker_point",
+    "default_power_kw": 7.0,
+    "default_phase": "single",
+    "default_cable_family": "6mm2_single_core",
+    "default_breaker_a": 40,
+    "requires_user_rating": true,
+    "notes": "Starting estimating default only; final cable/breaker must be load-designed."
   },
   {
     "load_key": "dishwasher",
@@ -37,7 +61,13 @@
     "selection_mode": "optional",
     "default_enabled": false,
     "circuit_policy": "dedicated",
-    "notes": ""
+    "assembly_key": "dishwasher_point",
+    "default_power_kw": 2.0,
+    "default_phase": "single",
+    "default_cable_family": "2.5mm2_single_core",
+    "default_breaker_a": 20,
+    "requires_user_rating": false,
+    "notes": "Dedicated appliance point for estimating."
   },
   {
     "load_key": "washing_machine",
@@ -45,15 +75,27 @@
     "selection_mode": "optional",
     "default_enabled": false,
     "circuit_policy": "dedicated",
-    "notes": ""
+    "assembly_key": "washing_machine_point",
+    "default_power_kw": 2.0,
+    "default_phase": "single",
+    "default_cable_family": "2.5mm2_single_core",
+    "default_breaker_a": 20,
+    "requires_user_rating": false,
+    "notes": "Dedicated appliance point for estimating."
   },
   {
     "load_key": "extractor",
     "space_context": "kitchen_or_bathroom",
     "selection_mode": "optional",
     "default_enabled": false,
-    "circuit_policy": "dedicated_or_shared",
-    "notes": ""
+    "circuit_policy": "shared_or_fcu",
+    "assembly_key": "extractor_point",
+    "default_power_kw": 0.3,
+    "default_phase": "single",
+    "default_cable_family": "1.5mm2_single_core",
+    "default_breaker_a": 10,
+    "requires_user_rating": false,
+    "notes": "Adds fused connection/control and route materials."
   },
   {
     "load_key": "water_heater",
@@ -61,7 +103,13 @@
     "selection_mode": "optional",
     "default_enabled": false,
     "circuit_policy": "dedicated",
-    "notes": "Requires load-based sizing"
+    "assembly_key": "water_heater_point",
+    "default_power_kw": 3.0,
+    "default_phase": "single",
+    "default_cable_family": "4mm2_single_core",
+    "default_breaker_a": 25,
+    "requires_user_rating": true,
+    "notes": "Starting estimate only; final sizing by heater power and design."
   },
   {
     "load_key": "air_conditioner",
@@ -69,7 +117,13 @@
     "selection_mode": "optional",
     "default_enabled": false,
     "circuit_policy": "dedicated",
-    "notes": "Capacity required/estimated"
+    "assembly_key": "ac_point",
+    "default_power_kw": 2.0,
+    "default_phase": "single",
+    "default_cable_family": "4mm2_single_core",
+    "default_breaker_a": 25,
+    "requires_user_rating": true,
+    "notes": "Capacity required/estimated. Every AC selection must add cable, isolator, breaker and containment."
   },
   {
     "load_key": "water_pump",
@@ -77,7 +131,13 @@
     "selection_mode": "optional",
     "default_enabled": false,
     "circuit_policy": "dedicated",
-    "notes": ""
+    "assembly_key": "water_pump_point",
+    "default_power_kw": 1.5,
+    "default_phase": "single",
+    "default_cable_family": "4mm2_single_core",
+    "default_breaker_a": 20,
+    "requires_user_rating": true,
+    "notes": "Pump feeder plus isolator/protection; adjust by motor data."
   },
   {
     "load_key": "gate_motor",
@@ -85,7 +145,13 @@
     "selection_mode": "optional",
     "default_enabled": false,
     "circuit_policy": "dedicated_or_design_rule",
-    "notes": ""
+    "assembly_key": "gate_motor_point",
+    "default_power_kw": 0.75,
+    "default_phase": "single",
+    "default_cable_family": "2.5mm2_power_cable",
+    "default_breaker_a": 16,
+    "requires_user_rating": false,
+    "notes": "Route may be long/external; user should confirm distance from DB."
   },
   {
     "load_key": "ev_charger",
@@ -93,7 +159,13 @@
     "selection_mode": "optional",
     "default_enabled": false,
     "circuit_policy": "dedicated",
-    "notes": "Future-ready; load-based"
+    "assembly_key": "ev_charger_point",
+    "default_power_kw": 7.4,
+    "default_phase": "single",
+    "default_cable_family": "load_sized_power_cable",
+    "default_breaker_a": 32,
+    "requires_user_rating": true,
+    "notes": "Future-ready; load-designed circuit and protection required."
   },
   {
     "load_key": "workshop_machine",
@@ -101,7 +173,13 @@
     "selection_mode": "user_defined",
     "default_enabled": false,
     "circuit_policy": "dedicated",
-    "notes": "Machine kW and phase required"
+    "assembly_key": "workshop_machine_point",
+    "default_power_kw": 5.0,
+    "default_phase": "three",
+    "default_cable_family": "load_sized_power_cable",
+    "default_breaker_a": 0,
+    "requires_user_rating": true,
+    "notes": "Machine kW, phase and route required. Protection/cable load-driven."
   },
   {
     "load_key": "refrigeration_equipment",
@@ -109,6 +187,12 @@
     "selection_mode": "optional",
     "default_enabled": false,
     "circuit_policy": "dedicated",
-    "notes": ""
+    "assembly_key": "refrigeration_equipment_point",
+    "default_power_kw": 3.0,
+    "default_phase": "single",
+    "default_cable_family": "4mm2_single_core",
+    "default_breaker_a": 25,
+    "requires_user_rating": true,
+    "notes": "Dedicated refrigeration supply; final sizing by equipment data."
   }
 ]

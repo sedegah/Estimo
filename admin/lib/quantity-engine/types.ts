@@ -195,6 +195,9 @@ export interface EngineResult {
   totals: ProjectTotals;
   materialQuantities: MaterialQuantity[];
   specialLoads: string[];
+  /** V1.2: where DB1 sits, and whether a sub-DB is advised. */
+  dbLocation?: { dbKey: string; spaceName: string; locationLabel: string; routeMethod: string } | null;
+  multiDb?: { recommended: boolean; suggestedCount: number; triggers: string[] };
   warnings: string[];
 }
 

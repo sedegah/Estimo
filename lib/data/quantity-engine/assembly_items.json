@@ -4,118 +4,909 @@
     "material_key": "double_13a_socket",
     "quantity": 1,
     "unit": "each",
-    "quantity_mode": "fixed"
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": ""
   },
   {
     "assembly_key": "double_socket_point",
     "material_key": "socket_mounting_box",
     "quantity": 1,
     "unit": "each",
-    "quantity_mode": "fixed"
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": ""
   },
   {
     "assembly_key": "double_socket_point",
     "material_key": "2.5mm2_phase_conductor",
     "quantity": null,
     "unit": "m",
-    "quantity_mode": "route_driven"
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "space_internal",
+    "notes": ""
   },
   {
     "assembly_key": "double_socket_point",
     "material_key": "2.5mm2_neutral_conductor",
     "quantity": null,
     "unit": "m",
-    "quantity_mode": "route_driven"
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "space_internal",
+    "notes": ""
   },
   {
     "assembly_key": "double_socket_point",
     "material_key": "cpc_conductor",
     "quantity": null,
     "unit": "m",
-    "quantity_mode": "route_driven"
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "space_internal",
+    "notes": ""
   },
   {
     "assembly_key": "double_socket_point",
     "material_key": "20mm_conduit",
     "quantity": null,
     "unit": "m",
-    "quantity_mode": "route_driven"
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "space_internal",
+    "notes": ""
   },
   {
     "assembly_key": "lighting_point",
     "material_key": "light_fitting_allowance",
     "quantity": 1,
     "unit": "each",
-    "quantity_mode": "fixed"
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": ""
   },
   {
     "assembly_key": "lighting_point",
     "material_key": "ceiling_junction_box",
     "quantity": 1,
     "unit": "each",
-    "quantity_mode": "fixed"
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": ""
   },
   {
     "assembly_key": "lighting_point",
     "material_key": "lighting_conductors",
     "quantity": null,
     "unit": "m",
-    "quantity_mode": "route_driven"
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "space_internal",
+    "notes": ""
   },
   {
     "assembly_key": "lighting_point",
     "material_key": "20mm_conduit",
     "quantity": null,
     "unit": "m",
-    "quantity_mode": "route_driven"
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "space_internal",
+    "notes": ""
   },
   {
     "assembly_key": "switch_point",
     "material_key": "switch_mechanism",
     "quantity": 1,
     "unit": "each",
-    "quantity_mode": "fixed"
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": ""
   },
   {
     "assembly_key": "switch_point",
     "material_key": "switch_mounting_box",
     "quantity": 1,
     "unit": "each",
-    "quantity_mode": "fixed"
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": ""
   },
   {
     "assembly_key": "switch_point",
     "material_key": "20mm_conduit",
     "quantity": null,
     "unit": "m",
-    "quantity_mode": "route_driven"
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "vertical_drop",
+    "notes": ""
+  },
+  {
+    "assembly_key": "refrigerator_point",
+    "material_key": "double_13a_socket",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": ""
+  },
+  {
+    "assembly_key": "refrigerator_point",
+    "material_key": "2.5mm2_phase_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "refrigerator_point",
+    "material_key": "2.5mm2_neutral_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "refrigerator_point",
+    "material_key": "cpc_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "refrigerator_point",
+    "material_key": "20mm_conduit",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "freezer_point",
+    "material_key": "double_13a_socket",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": ""
+  },
+  {
+    "assembly_key": "freezer_point",
+    "material_key": "2.5mm2_phase_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "freezer_point",
+    "material_key": "2.5mm2_neutral_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "freezer_point",
+    "material_key": "cpc_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "freezer_point",
+    "material_key": "20mm_conduit",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "microwave_point",
+    "material_key": "double_13a_socket",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": ""
+  },
+  {
+    "assembly_key": "microwave_point",
+    "material_key": "2.5mm2_phase_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "microwave_point",
+    "material_key": "2.5mm2_neutral_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "microwave_point",
+    "material_key": "cpc_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "microwave_point",
+    "material_key": "20mm_conduit",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "cooker_point",
+    "material_key": "40a_sp_mcb",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": "starting default; load-designed"
+  },
+  {
+    "assembly_key": "cooker_point",
+    "material_key": "45a_cooker_control_unit",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": ""
+  },
+  {
+    "assembly_key": "cooker_point",
+    "material_key": "cooker_outlet_plate",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": ""
+  },
+  {
+    "assembly_key": "cooker_point",
+    "material_key": "6mm2_phase_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "cooker_point",
+    "material_key": "6mm2_neutral_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "cooker_point",
+    "material_key": "cpc_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "cooker_point",
+    "material_key": "25mm_conduit",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "dishwasher_point",
+    "material_key": "20a_sp_mcb",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": ""
+  },
+  {
+    "assembly_key": "dishwasher_point",
+    "material_key": "double_13a_socket",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": ""
+  },
+  {
+    "assembly_key": "dishwasher_point",
+    "material_key": "2.5mm2_phase_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "dishwasher_point",
+    "material_key": "2.5mm2_neutral_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "dishwasher_point",
+    "material_key": "cpc_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "dishwasher_point",
+    "material_key": "20mm_conduit",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "washing_machine_point",
+    "material_key": "20a_sp_mcb",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": ""
+  },
+  {
+    "assembly_key": "washing_machine_point",
+    "material_key": "double_13a_socket",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": ""
+  },
+  {
+    "assembly_key": "washing_machine_point",
+    "material_key": "2.5mm2_phase_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "washing_machine_point",
+    "material_key": "2.5mm2_neutral_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "washing_machine_point",
+    "material_key": "cpc_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "washing_machine_point",
+    "material_key": "20mm_conduit",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "extractor_point",
+    "material_key": "13a_fcu",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": ""
+  },
+  {
+    "assembly_key": "extractor_point",
+    "material_key": "1.5mm2_phase_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "extractor_point",
+    "material_key": "1.5mm2_neutral_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "extractor_point",
+    "material_key": "cpc_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "extractor_point",
+    "material_key": "20mm_conduit",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "water_heater_point",
+    "material_key": "25a_sp_mcb",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": "starting default"
+  },
+  {
+    "assembly_key": "water_heater_point",
+    "material_key": "20a_dp_water_heater_switch",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": ""
+  },
+  {
+    "assembly_key": "water_heater_point",
+    "material_key": "4mm2_phase_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "water_heater_point",
+    "material_key": "4mm2_neutral_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "water_heater_point",
+    "material_key": "cpc_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "water_heater_point",
+    "material_key": "20mm_conduit",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "ac_point",
+    "material_key": "25a_sp_mcb",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": "starting default"
+  },
+  {
+    "assembly_key": "ac_point",
+    "material_key": "ac_isolator",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": ""
+  },
+  {
+    "assembly_key": "ac_point",
+    "material_key": "4mm2_phase_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "ac_point",
+    "material_key": "4mm2_neutral_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "ac_point",
+    "material_key": "cpc_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "ac_point",
+    "material_key": "20mm_conduit",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "water_pump_point",
+    "material_key": "20a_sp_mcb",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": "starting default"
+  },
+  {
+    "assembly_key": "water_pump_point",
+    "material_key": "pump_isolator",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": ""
+  },
+  {
+    "assembly_key": "water_pump_point",
+    "material_key": "4mm2_phase_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "water_pump_point",
+    "material_key": "4mm2_neutral_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "water_pump_point",
+    "material_key": "cpc_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "water_pump_point",
+    "material_key": "20mm_conduit",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "gate_motor_point",
+    "material_key": "16a_sp_mcb",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": "starting default"
+  },
+  {
+    "assembly_key": "gate_motor_point",
+    "material_key": "gate_motor_isolator",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": ""
+  },
+  {
+    "assembly_key": "gate_motor_point",
+    "material_key": "2.5mm2_power_cable",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "gate_motor_point",
+    "material_key": "external_containment",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "ev_charger_point",
+    "material_key": "ev_charger_rcbo",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "load_driven",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": "rating/load driven"
+  },
+  {
+    "assembly_key": "ev_charger_point",
+    "material_key": "load_sized_power_cable",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "load_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "ev_charger_point",
+    "material_key": "load_sized_containment",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "load_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "workshop_machine_point",
+    "material_key": "machine_isolator",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "load_driven",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": "rating/load driven"
+  },
+  {
+    "assembly_key": "workshop_machine_point",
+    "material_key": "machine_protective_device",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "load_driven",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": ""
+  },
+  {
+    "assembly_key": "workshop_machine_point",
+    "material_key": "load_sized_power_cable",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "load_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "workshop_machine_point",
+    "material_key": "load_sized_containment",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "load_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "refrigeration_equipment_point",
+    "material_key": "25a_sp_mcb",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": "starting default"
+  },
+  {
+    "assembly_key": "refrigeration_equipment_point",
+    "material_key": "equipment_isolator",
+    "quantity": 1,
+    "unit": "each",
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": ""
+  },
+  {
+    "assembly_key": "refrigeration_equipment_point",
+    "material_key": "4mm2_phase_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "refrigeration_equipment_point",
+    "material_key": "4mm2_neutral_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "refrigeration_equipment_point",
+    "material_key": "cpc_conductor",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
+  },
+  {
+    "assembly_key": "refrigeration_equipment_point",
+    "material_key": "20mm_conduit",
+    "quantity": null,
+    "unit": "m",
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "db_to_load",
+    "notes": ""
   },
   {
     "assembly_key": "earthing_basic_residential",
     "material_key": "earth_electrode",
     "quantity": 1,
     "unit": "each",
-    "quantity_mode": "fixed"
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": ""
   },
   {
     "assembly_key": "earthing_basic_residential",
     "material_key": "earth_clamp",
     "quantity": 1,
     "unit": "each",
-    "quantity_mode": "fixed"
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": ""
   },
   {
     "assembly_key": "earthing_basic_residential",
     "material_key": "earth_inspection_chamber",
     "quantity": 1,
     "unit": "each",
-    "quantity_mode": "fixed"
+    "quantity_mode": "fixed",
+    "route_multiplier": 0,
+    "route_basis": "none",
+    "notes": ""
   },
   {
     "assembly_key": "earthing_basic_residential",
     "material_key": "main_earthing_conductor",
     "quantity": null,
     "unit": "m",
-    "quantity_mode": "route_driven"
+    "quantity_mode": "route_driven",
+    "route_multiplier": 1,
+    "route_basis": "supply_to_db",
+    "notes": ""
   }
 ]
