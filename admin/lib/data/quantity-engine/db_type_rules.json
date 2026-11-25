@@ -1,0 +1,7 @@
+[
+  {"db_type":"main_db","parent_allowed":false,"default_location_rule":"project_type_default","requires_feeder":false,"default_spare_factor":1.25,"user_editable":true,"notes":"Primary consumer unit/main DB."},
+  {"db_type":"floor_db","parent_allowed":true,"default_location_rule":"landing_or_corridor_near_stair_or_riser","requires_feeder":true,"default_spare_factor":1.25,"user_editable":true,"notes":"Serves one occupied floor or major floor zone."},
+  {"db_type":"wing_db","parent_allowed":true,"default_location_rule":"accessible_central_corridor_or_transition","requires_feeder":true,"default_spare_factor":1.25,"user_editable":true,"notes":"Residential wing/remote zone."},
+  {"db_type":"zone_db","parent_allowed":true,"default_location_rule":"accessible_service_or_central_zone","requires_feeder":true,"default_spare_factor":1.25,"user_editable":true,"notes":"Office/retail/workshop zone."},
+  {"db_type":"machine_db","parent_allowed":true,"default_location_rule":"accessible_near_machine_cluster","requires_feeder":true,"default_spare_factor":1.25,"user_editable":true,"notes":"Estimating object for concentrated machine circuits; final design may use MCC/panel architecture."}
+]

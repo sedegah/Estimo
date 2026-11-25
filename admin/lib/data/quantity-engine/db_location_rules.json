@@ -1,0 +1,65 @@
+[
+  {
+    "project_type": "container_kiosk",
+    "preferred_space_type": "shop_floor/main_space",
+    "default_position": "inside_at_entry_door",
+    "fallback": "main usable space",
+    "notes": "Consumer unit mounted inside just around the entry door for easy access."
+  },
+  {
+    "project_type": "single_room",
+    "preferred_space_type": "bedroom/main_room",
+    "default_position": "inside_at_entry_door",
+    "fallback": "main room",
+    "notes": "Consumer unit inside the room close to the entry door."
+  },
+  {
+    "project_type": "one_bedroom",
+    "preferred_space_type": "corridor",
+    "default_position": "corridor_near_main_entry",
+    "fallback": "porch then living room",
+    "notes": "Ghana residential default: corridor/porch area, accessible and central."
+  },
+  {
+    "project_type": "two_bedroom",
+    "preferred_space_type": "corridor",
+    "default_position": "corridor_near_main_entry",
+    "fallback": "porch then living room",
+    "notes": "Ghana residential default: corridor/porch area, accessible and central."
+  },
+  {
+    "project_type": "three_bedroom",
+    "preferred_space_type": "corridor",
+    "default_position": "corridor_near_main_entry",
+    "fallback": "porch/veranda then living room",
+    "notes": "Ghana residential default: corridor/porch area, accessible and central."
+  },
+  {
+    "project_type": "four_bedroom_villa",
+    "preferred_space_type": "corridor",
+    "default_position": "corridor_near_main_entry",
+    "fallback": "porch/veranda then family/living area",
+    "notes": "Ghana residential default. Large villas may later use sub-DBs by floor/wing."
+  },
+  {
+    "project_type": "office",
+    "preferred_space_type": "reception",
+    "default_position": "inside_near_main_entry",
+    "fallback": "corridor/open office",
+    "notes": "Accessible to authorized staff; use floor/sub-DBs for larger offices."
+  },
+  {
+    "project_type": "shop_retail",
+    "preferred_space_type": "shop_floor",
+    "default_position": "inside_near_main_entry",
+    "fallback": "office/store",
+    "notes": "Inside near main entrance for access and short general routes."
+  },
+  {
+    "project_type": "workshop_small_factory",
+    "preferred_space_type": "workshop_floor",
+    "default_position": "inside_near_main_entry_or_electrical_corner",
+    "fallback": "office",
+    "notes": "Small workshop default only; larger plants should use engineered MDB/DB locations."
+  }
+]

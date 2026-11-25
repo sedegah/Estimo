@@ -25,6 +25,11 @@ const DATA = [
   "assemblies.json",
   "assembly_items.json",
   "special_loads.json",
+  "db_location_rules.json",
+  "template_db_locations.json",
+  "template_space_routes.json",
+  "db_type_rules.json",
+  "multi_db_rules.json",
 ];
 
 fs.mkdirSync(target, { recursive: true });
