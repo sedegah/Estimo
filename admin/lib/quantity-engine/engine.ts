@@ -388,6 +388,8 @@ function aggregateMaterials(args: {
   const loadCounts = new Map<string, number>();
   for (const load of args.specialLoadRows ?? []) {
     if (!args.selectedLoads?.includes(String(load.load_key))) continue;
+    // the EV charger is future-ready: it carries a circuit but no priced materials yet
+    if (String(load.load_key) === "ev_charger") continue;
     const key = String(load.assembly_key ?? "");
     if (key) loadCounts.set(key, (loadCounts.get(key) ?? 0) + 1);
   }
