@@ -23,6 +23,8 @@ import {
   TEMPLATE_FOR_CODE,
   templateForCode,
 } from "@/lib/estimate-live";
+import { parseSpecialLoadInstances, type SpecialLoadInstance } from "@/lib/quantity-engine/special-loads";
+import type { PointOverride, SpaceInput } from "@/lib/quantity-engine/types";
 import { saveEstimate } from "@/lib/storage/saved-estimates";
 import { saveDraft } from "@/lib/storage/draft";
 import { pushCreate } from "@/lib/api/estimates";
@@ -85,9 +87,45 @@ function SetupContent() {
 
   const templateId = TEMPLATE_FOR_CODE[type.code] ?? "T011";
   const specLevel = specLevelForQuality(quality);
+
+  /**
+   * The itemized bill lets a person edit the plan (spaces, point overrides, special
+   * loads). Coming back here must show that same plan and the same money, so the draft
+   * it left behind is picked up and priced instead of a fresh guess from the counters.
+   */
+  const [carried, setCarried] = useState<{
+    spaces: SpaceInput[];
+    overrides: PointOverride[];
+    instances: SpecialLoadInstance[];
+  } | null>(null);
+
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem("estimo_estimate_draft_v1");
+      if (!raw) return;
+      const draft = JSON.parse(raw) as {
+        templateId?: string;
+        spaces?: SpaceInput[];
+        overrides?: PointOverride[];
+        specialLoadInstances?: unknown[];
+      };
+      if (draft.templateId !== templateId || !draft.spaces?.length) {
+        setCarried(null);
+        return;
+      }
+      setCarried({
+        spaces: draft.spaces,
+        overrides: draft.overrides ?? [],
+        instances: parseSpecialLoadInstances(draft.specialLoadInstances),
+      });
+    } catch {
+      setCarried(null);
+    }
+  }, [templateId]);
+
   const planSpaces = useMemo(
-    () => spacesFromCounts(templateId, counts),
-    [templateId, counts],
+    () => carried?.spaces ?? spacesFromCounts(templateId, counts),
+    [carried, templateId, counts],
   );
 
   // prices come from the same catalogue call the itemized screen makes

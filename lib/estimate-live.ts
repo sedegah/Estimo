@@ -1,6 +1,10 @@
 import { calculateProject, parametersFromRows, rulesByKey } from "@/lib/quantity-engine/engine";
 import { MATERIAL_CATALOGUE, priceQuantities, type PriceEntry } from "@/lib/quantity-engine/catalogue";
 import { CATALOGUE_MATERIALS } from "@/lib/data/catalogue";
+import {
+  applySpecialLoads,
+  type SpecialLoadInstance,
+} from "@/lib/quantity-engine/special-loads";
 import type { CatalogueMaterial } from "@/lib/types";
 import globalParameters from "@/lib/data/quantity-engine/global_parameters.json";
 import roomRules from "@/lib/data/quantity-engine/room_rules.json";
@@ -174,19 +178,27 @@ export type LiveEstimate = {
   total: number;
   pricedCount: number;
   lines: ReturnType<typeof priceQuantities>;
-  result: ReturnType<typeof calculateProject>;
+  result: ReturnType<typeof applySpecialLoads>;
 };
 
+/**
+ * One live estimate path, used by the simple summary, the itemized screen and the saved
+ * project, so every screen shows the same money for the same plan.
+ *
+ * Configured special loads and point overrides travel with the plan: the summary must
+ * price the exact take-off the itemized bill shows, not an approximation of it.
+ */
 export function liveEstimate(options: {
   templateId: string;
   specLevel: SpecLevel;
   spaces: SpaceInput[];
   prices: Record<string, PriceEntry>;
   specialLoads?: string[];
+  specialLoadInstances?: SpecialLoadInstance[];
   overrides?: PointOverride[];
 }): LiveEstimate {
   const template = templates.find((row) => row.template_id === options.templateId);
-  const result = calculateProject({
+  const base = calculateProject({
     spaces: options.spaces,
     specLevel: options.specLevel,
     projectType: template?.project_type ?? PROJECT_TYPE_FOR_CODE["HOME-2B"],
@@ -196,8 +208,18 @@ export function liveEstimate(options: {
     circuitRules: circuitRules as never,
     assemblies: assemblies as unknown as AssemblyRow[],
     assemblyItems: assemblyItems as unknown as AssemblyItemRow[],
-    specialLoads: options.specialLoads ?? [],
+    // configured loads are counted by applySpecialLoads, so the raw keys stay out
+    specialLoads: options.specialLoadInstances?.length ? [] : (options.specialLoads ?? []),
     overrides: options.overrides ?? [],
+  });
+
+  const result = applySpecialLoads(base, options.specialLoadInstances ?? [], {
+    spareCapacityPct: params.db_spare_capacity_pct,
+    cableWastePct: params.cable_waste_pct,
+    containmentWastePct: params.containment_waste_pct,
+    couplerPerM: params.coupler_per_conduit_m,
+    bendPerM: params.bend_per_conduit_m,
+    drawBoxPerM: params.drawbox_per_conduit_m,
   });
 
   const lines = priceQuantities(result.materialQuantities, options.prices, catalogueMap);

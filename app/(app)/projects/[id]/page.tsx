@@ -6,7 +6,6 @@ import { useEffect, useMemo, useState } from "react";
 import {
   FITTINGS,
   PROJECT_LABELS,
-  computeEstimate,
   defaultCounts,
   projectType,
   totalSpaces,
@@ -14,6 +13,14 @@ import {
   type FittingQuality,
   type SpaceItem,
 } from "@/lib/estimate-model";
+import {
+  fetchLivePrices,
+  liveEstimate,
+  spacesFromCounts,
+  specLevelForQuality,
+  TEMPLATE_FOR_CODE,
+} from "@/lib/estimate-live";
+import type { PriceEntry } from "@/lib/quantity-engine/catalogue";
 import { formatDate, formatGhs } from "@/lib/format";
 import { pricedCount, pricedTotal } from "@/lib/estimate-total";
 import { unitLabel } from "@/lib/format";
@@ -95,9 +102,39 @@ export default function ProjectPage() {
   }, [params.id]);
 
   const type = projectType(template);
-  const total = useMemo(() => computeEstimate(template, counts, quality), [template, counts, quality]);
   const fittingsLabel = FITTINGS.find((entry) => entry.value === quality)?.label ?? "Standard";
   const spaces = totalSpaces(counts);
+
+  /**
+   * The total comes from the same engine and catalogue the itemized bill uses, so saving
+   * this project can never store a number the itemized bill disagrees with.
+   */
+  const templateId = TEMPLATE_FOR_CODE[type.code] ?? "T011";
+  const [livePrices, setLivePrices] = useState<Record<string, PriceEntry> | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    void fetchLivePrices()
+      .then((live) => {
+        if (!cancelled) setLivePrices(live);
+      })
+      .catch(() => undefined);
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const planSpaces = useMemo(() => spacesFromCounts(templateId, counts), [templateId, counts]);
+  const live = useMemo(
+    () =>
+      liveEstimate({
+        templateId,
+        specLevel: specLevelForQuality(quality),
+        spaces: planSpaces,
+        prices: livePrices ?? {},
+      }),
+    [templateId, quality, planSpaces, livePrices],
+  );
+  const total = livePrices ? live.total : null;
 
   const changeSpace = (key: string, delta: number) => {
     setCounts((current) => ({ ...current, [key]: clamp((current[key] ?? 0) + delta) }));
