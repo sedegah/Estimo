@@ -112,8 +112,26 @@ const LOAD_LABELS: Record<string, string> = {
   refrigeration_equipment: "Refrigeration plant",
 };
 
-const tidyNames = (list: SpaceInput[]): SpaceInput[] =>
-  list.map((space) => ({ ...space, space_name: space.space_name.replace(/\s(\d+)\s(\d+)$/, " $2") }));
+/** Names stay readable: one master bedroom, the rest numbered per room type. */
+const tidyNames = (list: SpaceInput[]): SpaceInput[] => {
+  const seen = new Map<string, number>();
+  let masterUsed = false;
+  return list.map((space) => {
+    const base = space.space_name.replace(/\s+\d+(\s+\d+)?$/, "").trim() || "Space";
+    const key = space.room_type;
+    const index = (seen.get(key) ?? 0) + 1;
+    seen.set(key, index);
+    if (space.room_type === "bedroom") {
+      if (/master/i.test(space.space_name) && !masterUsed) {
+        masterUsed = true;
+        return { ...space, space_name: "Master Bedroom" };
+      }
+      const numbered = /^bedroom$/i.test(base) ? index - (masterUsed ? 1 : 0) : index - (masterUsed ? 1 : 0);
+      return { ...space, space_name: `Bedroom ${Math.max(1, numbered)}` };
+    }
+    return { ...space, space_name: index > 1 ? `${base} ${index}` : base };
+  });
+};
 const money = (value: number | null) =>
   value === null || value === undefined
     ? "—"

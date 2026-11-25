@@ -117,14 +117,18 @@ export function spacesFromCounts(templateId: string, counts: Record<string, numb
     handled.add(roomType);
     const prototype = byType.get(roomType)![0];
     // "Bedroom 1" + a second bedroom must read "Bedroom 2", not "Bedroom 1 2"
-    const baseName = prototype.space_name.replace(/\s+\d+$/, "");
+    const isMaster = /master/i.test(prototype.space_name);
+    const baseName = isMaster ? "Bedroom" : prototype.space_name.replace(/\s+\d+$/, "");
     for (let index = 0; index < wanted; index += 1) {
-      next.push({
-        ...prototype,
-        id: `${prototype.id}-${index + 1}`,
-        space_name: wanted > 1 ? `${baseName} ${index + 1}` : prototype.space_name,
-        quantity: 1,
-      });
+      // exactly one master bedroom; the rest are numbered bedrooms
+      const name = isMaster
+        ? index === 0
+          ? "Master Bedroom"
+          : `Bedroom ${index + 1}`
+        : wanted > 1
+          ? `${baseName} ${index + 1}`
+          : prototype.space_name;
+      next.push({ ...prototype, id: `${prototype.id}-${index + 1}`, space_name: name, quantity: 1 });
     }
   }
 
