@@ -31,8 +31,9 @@ the same site. The Worker's custom domain is proxied by Cloudflare, which is wha
 | `ESTIMO_PDF_SECRET` | long random string | server |
 
 `NEXT_PUBLIC_*` values bake into the bundle at build time; changing one needs a redeploy.
-The code defaults to `https://api.estimo.live` in production and to the workers.dev address
-in development, so a local build works before the custom domain exists.
+Until `api.estimo.live` is attached, the app calls the workers.dev address by default, so
+production keeps working; setting `NEXT_PUBLIC_ESTIMO_API_URL=https://api.estimo.live` is the
+only change needed once the custom domain is live.
 
 ### Worker (`estimo-api`)
 
@@ -49,8 +50,12 @@ Bindings and secrets: `DB` (D1 `estimo`), `IMAGES` (R2), `CLERK_PUBLISHABLE_KEY`
 2. **Vercel**: project → Settings → Domains → add `estimo.live` and `www.estimo.live`; copy the
    exact records Vercel shows into Cloudflare as **DNS only**; set `www` to redirect to the
    root (the app also 308s `www` in `next.config.ts`, so both layers agree).
-3. **Worker custom domain**: Workers & Pages → `estimo-api` → Settings → Domains & Routes →
-   Add → Custom Domain → `api.estimo.live`. Cloudflare creates the record and the certificate.
+3. **Worker custom domain**: the zone `estimo.live` must be in the **same Cloudflare account**
+   as the worker. Add it in the dashboard (the wrangler OAuth token cannot create zones), set
+   the registrar nameservers, then either use Workers & Pages → `estimo-api` → Settings →
+   Domains & Routes → Add → Custom Domain → `api.estimo.live`, or uncomment the `routes`
+   entry in `worker/api/wrangler.jsonc` and deploy again. Cloudflare creates the record and
+   the certificate.
 4. **Secrets**: set them with `wrangler secret put …` (never in `wrangler.jsonc`).
 5. **Vercel env**: add the table above, then redeploy.
 6. **Verify** (PowerShell):

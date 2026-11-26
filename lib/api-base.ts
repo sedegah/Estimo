@@ -7,9 +7,11 @@
  */
 const configured = process.env.NEXT_PUBLIC_ESTIMO_API_URL ?? process.env.NEXT_PUBLIC_API_URL;
 
+/**
+ * Until api.estimo.live is attached to the worker (the zone has to be in the same
+ * Cloudflare account), production keeps calling the workers.dev address. Set
+ * NEXT_PUBLIC_ESTIMO_API_URL=https://api.estimo.live to switch, with no code change.
+ */
 export const API_URL = (
-  configured?.trim() ||
-  (process.env.NODE_ENV === "production"
-    ? "https://api.estimo.live"
-    : "https://estimo-api.sedegahkimathi.workers.dev")
+  configured?.trim() || "https://estimo-api.sedegahkimathi.workers.dev"
 ).replace(/\/$/, "");

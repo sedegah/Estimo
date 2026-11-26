@@ -1,6 +1,6 @@
 "use client";
 
-const API_URL = (process.env.NEXT_PUBLIC_ESTIMO_API_URL ?? "https://api.estimo.live").replace(/\/$/, "");
+const API_URL = (process.env.NEXT_PUBLIC_ESTIMO_API_URL ?? "https://estimo-api.sedegahkimathi.workers.dev").replace(/\/$/, "");
 
 type ClerkBridge = { session?: { getToken(): Promise<string | null> } };
 
