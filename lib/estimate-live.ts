@@ -148,6 +148,27 @@ export function templatePlanSpaces(templateId: string): SpaceInput[] {
 }
 
 /** Room-type counts behind the simple summary. */
+/** Room names for copies the summary creates, so a plural template row reads naturally. */
+export const ROOM_NAMES: Record<string, string> = {
+  bedroom: "Bedroom",
+  bathroom: "Bathroom",
+  wc: "Washroom",
+  kitchen: "Kitchen",
+  living_room: "Living Room",
+  dining_room: "Dining",
+  corridor: "Corridor",
+  store: "Store",
+  porch_veranda: "Porch",
+  private_office: "Private Office",
+  open_office: "Open Office",
+  meeting_room: "Meeting Room",
+  reception: "Reception",
+  server_room: "Server Room",
+  utility_room: "Utility Room",
+  workshop: "Workshop",
+  shop_floor: "Shop Floor",
+  external_area: "External Area",
+};
 export const COUNT_FOR_ROOM: Record<string, string> = {
   bedrooms: "bedroom",
   bathrooms: "bathroom",
@@ -183,8 +204,10 @@ export function spacesFromCounts(templateId: string, counts: Record<string, numb
     handled.add(roomType);
     const prototype = byType.get(roomType)![0];
     // "Bedroom 1" + a second bedroom must read "Bedroom 2", not "Bedroom 1 2"
-    const isMaster = /master/i.test(prototype.space_name);
-    const baseName = isMaster ? "Bedroom" : prototype.space_name.replace(/\s+\d+$/, "");
+    const isMaster = roomType === "bedroom" && /master/i.test(prototype.space_name);
+    // copies are named for the room they are, not for the template's plural row: the
+    // bathroom row reads "Bathrooms", but the copies are "Bathroom 1", "Bathroom 2"...
+    const baseName = isMaster ? "Bedroom" : (ROOM_NAMES[roomType] ?? prototype.space_name.replace(/\s+\d+$/, ""));
     for (let index = 0; index < wanted; index += 1) {
       // exactly one master bedroom; the rest are numbered bedrooms
       const name = isMaster

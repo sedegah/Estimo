@@ -36,7 +36,7 @@ import {
   type SpecialLoadInstance,
 } from "@/lib/quantity-engine/special-loads";
 import { SpecialLoadConfigurator } from "./special-load-configurator";
-import { defaultPlanAdditions, PROJECT_TYPE_FOR_CODE } from "@/lib/estimate-live";
+import { defaultPlanAdditions, PROJECT_TYPE_FOR_CODE, ROOM_NAMES } from "@/lib/estimate-live";
 /** The short project code behind a project type, so the draft names the project it shows. */
 const CODE_FOR_PROJECT_TYPE: Record<string, string> = Object.fromEntries(
   Object.entries(PROJECT_TYPE_FOR_CODE).map(([code, projectType]) => [projectType, code]),
@@ -194,21 +194,35 @@ function NumberCell({ value, min, step, onCommit }: { value: number; min: number
 
 const tidyNames = (list: SpaceInput[]): SpaceInput[] => {
   const seen = new Map<string, number>();
+  const totals = new Map<string, number>();
+  const used = new Map<string, number>();
+  for (const space of list) totals.set(space.room_type, (totals.get(space.room_type) ?? 0) + 1);
   let masterUsed = false;
   return list.map((space) => {
     const base = space.space_name.replace(/\s+\d+(\s+\d+)?$/, "").trim() || "Space";
     const key = space.room_type;
     const index = (seen.get(key) ?? 0) + 1;
     seen.set(key, index);
+    let name: string;
     if (space.room_type === "bedroom") {
       if (/master/i.test(space.space_name) && !masterUsed) {
         masterUsed = true;
-        return { ...space, space_name: "Master Bedroom" };
+        name = "Master Bedroom";
+      } else {
+        name = `Bedroom ${Math.max(1, index - (masterUsed ? 1 : 0))}`;
       }
-      const numbered = /^bedroom$/i.test(base) ? index - (masterUsed ? 1 : 0) : index - (masterUsed ? 1 : 0);
-      return { ...space, space_name: `Bedroom ${Math.max(1, numbered)}` };
+    } else {
+      // a bathroom once borrowed a bedroom's name (the "Master Bath" prototype was read as
+      // a master bedroom); name it for the room it is, numbered when there are several
+      const borrowed = /^(master bedroom|bedroom)$/i.test(base);
+      const own = ROOM_NAMES[key] ?? ROOM_TYPE_LABEL[key] ?? base;
+      const many = (totals.get(key) ?? 1) > 1;
+      name = many || borrowed ? `${own} ${index}` : base;
     }
-    return { ...space, space_name: index > 1 ? `${base} ${index}` : base };
+    // never show the same room twice, whatever path built the plan
+    const repeats = used.get(name) ?? 0;
+    used.set(name, repeats + 1);
+    return { ...space, space_name: repeats ? `${name} ${repeats + 1}` : name };
   });
 };
 const money = (value: number | null) =>
