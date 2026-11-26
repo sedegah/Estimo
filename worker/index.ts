@@ -94,7 +94,7 @@ async function runCheckIn(env: Env, testRecipient?: string): Promise<RunSummary>
     return { recipients: 0, sent: 0, failed: 0, skipped: "RESEND_API_KEY or EMAIL_FROM is not set" };
   }
 
-  const appUrl = env.APP_URL ?? "https://estimo.app";
+  const appUrl = env.APP_URL ?? "https://estimo.live";
   const recipients: Recipient[] = testRecipient
     ? [{ email: testRecipient, full_name: "Test" }]
     : (

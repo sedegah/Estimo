@@ -185,7 +185,7 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
     const markWidth = (footerMark.width / footerMark.height) * markHeight;
     target.drawImage(footerMark, { x: margin, y: footerY - 1, width: markWidth, height: markHeight });
     strongText(target, "Ghana electrical estimates", { x: margin + markWidth + 10, y: footerY, size: 8, font: bold, color: NAVY });
-    rightText(target, "estimo.app", tableRight, footerY, 8, font, MUTED);
+    rightText(target, "estimo.live", tableRight, footerY, 8, font, MUTED);
     target.drawText(`Issued ${dateLabel} · Reference ${type.code}-${quality.slice(0, 3).toUpperCase()}`, {
       x: margin,
       y: footerY - 12,

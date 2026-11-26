@@ -1,4 +1,4 @@
-const PRODUCTION_FALLBACK = "https://estimo.app";
+const PRODUCTION_FALLBACK = "https://estimo.live";
 
 /**
  * Canonical address of the public site, used by the sitemap and robots.txt.
