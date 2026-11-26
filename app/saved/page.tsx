@@ -1,42 +1,61 @@
 "use client";
 
 /**
- * Saved estimates for everyone.
+ * Saved estimates for everyone — no account needed.
  *
- * Someone who is not signed in still saves estimates — they live in this browser. This page
- * is the way back to them: no account, no sign-in, just the local store, priced at today's
- * catalogue the same way the project page prices them.
+ * A visitor who is not signed in saves into this browser. This page is the way back:
+ * it lists what is here, prices each estimate at today's catalogue, opens one on its
+ * itemized bill (rebuilding the plan from the saved counters when the older save did not
+ * keep a full take-off), and can find an estimate by the code printed on its card.
  */
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { PlanThumb } from "@/components/estimates/plan-thumb";
+import { MaterialThumb } from "@/components/estimates/material-thumb";
 import { estimateType, isEstimated, statusLabel } from "@/lib/estimates-view";
 import { formatDate, formatGhsOrNull } from "@/lib/format";
-import { fetchLivePrices, priceSavedEstimate, TEMPLATE_FOR_CODE } from "@/lib/estimate-live";
+import {
+  defaultPlanAdditions,
+  fetchLivePrices,
+  priceSavedEstimate,
+  PROJECT_TYPE_FOR_CODE,
+  spacesFromCounts,
+  specLevelForQuality,
+  TEMPLATE_FOR_CODE,
+} from "@/lib/estimate-live";
 import {
   SAVED_EVENT,
   deleteSavedEstimate,
   listSavedEstimates,
   purgeExpiredEstimates,
+  RETENTION_DAYS,
   touchSavedEstimate,
 } from "@/lib/storage/saved-estimates";
 import { pushDelete } from "@/lib/api/estimates";
+import { FITTINGS } from "@/lib/estimate-model";
 import type { PriceEntry } from "@/lib/quantity-engine/catalogue";
+import type { PointOverride, SpaceInput, SpecLevel } from "@/lib/quantity-engine/types";
 import type { SavedEstimate } from "@/lib/types";
+
+const qualityLabel = (value: string | undefined) =>
+  FITTINGS.find((entry) => entry.value === value)?.label ?? "Standard";
 
 export default function SavedEstimatesPage() {
   const router = useRouter();
   const [projects, setProjects] = useState<SavedEstimate[]>([]);
-  const [codeQuery, setCodeQuery] = useState("");
-  const [lookupError, setLookupError] = useState("");
   const [prices, setPrices] = useState<Record<string, PriceEntry> | null>(null);
   const [liveTotals, setLiveTotals] = useState<Record<string, number>>({});
+  const [query, setQuery] = useState("");
+  const [lookupError, setLookupError] = useState("");
+  const [ready, setReady] = useState(false);
 
   useEffect(() => {
     const sync = () => {
-      // estimates nobody has opened in 40 days go, and their server copies with them
+      // estimates nobody has opened for RETENTION_DAYS go, server copies included
       for (const id of purgeExpiredEstimates()) void pushDelete(id);
       setProjects(listSavedEstimates());
+      setReady(true);
     };
     sync();
     window.addEventListener(SAVED_EVENT, sync);
@@ -67,33 +86,70 @@ export default function SavedEstimatesPage() {
     setLiveTotals(next);
   }, [projects, prices]);
 
-  /** Reopens an estimate on the itemized bill, plan and all, without saving first. */
+  const visible = useMemo(() => {
+    const term = query.trim().toLowerCase();
+    if (!term) return projects;
+    return projects.filter((project) =>
+      `${project.name} ${project.detail} ${project.code ?? ""} ${estimateType(project)}`
+        .toLowerCase()
+        .includes(term),
+    );
+  }, [projects, query]);
+
+  /**
+   * Reopens an estimate on the itemized bill. Newer saves carry a full take-off; a save
+   * made from the summary keeps only the counters, so the plan is rebuilt from them —
+   * the same builder the summary itself uses, so the bill matches what was saved.
+   */
   const open = (project: SavedEstimate) => {
     touchSavedEstimate(project.id);
-    const quantities = project.quantities;
     const code = project.template ?? "HOME-2B";
+    const quantities = project.quantities;
     const templateId = quantities?.templateId ?? TEMPLATE_FOR_CODE[code] ?? "T011";
-    if (quantities?.spaces?.length) {
-      try {
-        localStorage.setItem(
-          "estimo_estimate_draft_v1",
-          JSON.stringify({
-            template: code,
-            templateId,
-            specLevel: quantities.specLevel ?? "standard",
-            spaces: quantities.spaces,
-            overrides: quantities.overrides ?? [],
-            specialLoadInstances: quantities.specialLoadInstances ?? [],
-          }),
-        );
-      } catch {}
-    }
-    router.push(`/itemized?template=${encodeURIComponent(code)}&id=${encodeURIComponent(templateId)}`);
+    const specLevel = (quantities?.specLevel ??
+      specLevelForQuality(project.quality ?? "standard")) as SpecLevel;
+    const spaces = (quantities?.spaces?.length
+      ? quantities.spaces
+      : spacesFromCounts(templateId, (project.counts ?? {}) as Record<string, number>)) as SpaceInput[];
+    const defaults = defaultPlanAdditions({
+      projectType: PROJECT_TYPE_FOR_CODE[code] ?? "two_bedroom",
+      templateId,
+      spaces,
+    });
+    try {
+      localStorage.setItem(
+        "estimo_estimate_draft_v1",
+        JSON.stringify({
+          template: code,
+          projectType: PROJECT_TYPE_FOR_CODE[code] ?? "two_bedroom",
+          templateId,
+          specLevel,
+          spaces,
+          overrides:
+            quantities?.specialLoadInstances?.length
+              ? ((quantities.overrides ?? []) as PointOverride[])
+              : defaults.overrides,
+          specialLoadInstances: quantities?.specialLoadInstances?.length
+            ? quantities.specialLoadInstances
+            : defaults.instances,
+        }),
+      );
+    } catch {}
+    const quality =
+      specLevel === "economy" ? "basic" : specLevel === "premium" ? "premium" : "standard";
+    router.push(
+      `/itemized?template=${encodeURIComponent(code)}&id=${encodeURIComponent(templateId)}&quality=${quality}`,
+    );
+  };
+
+  const remove = (project: SavedEstimate) => {
+    void pushDelete(project.id);
+    deleteSavedEstimate(project.id);
   };
 
   /** Pull an estimate by the code written on its card. */
-  const lookup = () => {
-    const wanted = codeQuery.trim().toUpperCase();
+  const lookup = (value: string) => {
+    const wanted = value.trim().toUpperCase();
     if (!wanted) return;
     const match = projects.find((project) => (project.code ?? "").toUpperCase() === wanted);
     if (!match) {
@@ -104,11 +160,6 @@ export default function SavedEstimatesPage() {
     open(match);
   };
 
-  const remove = (project: SavedEstimate) => {
-    void pushDelete(project.id);
-    deleteSavedEstimate(project.id);
-  };
-
   return (
     <>
       <header className="app-head">
@@ -116,7 +167,8 @@ export default function SavedEstimatesPage() {
           <p className="app-eyebrow">Saved on this device</p>
           <h1 className="app-title">Saved estimates</h1>
           <p className="app-sub">
-            They stay in this browser until you delete them. Prices follow today&apos;s catalogue.
+            No account needed — they stay in this browser until you delete them. Each one is priced at
+            today&apos;s catalogue and clears after {RETENTION_DAYS} days without being opened.
           </p>
         </div>
         <Link className="btn-amber" href="/quick-estimate?template=HOME-2B&fresh=1">
@@ -124,52 +176,72 @@ export default function SavedEstimatesPage() {
         </Link>
       </header>
 
-      <form
-        className="app-search"
-        onSubmit={(event) => {
-          event.preventDefault();
-          lookup();
-        }}
-      >
-        <input
-          type="search"
-          value={codeQuery}
-          onChange={(event) => {
-            setCodeQuery(event.target.value);
-            setLookupError("");
+      <section className="saved-lookup">
+        <form
+          className="saved-lookup-form"
+          onSubmit={(event) => {
+            event.preventDefault();
+            lookup(query);
           }}
-          placeholder="Open by code, e.g. EST-7K3M9Q"
-          aria-label="Open an estimate by its code"
-        />
-        <button className="btn-outline" type="submit">Open</button>
-      </form>
-      {lookupError ? <p className="app-empty">{lookupError}</p> : null}
+        >
+          <label className="saved-lookup-label" htmlFor="estimate-code">
+            Open by code
+          </label>
+          <div className="saved-lookup-row">
+            <input
+              id="estimate-code"
+              type="search"
+              value={query}
+              onChange={(event) => {
+                setQuery(event.target.value);
+                setLookupError("");
+              }}
+              placeholder="EST-7K3M9Q"
+              autoComplete="off"
+            />
+            <button className="btn-outline" type="submit">
+              Open
+            </button>
+          </div>
+          <p className="saved-lookup-hint">The code is printed on each card below.</p>
+          {lookupError ? <p className="saved-lookup-error">{lookupError}</p> : null}
+        </form>
+      </section>
 
-      {projects.length ? (
+      {visible.length ? (
         <div className="app-grid">
-          {projects.map((project) => (
+          {visible.map((project) => (
             <article className="project-tile" key={project.id}>
-              <div className="project-tile-body">
-                <strong>{project.name}</strong>
-                <span className="project-tile-type">
-                  {estimateType(project)}
-                  {project.code ? <span className="project-tile-code">{project.code}</span> : null}
-                </span>
-                <span className="project-tile-meta">
-                  <span className={isEstimated(project) ? "status-pill is-estimated" : "status-pill is-draft"}>
-                    {statusLabel(project)}
+              <button
+                type="button"
+                className="project-tile-open"
+                onClick={() => open(project)}
+                aria-label={`Open ${project.name}`}
+              >
+                {project.kind === "materials" ? <MaterialThumb /> : <PlanThumb variant={project.name.length} />}
+                <div className="project-tile-body">
+                  <strong>{project.name}</strong>
+                  <span className="project-tile-type">
+                    {estimateType(project)}
+                    {project.code ? <span className="project-tile-code">{project.code}</span> : null}
                   </span>
-                  <span>{formatGhsOrNull(liveTotals[project.id] ?? project.totalGhs) ?? "Pending"}</span>
-                </span>
-              </div>
+                  <span className="project-tile-meta">
+                    <span className={isEstimated(project) ? "status-pill is-estimated" : "status-pill is-draft"}>
+                      {statusLabel(project)}
+                    </span>
+                    <span>{formatGhsOrNull(liveTotals[project.id] ?? project.totalGhs) ?? "Pending"}</span>
+                  </span>
+                </div>
+              </button>
               <div className="project-tile-actions">
-                <span className="project-tile-type">{formatDate(project.updatedAt ?? project.createdAt)}</span>
+                <span className="project-tile-type">
+                  {formatDate(project.lastAccessedAt ?? project.updatedAt ?? project.createdAt)}
+                  {project.quality ? ` · ${qualityLabel(project.quality)}` : ""}
+                </span>
                 <div className="project-tile-buttons">
-                  {project.quantities?.spaces?.length ? (
-                    <button className="link-button" type="button" onClick={() => open(project)}>
-                      Open estimate
-                    </button>
-                  ) : null}
+                  <button className="link-button" type="button" onClick={() => open(project)}>
+                    Open estimate
+                  </button>
                   <button className="link-button" type="button" onClick={() => remove(project)}>
                     Delete
                   </button>
@@ -179,9 +251,21 @@ export default function SavedEstimatesPage() {
           ))}
         </div>
       ) : (
-        <p className="app-empty">
-          Nothing saved yet. Save an estimate and it will appear here, signed in or not.
-        </p>
+        <section className="saved-empty">
+          <h2 className="saved-empty-title">
+            {ready && projects.length ? "No estimate matches that search" : "Nothing saved yet"}
+          </h2>
+          <p className="saved-empty-text">
+            {ready && projects.length
+              ? "Try the code, the project name, or clear the search."
+              : "Start an estimate and save it — signed in or not, it will appear here with a code you can come back to."}
+          </p>
+          {ready && !projects.length ? (
+            <Link className="btn-amber" href="/quick-estimate?template=HOME-2B&fresh=1">
+              Start an estimate
+            </Link>
+          ) : null}
+        </section>
       )}
     </>
   );
