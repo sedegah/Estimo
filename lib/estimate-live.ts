@@ -9,7 +9,7 @@ import {
   type SpaceRouteRow,
   type SpecialLoadInstance,
 } from "@/lib/quantity-engine/special-loads";
-import type { CatalogueMaterial } from "@/lib/types";
+import type { CatalogueMaterial, SavedEstimate } from "@/lib/types";
 import globalParameters from "@/lib/data/quantity-engine/global_parameters.json";
 import roomRules from "@/lib/data/quantity-engine/room_rules.json";
 import circuitRules from "@/lib/data/quantity-engine/circuit_rules.json";
@@ -294,4 +294,41 @@ export function liveEstimate(options: {
   const total = Math.round(lines.reduce((sum, line) => sum + (line.amount ?? 0), 0) * 100) / 100;
 
   return { total, pricedCount: lines.filter((line) => line.unitPrice !== null).length, lines, result };
+}
+
+/**
+ * The saved project priced at today's catalogue, using the plan it recorded. This is what
+ * the saved-estimates cards show, so they move with prices and with the estimate itself.
+ */
+export function priceSavedEstimate(
+  project: SavedEstimate,
+  prices: Record<string, PriceEntry>,
+): number | null {
+  const quantities = project.quantities;
+  if (!quantities?.spaces?.length) return null;
+  const spaces = quantities.spaces as unknown as SpaceInput[];
+  const templateId = quantities.templateId;
+  const priced = quantities.specialLoadInstances?.length
+    ? null
+    : defaultPlanAdditions({
+        projectType: PROJECT_TYPE_FOR_CODE[project.template ?? ""] ?? "two_bedroom",
+        templateId,
+        spaces,
+      });
+  try {
+    return liveEstimate({
+      templateId,
+      specLevel: (quantities.specLevel ?? "standard") as SpecLevel,
+      spaces,
+      prices,
+      overrides: quantities.specialLoadInstances?.length
+        ? (quantities.overrides as unknown as PointOverride[])
+        : priced?.overrides,
+      specialLoadInstances: quantities.specialLoadInstances?.length
+        ? quantities.specialLoadInstances
+        : priced?.instances,
+    }).total;
+  } catch {
+    return null;
+  }
 }

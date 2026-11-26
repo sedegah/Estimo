@@ -105,3 +105,8 @@ again moves it to the top. Cards show the project priced at **today's** catalogu
 using the same engine and the same defaults as the estimate itself, so a catalogue
 correction updates the card as well as the bill. The stored total remains as the record of
 what was saved.
+
+A visitor who is not signed in saves to this browser, and the button that appears says
+"Saved estimates" and opens `/saved` — a public list of what this browser holds, priced at
+today's catalogue, with Open and Delete. Signed-in users keep `/projects`, which merges the
+account's copies.

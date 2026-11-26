@@ -549,7 +549,7 @@ function SetupContent() {
             Itemized estimate
           </button>
           {saved ? (
-            <Link className="link-button side-link" href="/projects">Saved — view saved projects</Link>
+            <Link className="link-button side-link" href="/saved">Saved estimates</Link>
           ) : (
             <button className="link-button side-link" type="button" onClick={saveForLater}>Save for later</button>
           )}

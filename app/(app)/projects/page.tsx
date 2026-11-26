@@ -17,14 +17,7 @@ import {
 import { pushDelete } from "@/lib/api/estimates";
 import type { SavedEstimate } from "@/lib/types";
 import { PROJECT_LABELS, totalSpaces, FITTINGS } from "@/lib/estimate-model";
-import {
-  defaultPlanAdditions,
-  fetchLivePrices,
-  liveEstimate,
-  PROJECT_TYPE_FOR_CODE,
-  spacesFromCounts,
-} from "@/lib/estimate-live";
-import type { PointOverride, SpaceInput, SpecLevel } from "@/lib/quantity-engine/types";
+import { fetchLivePrices, priceSavedEstimate } from "@/lib/estimate-live";
 import type { PriceEntry } from "@/lib/quantity-engine/catalogue";
 
 const qualityLabel = (value: string) => FITTINGS.find((entry) => entry.value === value)?.label ?? "Standard";
@@ -57,33 +50,8 @@ export default function ProjectsPage() {
     if (!prices) return;
     const next: Record<string, number> = {};
     for (const project of projects) {
-      const quantities = project.quantities;
-      if (!quantities) continue;
-      const counts = (project.counts ?? {}) as Record<string, number>;
-      const templateId = quantities.templateId;
-      const spaces = (quantities.spaces?.length
-        ? (quantities.spaces as SpaceInput[])
-        : spacesFromCounts(templateId, counts)) as SpaceInput[];
-      if (!spaces.length) continue;
-      const defaults = quantities.specialLoadInstances?.length
-        ? null
-        : defaultPlanAdditions({
-            projectType: project.template ? (PROJECT_TYPE_FOR_CODE[project.template] ?? "two_bedroom") : "two_bedroom",
-            templateId,
-            spaces,
-          });
-      try {
-        next[project.id] = liveEstimate({
-          templateId,
-          specLevel: (quantities.specLevel ?? "standard") as SpecLevel,
-          spaces,
-          prices,
-          overrides: quantities.specialLoadInstances?.length
-            ? ((quantities.overrides ?? []) as PointOverride[])
-            : defaults?.overrides,
-          specialLoadInstances: quantities.specialLoadInstances?.length ? quantities.specialLoadInstances : defaults?.instances,
-        }).total;
-      } catch {}
+      const total = priceSavedEstimate(project, prices);
+      if (total !== null) next[project.id] = total;
     }
     setLiveTotals(next);
   }, [projects, prices]);

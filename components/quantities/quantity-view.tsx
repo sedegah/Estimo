@@ -1216,7 +1216,7 @@ export function QuantityView(props: Props) {
         </div>
         {added ? (
           <p className="quantities-added">
-            {added} <Link href="/projects">View saved projects</Link>
+            {added} <Link href={props.signedIn ? "/projects" : "/saved"}>{props.signedIn ? "View saved projects" : "Saved estimates"}</Link>
           </p>
         ) : null}
       </section>

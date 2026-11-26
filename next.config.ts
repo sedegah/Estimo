@@ -19,7 +19,6 @@ const nextConfig: NextConfig = {
       { source: "/sign-in", destination: "/signin", permanent: true },
       { source: "/sign-up", destination: "/signup", permanent: true },
       { source: "/catalog", destination: "/catalogue", permanent: true },
-      { source: "/saved", destination: "/projects", permanent: true },
       { source: "/home", destination: "/", permanent: true },
     ];
   },
