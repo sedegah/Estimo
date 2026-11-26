@@ -228,6 +228,9 @@ export function SpecialLoadConfigurator({
       draft.manufacturer_cable_size_mm2 !== null || draft.manufacturer_breaker_rating_a !== null;
     onApply({
       ...draft,
+      // the plan owns the count when it has one (ACs counted in Points), so applying the
+      // form can never quietly drop it back to one
+      quantity: lockedQuantity ?? draft.quantity,
       sizing_source:
         manufacturerFilled && draft.sizing_source === "ESTIMO_PROVISIONAL"
           ? "MANUFACTURER"

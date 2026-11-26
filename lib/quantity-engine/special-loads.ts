@@ -1220,8 +1220,8 @@ export function specialLoadSummary(instance: SpecialLoadInstance, defaultRouteM 
   if (definition.protection === "mcb") parts.push(`${sizing.protectiveDeviceA} A`);
   parts.push(`${sizing.cableSizeMm2} mm²`);
   if (instance.dedicated_circuit === false) parts.push("existing circuit");
-  if (instance.quantity > 1) parts.unshift(`${instance.quantity} ×`);
-  return parts.join(" · ");
+  const count = instance.quantity > 1 ? `${instance.quantity} × ` : "";
+  return `${count}${parts.join(" · ")}`;
 }
 
 const FIELD_LABELS: Record<SpecialLoadFieldKey, string> = {

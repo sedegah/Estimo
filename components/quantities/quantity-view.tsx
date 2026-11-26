@@ -451,6 +451,9 @@ export function QuantityView(props: Props) {
     return Math.max(0, Math.round(total));
   }, [auto.spaces, overrides]);
 
+  /** Adding the AC load after counting the ACs must pick the count up, not start at one. */
+  const hasAcLoad = instances.some((instance) => instance.load_key === "air_conditioner");
+
   useEffect(() => {
     setInstances((current) => {
       if (!current.some((instance) => instance.load_key === "air_conditioner")) return current;
@@ -458,7 +461,7 @@ export function QuantityView(props: Props) {
       const next = syncAcQuantity(current, acPointTotal);
       return next.some((instance, index) => instance !== current[index]) ? next : current;
     });
-  }, [acPointTotal]);
+  }, [acPointTotal, hasAcLoad]);
 
   const catalogueMap = useMemo(() => new Map(Object.entries(props.catalogue)), [props.catalogue]);
   const lines = useMemo(
@@ -603,8 +606,11 @@ export function QuantityView(props: Props) {
   };
 
   /** One action: files the estimate under Saved projects and fills the basket. */
+  /**
+   * Saves the take-off as a project, exactly as the simple screen's "Save for later" does:
+   * the browser keeps it either way, and a signed-in account also gets a server copy.
+   */
   const saveEstimateNow = async () => {
-    if (!props.signedIn) return null;
     const pricesNow = await loadPrices();
     const saveLines = priceQuantities(result.materialQuantities, pricesNow, catalogueMap);
     const saveItems = saveLines.map((line) => ({
@@ -632,7 +638,8 @@ export function QuantityView(props: Props) {
       totalGhs: saveTotal > 0 ? saveTotal : null,
       template: props.templateCode ?? "HOME-2B",
       counts,
-      quality: specLevel,
+      // the saved project speaks the same quality language as the simple screen
+      quality: specLevel === "economy" ? "basic" : specLevel === "premium" ? "premium" : "standard",
       items: saveItems,
       quantities: {
         templateId,
@@ -720,8 +727,10 @@ export function QuantityView(props: Props) {
 
   /** Every line goes in, priced or not, so the estimate shows the full take-off. */
   /**
-   * Signed in: the estimate is filed under Saved projects and leaves the basket.
-   * Signed out: it stays in the basket, because there is no account to keep it.
+  /**
+   * Saves the estimate as a project, the same file the simple screen keeps. A signed-in
+   * account also gets a server copy; a guest keeps it in this browser. Either way the
+   * basket stays in step: cleared for an account, kept on the device for a guest.
    */
   const addToEstimate = async () => {
     const groupId = `qty:${templateId}:${specLevel}`;
@@ -740,20 +749,18 @@ export function QuantityView(props: Props) {
       groupName,
     }));
 
-    if (props.signedIn) {
-      const saved = await saveEstimateNow();
-      if (!saved) return;
-      writeBasket(readBasket().filter((item) => item.groupId !== groupId));
-      setAdded(`${lines_.length} materials saved to your account.`);
-      return;
-    }
+    const saved = await saveEstimateNow();
+    if (!saved) return;
 
-    if (!lines_.length) return;
-    const rest = readBasket().filter(
-      (item) => !(item.groupId === groupId && lines_.some((line) => line.materialId === item.materialId)),
-    );
-    writeBasket([...rest, ...lines_]);
-    setAdded(`${lines_.length} materials added to your estimate basket.`);
+    if (props.signedIn) {
+      writeBasket(readBasket().filter((item) => item.groupId !== groupId));
+    } else if (lines_.length) {
+      const rest = readBasket().filter(
+        (item) => !(item.groupId === groupId && lines_.some((line) => line.materialId === item.materialId)),
+      );
+      writeBasket([...rest, ...lines_]);
+    }
+    setAdded(props.signedIn ? "Estimate saved to your account." : "Estimate saved on this device.");
   };
 
   /** Boards a load can leave from: the plan's own DB keys, main board first. */
@@ -980,8 +987,14 @@ export function QuantityView(props: Props) {
                     return;
                   }
                   const [created] = seedSpecialLoads([load.load_key], spaces, props.spaceRoutes ?? [], templateId);
-                  setInstances((current) => [...current, created]);
-                  setOpenLoadId(created.id);
+                  // an AC load enters at the count already on the plan, so the first price
+                  // it shows is for every air conditioner, not for one of them
+                  const seeded =
+                    created.load_key === "air_conditioner" && acPointTotal > 0
+                      ? { ...created, quantity: acPointTotal }
+                      : created;
+                  setInstances((current) => [...current, seeded]);
+                  setOpenLoadId(seeded.id);
                   setAdded("");
                 }}
               >
@@ -1101,11 +1114,20 @@ export function QuantityView(props: Props) {
           <button className="btn-outline" type="button" onClick={() => void downloadEstimatePdf()} disabled={!lines.length}>
             Download PDF
           </button>
-          <button className="btn-amber" type="button" onClick={addToEstimate} disabled={!lines.length}>
-            Save estimate
+          <button
+            className="btn-amber"
+            type="button"
+            onClick={addToEstimate}
+            disabled={!lines.length || added.startsWith("Estimate saved")}
+          >
+            {added.startsWith("Estimate saved") ? "Saved" : "Save estimate"}
           </button>
         </div>
-        {added ? <p className="quantities-added">{added} <Link href={props.signedIn ? "/projects" : "/estimate-basket"}>{props.signedIn ? "Saved estimates" : "Open the basket"}</Link></p> : null}
+        {added ? (
+          <p className="quantities-added">
+            {added} <Link href="/projects">View saved projects</Link>
+          </p>
+        ) : null}
       </section>
 
       {openInstance ? (

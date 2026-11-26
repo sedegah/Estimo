@@ -291,6 +291,34 @@ test("the bill says which loads a shared material line belongs to", () => {
   assert.equal(copper.mixed, false, "only the loads use this size, so it is theirs");
 });
 
+test("adding the AC load after counting the ACs prices every one of them", () => {
+  // the order that used to break: count the ACs first, then add the load
+  const ac: SpecialLoadInstance = {
+    ...newSpecialLoadInstance("air_conditioner", "ac-order"),
+    capacity_hp: 2.5,
+    phase: "single",
+    route_length_m: 13,
+    route_source: "USER_OVERRIDE",
+    quantity: 1,
+  };
+  const synced = syncAcQuantity([ac], 4);
+  assert.equal(synced[0].quantity, 4);
+  assert.equal(specialLoadSummary(synced[0]), `4 × 2.5 HP · 2.25 kW · 13 m · 16 A · 2.5 mm²`);
+
+  const outcome = applySpecialLoads(engine(), synced, {});
+  const device = outcome.materialQuantities.find((row) => row.material_key === "mcb_sp_16");
+  assert.equal(device?.engineering_quantity, 4, "one breaker per air conditioner");
+  const isolator = outcome.materialQuantities.find((row) => row.material_key === "isolator_dp_32");
+  assert.equal(isolator?.engineering_quantity, 4);
+  assert.equal(outcome.specialLoadTotals.circuits, 4);
+
+  // and the card's own figure is for four units, not one
+  const lines = priceQuantities(specialLoadMaterials(synced[0], 8), prices, catalogue);
+  const single = priceQuantities(specialLoadMaterials({ ...synced[0], quantity: 1 }, 8), prices, catalogue);
+  const total = (rows: ReturnType<typeof priceQuantities>) => rows.reduce((sum, line) => sum + (line.amount ?? 0), 0);
+  assert.ok(total(lines) > total(single) * 3.5, "four units cost about four times one");
+});
+
 test("ACs counted in the Points table set the AC load's quantity", () => {
   const ac: SpecialLoadInstance = {
     ...newSpecialLoadInstance("air_conditioner", "ac-1"),
