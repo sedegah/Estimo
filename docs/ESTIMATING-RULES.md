@@ -1,0 +1,45 @@
+# Estimating rules
+
+The rules the estimate applies on its own, beyond the room geometry. They live in code so
+the simple summary, the itemized bill and the PDF cannot disagree about them.
+
+## One price, one source
+
+The itemized bill is the source of truth for money. It publishes its priced lines and total
+into the shared draft (`estimo_estimate_draft_v1`), and the simple estimate prints that bill
+rather than pricing the plan its own way. A plan that has never been opened itemized is
+priced with the same engine and the same catalogue, so the two agree from the first render.
+Editing a counter on the simple page drops the carried bill and prices the counters again.
+
+## Washrooms
+
+Offices, shops and workshops must provide at least two washrooms: staff and customers cannot
+share one, and the layouts are planned with two.
+
+- `MINIMUM_WASHROOMS` in `lib/estimate-model.ts` sets the floor (office, shop, workshop).
+- `defaultCounts` starts the counters there, and `clampCount` stops a stepper going below it.
+- The templates carry the same floor: every office, shop and workshop template has two or
+  more WC/bathroom spaces, so the itemized bill satisfies the rule without any counters.
+- Homes and kiosks are unaffected.
+
+## Fans
+
+A fan point used to buy a switch and a length of cable, but never the fan. Each fan point now
+carries:
+
+| Material | Engine key | Catalogue item |
+| --- | --- | --- |
+| Ceiling fan | `ceiling_fan` | `mat-fan-ceiling-56` (allowance) |
+| Speed regulator | `fan_regulator` | `mat-fan-regulator` |
+| Hook and cover | `fan_hook` | `mat-fan-hook` |
+
+Quantities follow the fan count in the Points table, so a plan with three fans buys three of
+each. The catalogue items are allowance rates (`ALLOWANCE_PRICES_GHS`): a published supplier
+price always wins, and the bill labels the allowance brand so nobody mistakes it for a
+quotient. Fans are a line item in every estimate, not an unstated assumption.
+
+## Special loads and air conditioning
+
+See `docs/SPECIAL-LOADS.md`. Air conditioners counted in the Points table are the quantity of
+the configured AC load, and the engine's generic AC point is switched off while that load
+covers it, so the same unit is never costed twice.
