@@ -11,6 +11,12 @@ rather than pricing the plan its own way. A plan that has never been opened item
 priced with the same engine and the same catalogue, so the two agree from the first render.
 Editing a counter on the simple page drops the carried bill and prices the counters again.
 
+The specification travels with the bill. Choosing Premium (or Standard, or Economy) in the
+itemized bill writes that choice into the draft, and the simple page adopts it on return, so
+the fittings label and the price always describe the same specification. Changing the
+fittings on the simple page keeps the plan but drops the bill, prices it again at the new
+specification, and hands that choice to the itemized screen for its next visit.
+
 ## Washrooms
 
 Offices, shops and workshops must provide at least two washrooms: staff and customers cannot

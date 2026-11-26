@@ -69,6 +69,10 @@ export const PROJECT_TYPE_FOR_CODE: Record<string, string> = {
 export const specLevelForQuality = (quality: string): SpecLevel =>
   quality === "basic" ? "economy" : quality === "premium" ? "premium" : "standard";
 
+/** The other way round, for adopting the itemized bill's specification on the way back. */
+export const qualityForSpecLevel = (specLevel: string): "basic" | "standard" | "premium" =>
+  specLevel === "economy" ? "basic" : specLevel === "premium" ? "premium" : "standard";
+
 export const templateForCode = (code: string): StructureTemplateRow | undefined => {
   const id = TEMPLATE_FOR_CODE[code];
   return templates.find((row) => row.template_id === id) ?? templates.find((row) => row.template_id === "T011");

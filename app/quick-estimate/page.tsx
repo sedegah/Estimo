@@ -20,12 +20,14 @@ import {
   defaultSpecialLoadsFor,
   fetchLivePrices,
   liveEstimate,
+  qualityForSpecLevel,
   spacesFromCounts,
   specLevelForQuality,
   TEMPLATE_FOR_CODE,
   templateForCode,
 } from "@/lib/estimate-live";
 import { parseSpecialLoadInstances, type SpecialLoadInstance } from "@/lib/quantity-engine/special-loads";
+import type { SpecLevel } from "@/lib/quantity-engine/types";
 import type { PointOverride, SpaceInput } from "@/lib/quantity-engine/types";
 import { saveEstimate } from "@/lib/storage/saved-estimates";
 import { saveDraft } from "@/lib/storage/draft";
@@ -68,9 +70,15 @@ function SetupContent() {
   };
 
   const [counts, setCounts] = useState<Counts>(initialCounts);
-  const [quality, setQuality] = useState<FittingQuality>(
-    (searchParams.get("quality") as FittingQuality) || "standard",
+  /**
+   * The specification is the one figure the itemized bill and this screen share: "Standard"
+   * here is `standard` there. It is state, not derived from a label, so the itemized bill's
+   * choice can be adopted on the way back without the two disagreeing.
+   */
+  const [specLevel, setSpecLevel] = useState<SpecLevel>(() =>
+    specLevelForQuality((searchParams.get("quality") as FittingQuality) || "standard"),
   );
+  const quality = qualityForSpecLevel(specLevel);
   const [openSpaces, setOpenSpaces] = useState<string[]>(() =>
     (searchParams.get("open") ?? "").split(",").filter(Boolean),
   );
@@ -90,7 +98,6 @@ function SetupContent() {
   }, [type.code, counts, quality]);
 
   const templateId = TEMPLATE_FOR_CODE[type.code] ?? "T011";
-  const specLevel = specLevelForQuality(quality);
 
   /**
    * The itemized bill is the source of truth for price. It publishes its priced lines and
@@ -118,6 +125,7 @@ function SetupContent() {
         }
         const draft = JSON.parse(raw) as {
           templateId?: string;
+          specLevel?: string;
           spaces?: SpaceInput[];
           overrides?: PointOverride[];
           specialLoadInstances?: unknown[];
@@ -126,6 +134,14 @@ function SetupContent() {
         if (draft.templateId !== templateId || !draft.spaces?.length) {
           setCarried(null);
           return;
+        }
+        // the specification chosen in the itemized bill comes back with it
+        if (
+          draft.specLevel === "economy" ||
+          draft.specLevel === "premium" ||
+          draft.specLevel === "standard"
+        ) {
+          setSpecLevel(draft.specLevel);
         }
         const bill =
           draft.bill &&
@@ -305,17 +321,44 @@ function SetupContent() {
     if (linked.ok) await save(await linked.blob());
   };
 
-  /** Drops the edited take-off and bill, and prices the counters instead. */
-  const useCounters = () => {
+  /**
+   * Counting a room here starts a fresh plan: the itemized bill priced the rooms as they
+   * were, so it is set aside and this plan is priced in its place.
+   */
+  const resetToCounters = () => {
     setCarried(null);
     try {
       localStorage.removeItem("estimo_estimate_draft_v1");
     } catch {}
   };
 
+  /**
+   * Changing the specification keeps the plan (spaces, overrides, special loads) but not
+   * the bill, which was priced for the old specification: it is dropped and the plan is
+   * priced again at the new one, and the itemized screen is handed the new choice.
+   */
+  const changeQuality = (next: FittingQuality) => {
+    const nextSpec = specLevelForQuality(next);
+    setSpecLevel(nextSpec);
+    if (!carried) return;
+    setCarried({ ...carried, bill: null });
+    try {
+      localStorage.setItem(
+        "estimo_estimate_draft_v1",
+        JSON.stringify({
+          templateId,
+          specLevel: nextSpec,
+          spaces: carried.spaces,
+          overrides: carried.overrides,
+          specialLoadInstances: carried.instances,
+        }),
+      );
+    } catch {}
+  };
+
   const changeSpace = (key: string, delta: number) => {
     // editing the counters means going back to the counter-built plan
-    useCounters();
+    resetToCounters();
     setCounts((current) => ({ ...current, [key]: clampCount(type.code, key, (current[key] ?? 0) + delta) }));
   };
 
@@ -421,7 +464,7 @@ function SetupContent() {
                   key={option.value}
                   type="button"
                   className={quality === option.value ? "option-card is-active" : "option-card"}
-                  onClick={() => setQuality(option.value)}
+                  onClick={() => changeQuality(option.value)}
                   aria-pressed={quality === option.value}
                 >
                   <strong>{option.label}</strong>
@@ -444,13 +487,8 @@ function SetupContent() {
           <strong className="side-total">{money(total)}</strong>
           <p className="side-note">
             {pricedCountValue} of {estimateLines.length} priced ·{" "}
-            {carried ? "carried over from the itemized bill" : "updates as you change the spaces"}.
+            {carried?.bill ? "priced by the itemized bill" : "updates as you change the spaces"}.
           </p>
-          {carried ? (
-            <button className="link-button side-link" type="button" onClick={useCounters}>
-              Price the counters instead
-            </button>
-          ) : null}
           <button className="btn-outline side-secondary" type="button" onClick={() => void downloadSimplePdf()}>
             Download PDF
           </button>
