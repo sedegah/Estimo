@@ -23,6 +23,7 @@ import {
   PROJECT_TYPE_FOR_CODE,
   spacesFromCounts,
   specLevelForQuality,
+  qualityForSpecLevel,
   TEMPLATE_FOR_CODE,
 } from "@/lib/estimate-live";
 import { priceQuantities } from "@/lib/quantity-engine/catalogue";
@@ -446,10 +447,12 @@ export default function ProjectPage() {
     };
 
     const resume = () => {
+      const code = project.template ?? "HOME-2B";
       try {
         localStorage.setItem(
           "estimo_estimate_draft_v1",
           JSON.stringify({
+            template: code,
             templateId: takeOff.templateId,
             specLevel: takeOff.specLevel,
             spaces: takeOff.spaces,
@@ -458,15 +461,22 @@ export default function ProjectPage() {
           }),
         );
       } catch {}
-      // the itemized bill is this same take-off, editable and priced line by line
-      router.push(`/itemized?template=${encodeURIComponent(project.template ?? "HOME-2B")}`);
+      // the itemized bill is this same take-off, editable and priced line by line: the
+      // template variant and the specification must travel with it, or the bill would open
+      // on the project type's default template at the default specification
+      const quality = qualityForSpecLevel(takeOff.specLevel as SpecLevel);
+      router.push(
+        `/itemized?template=${encodeURIComponent(code)}&id=${encodeURIComponent(takeOff.templateId)}&quality=${quality}`,
+      );
     };
 
     return (
       <>
         <header className="app-head">
           <div>
-            <p className="app-eyebrow">Saved estimate</p>
+            <p className="app-eyebrow">
+              Saved estimate{project.code ? ` · ${project.code}` : ""}
+            </p>
             <h1 className="app-title">{project.name}</h1>
             <p className="app-sub">
               {takeOff.spaces.length} space{takeOff.spaces.length === 1 ? "" : "s"} · {takeOff.specLevel} · {Math.round(area * 10) / 10} m²

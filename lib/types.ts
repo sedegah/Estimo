@@ -66,6 +66,8 @@ export type SavedQuantities = {
 
 export type SavedEstimate = {
   id: string;
+  /** Short code a person can read out or type, e.g. EST-7K3M9Q, unique in this browser. */
+  code?: string;
   name: string;
   kind: "quick" | "materials";
   createdAt: string;

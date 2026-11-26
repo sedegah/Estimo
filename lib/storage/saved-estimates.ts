@@ -11,6 +11,25 @@ const DELETED_KEY = "estimo_deleted_estimates_v1";
 
 export const SAVED_EVENT = "estimo-saved-change";
 
+/** No I, O, 0 or 1: a code gets read aloud and typed back. */
+const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+
+/** A short reference for one estimate, e.g. EST-7K3M9Q. */
+function nextCode(used: Set<string>): string {
+  for (let attempt = 0; attempt < 1000; attempt += 1) {
+    let body = "";
+    for (let index = 0; index < 6; index += 1) {
+      body += CODE_ALPHABET[Math.floor(Math.random() * CODE_ALPHABET.length)];
+    }
+    const code = `EST-${body}`;
+    if (!used.has(code)) {
+      used.add(code);
+      return code;
+    }
+  }
+  return `EST-${Date.now().toString(36).toUpperCase().slice(-6)}`;
+}
+
 /** When an estimate was last written, which is how the list is ordered. */
 const savedAt = (entry: SavedEstimate): string => entry.updatedAt ?? entry.createdAt;
 
@@ -23,7 +42,17 @@ export function listSavedEstimates(): SavedEstimate[] {
     const parsed = raw ? JSON.parse(raw) : [];
     if (!Array.isArray(parsed)) return [];
     const deleted = new Set(readDeleted());
-    return (parsed as SavedEstimate[]).filter((entry) => !deleted.has(entry.id)).sort(newestFirst);
+    const entries = (parsed as SavedEstimate[]).filter((entry) => !deleted.has(entry.id));
+    // estimates saved before codes existed get one now, in place, so the reference shown
+    // on a card never changes once a person has read it out
+    if (entries.some((entry) => !entry.code)) {
+      const used = new Set(entries.map((entry) => entry.code).filter(Boolean) as string[]);
+      for (const entry of entries) if (!entry.code) entry.code = nextCode(used);
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
+      } catch {}
+    }
+    return entries.sort(newestFirst);
   } catch {
     return [];
   }
@@ -36,13 +65,16 @@ function persist(next: SavedEstimate[]): void {
 
 export function saveEstimate(entry: Omit<SavedEstimate, "id" | "createdAt">): SavedEstimate {
   const now = new Date().toISOString();
+  const existing = listSavedEstimates();
+  const used = new Set(existing.map((saved) => saved.code).filter(Boolean) as string[]);
   const saved: SavedEstimate = {
     ...entry,
     id: `est-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+    code: entry.code ?? nextCode(used),
     createdAt: now,
     updatedAt: now,
   };
-  persist([saved, ...listSavedEstimates()]);
+  persist([saved, ...existing]);
   return saved;
 }
 
@@ -90,6 +122,7 @@ export function mergeSavedEstimates(entries: SavedEstimate[]): SavedEstimate[] {
   const deleted = new Set(readDeleted());
   const local = listSavedEstimates();
   const byId = new Map<string, SavedEstimate>();
+  const usedCodes = new Set(local.map((entry) => entry.code).filter(Boolean) as string[]);
 
   for (const entry of local) byId.set(entry.id, entry);
   for (const entry of entries) {
@@ -103,12 +136,13 @@ export function mergeSavedEstimates(entries: SavedEstimate[]): SavedEstimate[] {
         ? {
             ...current,
             ...entry,
+            code: current.code ?? nextCode(usedCodes),
             items: entry.items?.length ? entry.items : current.items,
             quantities: current.quantities ?? entry.quantities,
             // ordering follows the latest save from either side
             updatedAt: [current.updatedAt, entry.updatedAt].filter(Boolean).sort().at(-1),
           }
-        : entry,
+        : { ...entry, code: entry.code ?? nextCode(usedCodes) },
     );
   }
 

@@ -84,3 +84,35 @@ test("projects saved before this rule still list by their creation date", async 
 
   assert.deepEqual(listSavedEstimates().map((saved) => saved.name), ["Newer", "Older"]);
 });
+
+test("every estimate carries a readable code, including the ones saved before codes", async () => {
+  installWindow();
+  const { saveEstimate, listSavedEstimates } = await import("../lib/storage/saved-estimates.ts");
+  const storage = (globalThis as unknown as { window: { localStorage: MemoryStorage } }).window.localStorage;
+
+  // two estimates saved before codes existed
+  storage.setItem(
+    "estimo_saved_estimates_v1",
+    JSON.stringify([
+      { id: "old-1", name: "Old one", kind: "quick", createdAt: "2026-01-01T10:00:00.000Z", detail: "", totalGhs: 1 },
+      { id: "old-2", name: "Old two", kind: "quick", createdAt: "2026-02-01T10:00:00.000Z", detail: "", totalGhs: 2 },
+    ]),
+  );
+
+  const backfilled = listSavedEstimates();
+  assert.equal(backfilled.length, 2);
+  for (const entry of backfilled) {
+    assert.match(entry.code ?? "", /^EST-[A-HJ-NP-Z2-9]{6}$/, "a code with no I, O, 0 or 1");
+  }
+  assert.notEqual(backfilled[0].code, backfilled[1].code, "codes are unique");
+
+  // the backfill is written back, so the code a person reads out stays the same
+  const persisted = JSON.parse(storage.getItem("estimo_saved_estimates_v1") ?? "[]");
+  assert.equal(persisted[0].code, backfilled.find((entry) => entry.id === persisted[0].id)?.code);
+  const again = listSavedEstimates();
+  assert.deepEqual(again.map((entry) => entry.code), backfilled.map((entry) => entry.code));
+
+  const fresh = saveEstimate({ name: "New", kind: "quick", detail: "", totalGhs: 3 });
+  assert.match(fresh.code ?? "", /^EST-[A-HJ-NP-Z2-9]{6}$/);
+  assert.ok(!again.some((entry) => entry.code === fresh.code), "a new estimate gets a new code");
+});

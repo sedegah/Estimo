@@ -329,6 +329,7 @@ button.chip:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px;
   color: #6b7684;
 }
 .project-tile-buttons { display: flex; align-items: center; gap: 12px; }
+.project-tile-code { margin-left: 8px; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; letter-spacing: 0.06em; color: #6b7684; }
 
 /* ── responsive: tablet and mobile ───────────────────────────────────────── */
 @media (max-width: 900px) {

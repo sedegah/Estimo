@@ -21,6 +21,8 @@ import type { SavedEstimate } from "@/lib/types";
 export default function SavedEstimatesPage() {
   const router = useRouter();
   const [projects, setProjects] = useState<SavedEstimate[]>([]);
+  const [codeQuery, setCodeQuery] = useState("");
+  const [lookupError, setLookupError] = useState("");
   const [prices, setPrices] = useState<Record<string, PriceEntry> | null>(null);
   const [liveTotals, setLiveTotals] = useState<Record<string, number>>({});
 
@@ -78,6 +80,19 @@ export default function SavedEstimatesPage() {
     router.push(`/itemized?template=${encodeURIComponent(code)}&id=${encodeURIComponent(templateId)}`);
   };
 
+  /** Pull an estimate by the code written on its card. */
+  const lookup = () => {
+    const wanted = codeQuery.trim().toUpperCase();
+    if (!wanted) return;
+    const match = projects.find((project) => (project.code ?? "").toUpperCase() === wanted);
+    if (!match) {
+      setLookupError(`No estimate coded ${wanted} is saved on this device.`);
+      return;
+    }
+    setLookupError("");
+    open(match);
+  };
+
   const remove = (project: SavedEstimate) => {
     void pushDelete(project.id);
     deleteSavedEstimate(project.id);
@@ -98,13 +113,37 @@ export default function SavedEstimatesPage() {
         </Link>
       </header>
 
+      <form
+        className="app-search"
+        onSubmit={(event) => {
+          event.preventDefault();
+          lookup();
+        }}
+      >
+        <input
+          type="search"
+          value={codeQuery}
+          onChange={(event) => {
+            setCodeQuery(event.target.value);
+            setLookupError("");
+          }}
+          placeholder="Open by code, e.g. EST-7K3M9Q"
+          aria-label="Open an estimate by its code"
+        />
+        <button className="btn-outline" type="submit">Open</button>
+      </form>
+      {lookupError ? <p className="app-empty">{lookupError}</p> : null}
+
       {projects.length ? (
         <div className="app-grid">
           {projects.map((project) => (
             <article className="project-tile" key={project.id}>
               <div className="project-tile-body">
                 <strong>{project.name}</strong>
-                <span className="project-tile-type">{estimateType(project)}</span>
+                <span className="project-tile-type">
+                  {estimateType(project)}
+                  {project.code ? <span className="project-tile-code">{project.code}</span> : null}
+                </span>
                 <span className="project-tile-meta">
                   <span className={isEstimated(project) ? "status-pill is-estimated" : "status-pill is-draft"}>
                     {statusLabel(project)}

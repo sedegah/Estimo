@@ -133,7 +133,7 @@ export default async function QuickEstimatePage({
       <div className="container quantities-body">
         <QuantityView
           signedIn={signedIn}
-          initialSpecLevel={specLevelFromQuality}
+          initialSpecLevel={quality ? specLevelFromQuality : undefined}
           initialSpaces={planSpaces as never}
           templateCode={code}
           initialTemplateId={templateId}

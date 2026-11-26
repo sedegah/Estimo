@@ -87,7 +87,7 @@ export default function ProjectsPage() {
     const term = query.trim().toLowerCase();
     if (!term) return projects;
     return projects.filter((entry) =>
-      `${entry.name} ${entry.detail} ${estimateType(entry)}`.toLowerCase().includes(term),
+      `${entry.name} ${entry.detail} ${estimateType(entry)} ${entry.code ?? ""}`.toLowerCase().includes(term),
     );
   }, [projects, query]);
 
@@ -161,7 +161,10 @@ export default function ProjectsPage() {
                 {project.kind === "materials" ? <MaterialThumb /> : <PlanThumb variant={project.name.length} />}
                 <div className="project-tile-body">
                   <strong>{project.name}</strong>
-                  <span className="project-tile-type">{estimateType(project)}</span>
+                  <span className="project-tile-type">
+                    {estimateType(project)}
+                    {project.code ? <span className="project-tile-code">{project.code}</span> : null}
+                  </span>
                   <span className="project-tile-meta">
                     <span className={isEstimated(project) ? "status-pill is-estimated" : "status-pill is-draft"}>
                       {statusLabel(project)}

@@ -110,3 +110,12 @@ A visitor who is not signed in saves to this browser, and the button that appear
 "Saved estimates" and opens `/saved` — a public list of what this browser holds, priced at
 today's catalogue, with Open and Delete. Signed-in users keep `/projects`, which merges the
 account's copies.
+
+## Estimate codes
+
+Every saved estimate carries a short code such as `EST-7K3M9Q` (no I, O, 0 or 1, so it can be
+read out). Estimates saved before codes existed are given one the first time the list is
+read, and the code is written back, so it never changes afterwards. The code is shown on the
+card in both lists, included in the projects search, and `/saved` can open an estimate from a
+typed code. Opening a saved estimate restores its own template variant and specification —
+the itemized bill is the saved plan, not the project type's defaults.
