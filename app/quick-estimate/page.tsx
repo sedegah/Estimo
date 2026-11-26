@@ -251,7 +251,7 @@ function SetupContent() {
         specLevel,
         spaces: planSpaces,
         prices: (prices ?? {}) as Parameters<typeof liveEstimate>[0]["prices"],
-        overrides: carried?.overrides,
+        overrides: planOverrides,
         specialLoadInstances: instances,
       }),
     [templateId, specLevel, planSpaces, prices, carried, instances],
@@ -288,7 +288,7 @@ function SetupContent() {
           templateId,
           specLevel,
           spaces: planSpaces,
-          overrides: carried?.overrides ?? [],
+          overrides: planOverrides,
           specialLoadInstances: instances,
         }),
       );
