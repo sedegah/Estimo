@@ -55,7 +55,7 @@ export function SiteFooter({ year }: { year: number }) {
         <nav className="footer-columns" aria-label="Footer">
           <div className="footer-col">
             <h2>Estimate</h2>
-            <Link href="/quick-estimate?template=HOME-2B">Start an estimate</Link>
+            <Link href="/quick-estimate?template=HOME-2B&fresh=1">Start an estimate</Link>
             <Link href="/catalogue">Material catalogue</Link>
           </div>
           <div className="footer-col">

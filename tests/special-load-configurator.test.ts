@@ -15,6 +15,7 @@ import {
   acSuppressionOverrides,
   applySpecialLoads,
   configurationStatus,
+  defaultHomeAcAdditions,
   missingRequirements,
   newSpecialLoadInstance,
   parseSpecialLoadInstances,
@@ -437,4 +438,37 @@ test("configured loads move the final circuit count and the board size", () => {
   assert.ok(outcome.totals.db_design_ways >= base.totals.db_design_ways);
   assert.equal(outcome.specialLoadTotals.verified, 0);
   assert.equal(outcome.specialLoadTotals.provisional, 2);
+});
+
+test("homes open air conditioned; a single room and commercial plans do not", () => {
+  const rooms: SpaceInput[] = [
+    { id: "T011-1", space_name: "Bedroom 1", room_type: "bedroom", length_m: 4, width_m: 3.5, height_m: 3 },
+    { id: "T011-2", space_name: "Bedroom 2", room_type: "bedroom", length_m: 3.5, width_m: 3, height_m: 3 },
+    { id: "T011-5", space_name: "Living Room", room_type: "living_room", length_m: 5, width_m: 4, height_m: 3 },
+    { id: "T011-4", space_name: "Kitchen", room_type: "kitchen", length_m: 3, width_m: 2.5, height_m: 3 },
+  ];
+
+  const home = defaultHomeAcAdditions({ projectType: "two_bedroom", templateId: "T011", spaces: rooms, routes: [] });
+  assert.equal(home.overrides.length, 3, "one AC per bedroom and living room, not the kitchen");
+  assert.ok(home.overrides.every((entry) => entry.point_type === "ac" && entry.value === 1));
+  assert.equal(home.instances.length, 1);
+  assert.equal(home.instances[0].load_key, "air_conditioner");
+  assert.equal(home.instances[0].quantity, 3, "the load is priced for all three units");
+  assert.equal(home.instances[0].capacity_hp, 1);
+
+  const single = defaultHomeAcAdditions({ projectType: "single_room", templateId: "T004", spaces: rooms, routes: [] });
+  assert.deepEqual(single, { overrides: [], instances: [] }, "a single room has nowhere to put one");
+
+  const shop = defaultHomeAcAdditions({ projectType: "shop_retail", templateId: "T023", spaces: rooms, routes: [] });
+  assert.deepEqual(shop, { overrides: [], instances: [] }, "commercial plans are not air conditioned by default");
+
+  // a count the person already set is left alone; only the unset rooms are seeded
+  const kept = defaultHomeAcAdditions({
+    projectType: "two_bedroom",
+    templateId: "T011",
+    spaces: rooms,
+    routes: [],
+    overrides: [{ space_id: "T011-1", point_type: "ac", value: 3, source: "user_override" }],
+  });
+  assert.deepEqual(kept.overrides.map((entry) => entry.space_id).sort(), ["T011-2", "T011-5"]);
 });

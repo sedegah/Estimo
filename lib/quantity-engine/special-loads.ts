@@ -1516,6 +1516,51 @@ export function seedSpecialLoads(
   });
 }
 
+/** Project types that are planned with air conditioning: every home but a single room. */
+const AIR_CONDITIONED_HOMES = new Set([
+  "one_bedroom",
+  "two_bedroom",
+  "three_bedroom",
+  "four_bedroom_villa",
+]);
+
+/**
+ * A home starts with one air conditioner per bedroom and living room, counted in the plan
+ * and carried by a single AC load, so the estimate prices them without being asked. A
+ * single room and the commercial types get nothing.
+ */
+export function defaultHomeAcAdditions(args: {
+  projectType: string;
+  templateId: string;
+  spaces: SpaceInput[];
+  routes: SpaceRouteRow[];
+  overrides?: PointOverride[];
+}): { overrides: PointOverride[]; instances: SpecialLoadInstance[] } {
+  const existing = args.overrides ?? [];
+  if (!AIR_CONDITIONED_HOMES.has(args.projectType)) return { overrides: [], instances: [] };
+
+  const acSpaces = args.spaces.filter(
+    (space) => space.room_type === "bedroom" || space.room_type === "living_room",
+  );
+  if (!acSpaces.length) return { overrides: [], instances: [] };
+
+  const overrides: PointOverride[] = acSpaces
+    .filter((space) => !existing.some((entry) => entry.space_id === space.id && entry.point_type === "ac"))
+    .map((space) => ({ space_id: space.id, point_type: "ac" as const, value: 1, source: "user_override" as const }));
+
+  const [acLoad] = seedSpecialLoads(["air_conditioner"], args.spaces, args.routes, args.templateId);
+  const instances: SpecialLoadInstance[] = [
+    {
+      ...acLoad,
+      // a standard 1 HP split, provisionally priced until the person picks the real units
+      capacity_hp: 1,
+      phase: "single",
+      quantity: acSpaces.length,
+      sizing_source: "ESTIMO_PROVISIONAL",
+    },
+  ];
+  return { overrides, instances };
+}
 /**
  * The ESTIMO route for a space, read from the published route table. Space ids carry the
  * template and the space number ("T011-3"), so the automatic distance survives a reload.

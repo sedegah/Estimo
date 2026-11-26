@@ -42,7 +42,7 @@ export default function EstimatesPage() {
           <p className="app-eyebrow">Every estimate in one place</p>
           <h1 className="app-title">Estimates</h1>
         </div>
-        <Link className="btn-amber" href="/quick-estimate?template=HOME-2B">New estimate</Link>
+        <Link className="btn-amber" href="/quick-estimate?template=HOME-2B&fresh=1">New estimate</Link>
       </header>
 
       <div className="chip-row">

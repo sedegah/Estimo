@@ -2,7 +2,9 @@ import { calculateProject, parametersFromRows, rulesByKey } from "@/lib/quantity
 import { MATERIAL_CATALOGUE, priceQuantities, type PriceEntry } from "@/lib/quantity-engine/catalogue";
 import { CATALOGUE_MATERIALS } from "@/lib/data/catalogue";
 import {
+  acSuppressionOverrides,
   applySpecialLoads,
+  defaultHomeAcAdditions,
   seedSpecialLoads,
   type SpaceRouteRow,
   type SpecialLoadInstance,
@@ -91,17 +93,6 @@ export function defaultSpecialLoadsFor(templateId: string, spaces: SpaceInput[])
   return seedSpecialLoads(enabled, spaces, spaceRouteRows as unknown as SpaceRouteRow[], templateId);
 }
 
-/**
- * Homes are planned with air conditioning: one unit per bedroom and per living room. A
- * single room is the exception, because there is nowhere to put one.
- */
-const AIR_CONDITIONED_HOMES = new Set([
-  "one_bedroom",
-  "two_bedroom",
-  "three_bedroom",
-  "four_bedroom_villa",
-]);
-
 export type PlanDefaults = {
   overrides: PointOverride[];
   instances: SpecialLoadInstance[];
@@ -109,8 +100,9 @@ export type PlanDefaults = {
 
 /**
  * What a plan starts with, before the person changes anything: the rulebook's default
- * loads, plus the air conditioners a home is expected to have. The simple summary and the
- * itemized bill both seed through here, so a home is air conditioned on both screens.
+ * loads, plus the air conditioners a home is expected to have (one per bedroom and living
+ * room, none in a single room). The simple summary and the itemized bill both seed through
+ * here, so a home is air conditioned on both screens.
  */
 export function defaultPlanAdditions(args: {
   projectType: string;
@@ -122,33 +114,19 @@ export function defaultPlanAdditions(args: {
   const routes = args.routes ?? (spaceRouteRows as unknown as SpaceRouteRow[]);
   const existing = args.overrides ?? [];
   const instances = defaultSpecialLoadsFor(args.templateId, args.spaces);
-  if (!AIR_CONDITIONED_HOMES.has(args.projectType)) {
-    return { overrides: existing, instances };
-  }
-
-  const acSpaces = args.spaces.filter(
-    (space) => space.room_type === "bedroom" || space.room_type === "living_room",
-  );
-  if (!acSpaces.length) return { overrides: existing, instances };
-
-  const acOverrides: PointOverride[] = acSpaces
-    .filter((space) => !existing.some((entry) => entry.space_id === space.id && entry.point_type === "ac"))
-    .map((space) => ({ space_id: space.id, point_type: "ac" as const, value: 1, source: "user_override" as const }));
-
-  const [acLoad] = seedSpecialLoads(["air_conditioner"], args.spaces, routes, args.templateId);
-  const airConditioner: SpecialLoadInstance = {
-    ...acLoad,
-    // a standard 1 HP split, priced provisionally until the person picks the real units
-    capacity_hp: 1,
-    phase: "single",
-    quantity: acSpaces.length,
-    sizing_source: "ESTIMO_PROVISIONAL",
+  const home = defaultHomeAcAdditions({
+    projectType: args.projectType,
+    templateId: args.templateId,
+    spaces: args.spaces,
+    routes,
+    overrides: existing,
+  });
+  return {
+    overrides: [...existing, ...home.overrides],
+    instances: [...instances, ...home.instances],
   };
-
-  return { overrides: [...existing, ...acOverrides], instances: [...instances, airConditioner] };
 }
 
-/** Spaces as the itemized screen would start them for a template. */
 export function templatePlanSpaces(templateId: string): SpaceInput[] {
   const template = templates.find((row) => row.template_id === templateId);
   if (!template) return [];
@@ -278,6 +256,12 @@ export function liveEstimate(options: {
   overrides?: PointOverride[];
 }): LiveEstimate {
   const template = templates.find((row) => row.template_id === options.templateId);
+  const requested = options.overrides ?? [];
+  // a configured AC load owns the AC count, so the plan's AC points must not also buy ways
+  const acSuppression = acSuppressionOverrides(options.spaces, options.specialLoadInstances ?? []);
+  const overrides = acSuppression.length
+    ? [...requested.filter((entry) => entry.point_type !== "ac"), ...acSuppression]
+    : requested;
   const base = calculateProject({
     spaces: options.spaces,
     specLevel: options.specLevel,
@@ -290,7 +274,7 @@ export function liveEstimate(options: {
     assemblyItems: assemblyItems as unknown as AssemblyItemRow[],
     // configured loads are counted by applySpecialLoads, so the raw keys stay out
     specialLoads: options.specialLoadInstances?.length ? [] : (options.specialLoads ?? []),
-    overrides: options.overrides ?? [],
+    overrides,
   });
 
   const result = applySpecialLoads(base, options.specialLoadInstances ?? [], {

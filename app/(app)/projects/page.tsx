@@ -85,7 +85,7 @@ export default function ProjectsPage() {
           <h1 className="app-title">Saved projects</h1>
           <p className="app-sub">Saved estimates stay in this browser.</p>
         </div>
-        <Link className="btn-amber" href="/quick-estimate?template=HOME-2B">New project</Link>
+        <Link className="btn-amber" href="/quick-estimate?template=HOME-2B&fresh=1">New project</Link>
       </header>
 
       {draft ? (

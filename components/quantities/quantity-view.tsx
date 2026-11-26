@@ -405,7 +405,10 @@ export function QuantityView(props: Props) {
    */
   const engineOverrides = useMemo(() => {
     const suppression = acSuppressionOverrides(spaces, instances);
-    return suppression.length ? [...overrides, ...suppression] : overrides;
+    if (!suppression.length) return overrides;
+    // the configured AC load owns the count, so the plan's AC points must not also buy
+    // ways on the board: drop them and let the suppression stand
+    return [...overrides.filter((entry) => entry.point_type !== "ac"), ...suppression];
   }, [spaces, overrides, instances]);
 
   const result = useMemo(() => {

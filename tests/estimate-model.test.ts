@@ -23,8 +23,7 @@ test("adding a room increases the total", () => {
   assert.ok(after > before);
 });
 
-test("every project type produces a positive total and lines that add up", () => {
-  for (const code of ["HOME-1R", "HOME-1B", "HOME-2B", "HOME-3B", "HOME-4B", "SHOP-KIOSK", "SHOP-RETAIL", "COMM-OFF-S", "IND-WORK"]) {
+test("every project type produces a positive total and lines that add up", () => {  for (const code of ["HOME-1R", "HOME-1B", "HOME-2B", "HOME-3B", "HOME-4B", "SHOP-KIOSK", "SHOP-RETAIL", "COMM-OFF-S", "IND-WORK"]) {
     const type = projectType(code);
     const counts = defaultCounts(code);
     const total = computeEstimate(code, counts, "standard");
