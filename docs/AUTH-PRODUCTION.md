@@ -48,3 +48,39 @@ by the data-API token verification; it must never be prefixed with `NEXT_PUBLIC_
 3. The header shows **Sign in** when signed out and **Dashboard** + the user button when in.
 4. Settings → Sign out returns to `/` and `/dashboard` is protected again.
 5. `https://estimo.live/.well-known/` is not needed; Clerk's proxy is the CNAME above.
+
+## Troubleshooting: the sign-in card says “Development mode”
+
+That ribbon is Clerk telling you the page is running on a **development instance**. It is
+not a styling issue and hiding it would hide a real warning: a development instance is not
+meant to serve real users.
+
+**Check which key the deployed site is using.** The publishable key is public and appears in
+the page source:
+
+```powershell
+(Invoke-WebRequest https://estimo.live/signin -UseBasicParsing).Content `
+  | Select-String -Pattern 'pk_(test|live)_[A-Za-z0-9_]+'
+```
+
+- `pk_test_…` (and the instance host it decodes to, e.g. `star-dove-4957.clerk.accounts.dev`)
+  means the build was made with a development key.
+- `pk_live_…` means the production instance; the ribbon disappears.
+
+**Fix it at the source, not in CSS:**
+
+1. Clerk dashboard → use the **instance selector** (top left) → switch to the **Production**
+   instance. A development instance can never lose the ribbon, custom domain or not.
+2. Confirm the production instance lists `estimo.live` as the application domain and has the
+   `clerk.estimo.live` Frontend API verified.
+3. Copy the production keys: `pk_live_…` (publishable) and `sk_live_…` (secret).
+4. Vercel → Project → Settings → Environment Variables → **Production**:
+   set `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY` to the `pk_live_…` value and `CLERK_SECRET_KEY` to
+   `sk_live_…`. Update Preview too if you use preview deployments with auth.
+5. **Redeploy** — `NEXT_PUBLIC_*` values are baked into the bundle at build time. A change
+   without a redeploy keeps the old test key, which is the usual reason the ribbon persists.
+6. Re-run the check above: it must print `pk_live_…`.
+
+The application code needs no change: `lib/env.ts` reads only
+`NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`, and `middleware.ts` lets Clerk read the same environment,
+so client and middleware always agree.
