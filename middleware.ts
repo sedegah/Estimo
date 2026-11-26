@@ -1,6 +1,12 @@
 import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server";
 import { clerkMiddleware } from "@clerk/nextjs/server";
-import { clerkEnabled } from "./lib/env";
+import { clerkEnabled, env } from "./lib/env";
+
+// Ensure Clerk reads the production publishable key even if the host
+// environment still carries a development (test) key.
+if (env.clerkPublishableKey) {
+  process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY = env.clerkPublishableKey;
+}
 
 /**
  * Routes that hold a person's work. A visitor without a session is sent to sign in
