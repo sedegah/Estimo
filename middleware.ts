@@ -21,7 +21,6 @@ const withClerk = clerkEnabled
       },
       {
         publishableKey: env.clerkPublishableKey,
-        secretKey: process.env.CLERK_SECRET_KEY,
       },
     )
   : null;
