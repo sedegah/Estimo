@@ -20,13 +20,6 @@ const nextConfig: NextConfig = {
       { source: "/sign-up", destination: "/signup", permanent: true },
       { source: "/catalog", destination: "/catalogue", permanent: true },
       { source: "/home", destination: "/", permanent: true },
-      // one canonical website: www is a permanent redirect to the root domain
-      {
-        source: "/:path*",
-        has: [{ type: "host", value: "www.estimo.live" }],
-        destination: "https://estimo.live/:path*",
-        permanent: true,
-      },
     ];
   },
   async headers() {

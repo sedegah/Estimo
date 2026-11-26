@@ -1,6 +1,6 @@
 import type { CatalogueItem } from "@/lib/api/admin-types";
 
-import { API_URL } from "@/lib/api-base";
+const API_URL = process.env.NEXT_PUBLIC_ESTIMO_API_URL ?? "https://estimo-api.sedegahkimathi.workers.dev";
 
 type ClerkBridge = { session?: { getToken(): Promise<string | null> } };
 

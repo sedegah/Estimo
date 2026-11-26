@@ -35,7 +35,7 @@ import type {
  * show the same money for the same plan.
  */
 
-import { API_URL } from "@/lib/api-base";
+const API_URL = process.env.NEXT_PUBLIC_ESTIMO_API_URL ?? "https://estimo-api.sedegahkimathi.workers.dev";
 
 const params = parametersFromRows(globalParameters as unknown as Parameters<typeof parametersFromRows>[0]);
 const rules = rulesByKey(roomRules as unknown as RoomRuleRow[]);

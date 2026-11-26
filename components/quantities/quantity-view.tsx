@@ -37,7 +37,6 @@ import {
 } from "@/lib/quantity-engine/special-loads";
 import { SpecialLoadConfigurator } from "./special-load-configurator";
 import { defaultPlanAdditions, PROJECT_TYPE_FOR_CODE, ROOM_NAMES } from "@/lib/estimate-live";
-import { API_URL } from "@/lib/api-base";
 /** The short project code behind a project type, so the draft names the project it shows. */
 const CODE_FOR_PROJECT_TYPE: Record<string, string> = Object.fromEntries(
   Object.entries(PROJECT_TYPE_FOR_CODE).map(([code, projectType]) => [projectType, code]),
@@ -378,7 +377,7 @@ export function QuantityView(props: Props) {
   /** Catalogue prices, fetched once, so a save always records real amounts. */
   const loadPrices = useCallback(async (): Promise<Record<string, PriceEntry>> => {
     if (Object.keys(livePrices).length) return livePrices;
-    const base = API_URL;
+    const base = process.env.NEXT_PUBLIC_ESTIMO_API_URL ?? "https://estimo-api.sedegahkimathi.workers.dev";
     const ids = new Set(Object.keys(props.catalogue));
     if (!ids.size) return {};
     try {
