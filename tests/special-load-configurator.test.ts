@@ -14,14 +14,17 @@ import test from "node:test";
 import {
   acSuppressionOverrides,
   applySpecialLoads,
+  autoRouteForSpace,
+  dbKeyForSpace,
   configurationStatus,
-  defaultHomeAcAdditions,
+  defaultAcAdditions,
   missingRequirements,
   newSpecialLoadInstance,
   parseSpecialLoadInstances,
   sizeSpecialLoad,
   specialLoadMaterials,
   specialLoadSummary,
+  seedSpecialLoads,
   specialLoadDefinition,
   syncAcQuantity,
   type SpecialLoadInstance,
@@ -475,7 +478,7 @@ test("configured loads move the final circuit count and the board size", () => {
   assert.equal(outcome.specialLoadTotals.provisional, 2);
 });
 
-test("homes open air conditioned; a single room and commercial plans do not", () => {
+test("homes and offices open air conditioned; the rooms that should not are left alone", () => {
   const rooms: SpaceInput[] = [
     { id: "T011-1", space_name: "Bedroom 1", room_type: "bedroom", length_m: 4, width_m: 3.5, height_m: 3 },
     { id: "T011-2", space_name: "Bedroom 2", room_type: "bedroom", length_m: 3.5, width_m: 3, height_m: 3 },
@@ -483,7 +486,7 @@ test("homes open air conditioned; a single room and commercial plans do not", ()
     { id: "T011-4", space_name: "Kitchen", room_type: "kitchen", length_m: 3, width_m: 2.5, height_m: 3 },
   ];
 
-  const home = defaultHomeAcAdditions({ projectType: "two_bedroom", templateId: "T011", spaces: rooms, routes: [] });
+  const home = defaultAcAdditions({ projectType: "two_bedroom", templateId: "T011", spaces: rooms, routes: [] });
   assert.equal(home.overrides.length, 3, "one AC per bedroom and living room, not the kitchen");
   assert.ok(home.overrides.every((entry) => entry.point_type === "ac" && entry.value === 1));
   assert.equal(home.instances.length, 1);
@@ -491,14 +494,34 @@ test("homes open air conditioned; a single room and commercial plans do not", ()
   assert.equal(home.instances[0].quantity, 3, "the load is priced for all three units");
   assert.equal(home.instances[0].capacity_hp, 1);
 
-  const single = defaultHomeAcAdditions({ projectType: "single_room", templateId: "T004", spaces: rooms, routes: [] });
+  // an office is air conditioned everywhere except the washrooms
+  const officeRooms: SpaceInput[] = [
+    { id: "T020-1", space_name: "Reception", room_type: "reception", length_m: 4, width_m: 3, height_m: 3 },
+    { id: "T020-2", space_name: "Open Office", room_type: "open_office", length_m: 10, width_m: 7, height_m: 3 },
+    { id: "T020-3", space_name: "Private Office", room_type: "private_office", length_m: 3.8, width_m: 3.4, height_m: 3 },
+    { id: "T020-4", space_name: "Meeting Room", room_type: "meeting_room", length_m: 5, width_m: 4, height_m: 3 },
+    { id: "T020-5", space_name: "Kitchenette", room_type: "kitchen", length_m: 3, width_m: 2.5, height_m: 3 },
+    { id: "T020-6", space_name: "WC", room_type: "wc", length_m: 2, width_m: 1.6, height_m: 3 },
+    { id: "T020-7", space_name: "Store", room_type: "store", length_m: 2.5, width_m: 2, height_m: 3 },
+    { id: "T020-8", space_name: "Server Room", room_type: "server_room", length_m: 3, width_m: 2.4, height_m: 3 },
+  ];
+  const office = defaultAcAdditions({ projectType: "office", templateId: "T020", spaces: officeRooms, routes: [] });
+  assert.equal(office.overrides.length, officeRooms.length - 1, "every office room except the washroom");
+  const cooled = new Set(office.overrides.map((entry) => entry.space_id));
+  assert.ok(!cooled.has("T020-6"), "the washroom is not air conditioned");
+  assert.ok(cooled.has("T020-1"), "the reception is air conditioned");
+  assert.ok(cooled.has("T020-8"), "the server room is air conditioned");
+  assert.equal(office.instances.length, 1);
+  assert.equal(office.instances[0].quantity, officeRooms.length - 1);
+
+  const single = defaultAcAdditions({ projectType: "single_room", templateId: "T004", spaces: rooms, routes: [] });
   assert.deepEqual(single, { overrides: [], instances: [] }, "a single room has nowhere to put one");
 
-  const shop = defaultHomeAcAdditions({ projectType: "shop_retail", templateId: "T023", spaces: rooms, routes: [] });
-  assert.deepEqual(shop, { overrides: [], instances: [] }, "commercial plans are not air conditioned by default");
+  const shop = defaultAcAdditions({ projectType: "shop_retail", templateId: "T023", spaces: rooms, routes: [] });
+  assert.deepEqual(shop, { overrides: [], instances: [] }, "a shop is not air conditioned by default");
 
   // a count the person already set is left alone; only the unset rooms are seeded
-  const kept = defaultHomeAcAdditions({
+  const kept = defaultAcAdditions({
     projectType: "two_bedroom",
     templateId: "T011",
     spaces: rooms,
@@ -506,4 +529,88 @@ test("homes open air conditioned; a single room and commercial plans do not", ()
     overrides: [{ space_id: "T011-1", point_type: "ac", value: 3, source: "user_override" }],
   });
   assert.deepEqual(kept.overrides.map((entry) => entry.space_id).sort(), ["T011-2", "T011-5"]);
+});
+
+test("the EV charger sits in the compound with its own double-pole breaker", () => {
+  assert.equal(specialLoadDefinition("ev_charger").spaceContext, "external");
+  const rooms: SpaceInput[] = [
+    { id: "T011-9", space_name: "Garage", room_type: "garage", length_m: 5, width_m: 3, height_m: 3 },
+    { id: "T011-8", space_name: "Porch", room_type: "porch_veranda", length_m: 3, width_m: 2, height_m: 3 },
+    { id: "T011-1", space_name: "Bedroom", room_type: "bedroom", length_m: 4, width_m: 3.5, height_m: 3 },
+  ];
+  const [seeded] = seedSpecialLoads(["ev_charger"], rooms, [], "T011");
+  assert.equal(seeded.target_space_id, "T011-8", "the compound's porch comes before the carport");
+
+  const ev: SpecialLoadInstance = {
+    ...seeded,
+    rated_power_kw: 7.4,
+    phase: "single",
+    quantity: 2,
+    route_length_m: 12,
+    route_source: "USER_OVERRIDE",
+  };
+  const rows = materialMap(specialLoadMaterials(ev, 8));
+  assert.equal(rows.get("mcb_dp_40")?.engineering_quantity, 2, "its own double-pole breaker, one per charger");
+  assert.ok(!rows.has("mcb_sp_40"), "not a single-pole device");
+  assert.equal(rows.get("rccb_2p_30ma")?.engineering_quantity, 2, "30 mA RCD protection per charger");
+  assert.ok(rows.get("isolator_dp_63"), "local isolation at the compound");
+});
+
+
+test("a multi-unit AC line is priced at the average route of its rooms, in any order", () => {
+  const rooms: SpaceInput[] = [
+    { id: "T011-1", space_name: "Bedroom 1", room_type: "bedroom", length_m: 4, width_m: 3.5, height_m: 3 },
+    { id: "T011-2", space_name: "Bedroom 2", room_type: "bedroom", length_m: 3.5, width_m: 3, height_m: 3 },
+    { id: "T011-5", space_name: "Living Room", room_type: "living_room", length_m: 5, width_m: 4, height_m: 3 },
+  ];
+  const routes = [
+    { template_id: "T011", space_no: 1, distance_from_db_m: 6 },
+    { template_id: "T011", space_no: 2, distance_from_db_m: 12 },
+    { template_id: "T011", space_no: 5, distance_from_db_m: 18 },
+  ].map((row) => ({ ...row, route_distance_from_db_m: row.distance_from_db_m, serving_db_id: "DB1" })) as never[];
+
+  const [ac] = defaultAcAdditions({ projectType: "two_bedroom", templateId: "T011", spaces: rooms, routes }).instances;
+  assert.equal(ac.quantity, 3);
+  assert.equal(ac.route_length_m, 12, "the mean of 6, 12 and 18 m");
+  assert.equal(ac.route_aggregate, true, "the card can say it is an average");
+
+  // the same rooms in another order give the same price, not one room's price
+  const shuffled = [rooms[2], rooms[0], rooms[1]];
+  const [ac2] = defaultAcAdditions({ projectType: "two_bedroom", templateId: "T011", spaces: shuffled, routes }).instances;
+  assert.equal(ac2.route_length_m, 12);
+  assert.equal(ac2.quantity, 3);
+});
+
+test("an office row of three private offices is three air conditioners", () => {
+  const rooms: SpaceInput[] = [
+    { id: "T020-1", space_name: "Reception", room_type: "reception", length_m: 4, width_m: 3, height_m: 3, quantity: 1 },
+    { id: "T020-3", space_name: "Private Offices", room_type: "private_office", length_m: 3.8, width_m: 3.4, height_m: 3, quantity: 3 },
+    { id: "T020-6", space_name: "WC", room_type: "wc", length_m: 2, width_m: 1.6, height_m: 3, quantity: 2 },
+  ];
+  const routes = [
+    { template_id: "T020", space_no: 1, route_distance_from_db_m: 4, serving_db_id: "DB1" },
+    { template_id: "T020", space_no: 3, route_distance_from_db_m: 10, serving_db_id: "DB1" },
+  ] as never[];
+
+  const { overrides, instances } = defaultAcAdditions({
+    projectType: "office",
+    templateId: "T020",
+    spaces: rooms,
+    routes,
+  });
+  assert.equal(overrides.length, 2, "one override per space, not per unit");
+  assert.equal(instances[0].quantity, 4, "reception + three private offices");
+  // (4 x 1 + 10 x 3) / 4 = 8.5 m, weighted by the room count
+  assert.equal(instances[0].route_length_m, 8.5);
+});
+
+test("a copied space keeps its own route, not the route of the copy number", () => {
+  const routes = [
+    { template_id: "T020", space_no: 1, route_distance_from_db_m: 4, serving_db_id: "DB1", db_key: "DB1" },
+    { template_id: "T020", space_no: 8, route_distance_from_db_m: 21, serving_db_id: "DB1", db_key: "DB1" },
+  ] as never[];
+  assert.equal(autoRouteForSpace(routes, "T020", "T020-8"), 21);
+  assert.equal(autoRouteForSpace(routes, "T020", "T020-8-1"), 21, "a copy still belongs to space 8");
+  assert.equal(autoRouteForSpace(routes, "T020", "T020-1-2"), 4);
+  assert.equal(dbKeyForSpace(routes, "T020", "T020-8-1"), "DB1");
 });

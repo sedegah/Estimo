@@ -67,6 +67,7 @@ function toSavedEstimate(row: ApiEstimate): SavedEstimate {
     name: snapshot.name ?? row.name,
     kind: snapshot.kind ?? "quick",
     createdAt: row.created_at,
+    updatedAt: row.updated_at,
     detail: snapshot.detail ?? `${label} · ${row.quality} fittings · ${row.spaces} spaces`,
     totalGhs: snapshot.totalGhs ?? row.total_ghs,
     template: snapshot.template ?? row.template,

@@ -18,7 +18,9 @@ import {
 import {
   catalogueMap,
   fetchLivePrices,
+  defaultPlanAdditions,
   liveEstimate,
+  PROJECT_TYPE_FOR_CODE,
   spacesFromCounts,
   specLevelForQuality,
   TEMPLATE_FOR_CODE,
@@ -136,6 +138,17 @@ export default function ProjectPage() {
   }, []);
 
   const planSpaces = useMemo(() => spacesFromCounts(templateId, counts), [templateId, counts]);
+  // the plan's own defaults (the fridge, the air conditioners) are part of the price here,
+  // exactly as they are on the simple screen and the itemized bill
+  const planDefaults = useMemo(
+    () =>
+      defaultPlanAdditions({
+        projectType: PROJECT_TYPE_FOR_CODE[type.code] ?? "two_bedroom",
+        templateId,
+        spaces: planSpaces,
+      }),
+    [type.code, templateId, planSpaces],
+  );
   const live = useMemo(
     () =>
       liveEstimate({
@@ -143,8 +156,10 @@ export default function ProjectPage() {
         specLevel: specLevelForQuality(quality),
         spaces: planSpaces,
         prices: livePrices ?? {},
+        overrides: planDefaults.overrides,
+        specialLoadInstances: planDefaults.instances,
       }),
-    [templateId, quality, planSpaces, livePrices],
+    [templateId, quality, planSpaces, livePrices, planDefaults],
   );
   const total = livePrices ? live.total : null;
 

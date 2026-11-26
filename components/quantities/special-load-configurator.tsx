@@ -260,7 +260,9 @@ export function SpecialLoadConfigurator({
       >
         <header className="load-dialog-head">
           <div>
-            <p className="load-dialog-kicker">{definition.spaceContext.replace(/_/g, " ")}</p>
+            <p className="load-dialog-kicker">
+              {definition.spaceContext === "external" ? "compound" : definition.spaceContext.replace(/_/g, " ")}
+            </p>
             <h2 id={titleId}>{definition.name}</h2>
             <p className="load-dialog-tagline">{definition.tagline}</p>
           </div>

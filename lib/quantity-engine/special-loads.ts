@@ -70,6 +70,8 @@ export interface SpecialLoadValues {
   target_space_id: string | null;
   route_length_m: number | null;
   route_source: RouteSource;
+  /** True when one line covers many rooms and its route is their average, not one space's. */
+  route_aggregate?: boolean;
   installation_method: InstallationMethod | null;
   local_isolator_required: boolean | null;
   /** False when the appliance shares an existing circuit instead of getting its own. */
@@ -135,6 +137,8 @@ export interface SpecialLoadDefinition {
   outlet: "socket" | "fcu" | "cooker" | "none";
   /** Circuit protection at the board. */
   protection: "mcb" | "none";
+  /** Poles the breaker switches: a compound charger needs its own double-pole device. */
+  protectivePoles?: "sp" | "dp";
   /** RCD/RCBO policy when the manufacturer has not said otherwise. */
   rcd: RcdRequirement;
   /** Local isolator policy. */
@@ -627,12 +631,13 @@ export const SPECIAL_LOAD_DEFINITIONS: SpecialLoadDefinition[] = [
   {
     key: "ev_charger",
     name: "EV charger",
-    tagline: "Load-sized charger circuit, protection and isolator.",
-    spaceContext: "garage",
+    tagline: "Compound charger: load-sized circuit, protection and isolator.",
+    spaceContext: "external",
     powerFactor: 1,
     motorLoad: false,
     outlet: "none",
     protection: "mcb",
+    protectivePoles: "dp",
     rcd: "required",
     isolator: "always",
     containment: "conduit",
@@ -807,6 +812,7 @@ export function parseSpecialLoadInstance(value: unknown): SpecialLoadInstance | 
     target_space_id: typeof row.target_space_id === "string" ? row.target_space_id : null,
     route_length_m: numberOrNull(row.route_length_m),
     route_source: row.route_source === "USER_OVERRIDE" ? "USER_OVERRIDE" : "AUTO",
+    route_aggregate: row.route_aggregate === true,
     installation_method: method,
     local_isolator_required:
       typeof row.local_isolator_required === "boolean" ? row.local_isolator_required : null,
@@ -1078,11 +1084,13 @@ export function specialLoadMaterials(
 
   // protection and control
   if (definition.protection === "mcb" && dedicated) {
-    const word = instance.phase === "three" ? "tp" : "sp";
+    const word = instance.phase === "three" ? "tp" : definition.protectivePoles === "dp" ? "dp" : "sp";
+    const poles =
+      instance.phase === "three" ? "triple-pole" : definition.protectivePoles === "dp" ? "double-pole" : "single-pole";
     add(
       material(
         `mcb_${word}_${sizing.protectiveDeviceA}`,
-        `${sizing.protectiveDeviceA} A ${instance.phase === "three" ? "triple-pole" : "single-pole"} MCB`,
+        `${sizing.protectiveDeviceA} A ${poles} MCB`,
         "each",
         units,
         null,
@@ -1494,7 +1502,8 @@ const CONTEXT_ROOM_TYPES: Record<string, string[]> = {
   habitable_room: ["bedroom", "living_room", "dining_room", "private_office", "meeting_room", "reception"],
   workshop: ["workshop"],
   shop_or_workshop: ["shop_floor", "store", "workshop"],
-  external: ["porch_veranda", "external_area"],
+  // the compound: a charger or gate motor sits outside, at the porch, the yard or the carport
+  external: ["external_area", "porch_veranda", "garage"],
   garage: ["garage"],
   building: [],
 };
@@ -1517,7 +1526,16 @@ export function seedSpecialLoads(
     const instance = newSpecialLoadInstance(loadKey);
     const context = specialLoadDefinition(loadKey).spaceContext;
     const wanted = CONTEXT_ROOM_TYPES[context] ?? [];
-    const target = spaces.find((space) => wanted.includes(space.room_type)) ?? spaces[0] ?? null;
+    // follow the context's own order: the compound's yard before the carport, for example
+    const byContext = wanted.map((roomType) => spaces.find((space) => space.room_type === roomType)).find(Boolean);
+    // nothing in this plan suits the load: serve the largest room, which is the main space,
+    // not whichever room happens to come first in the list (that used to be a washroom)
+    const largest = [...spaces].sort(
+      (a, b) =>
+        (b.length_m ?? 0) * (b.width_m ?? 0) * Math.max(1, b.quantity ?? 1) -
+        (a.length_m ?? 0) * (a.width_m ?? 0) * Math.max(1, a.quantity ?? 1),
+    )[0];
+    const target = byContext ?? largest ?? null;
     const targetId = target?.id ?? null;
     return {
       ...instance,
@@ -1528,20 +1546,60 @@ export function seedSpecialLoads(
   });
 }
 
-/** Project types that are planned with air conditioning: every home but a single room. */
-const AIR_CONDITIONED_HOMES = new Set([
-  "one_bedroom",
-  "two_bedroom",
-  "three_bedroom",
-  "four_bedroom_villa",
-]);
+/** Rooms a home is air conditioned in: the bedrooms and the living areas. */
+const HOME_AC_ROOMS = ["bedroom", "living_room"];
 
 /**
- * A home starts with one air conditioner per bedroom and living room, counted in the plan
- * and carried by a single AC load, so the estimate prices them without being asked. A
- * single room and the commercial types get nothing.
+ * Which rooms ESTIMO air conditions by default.
+ *
+ * Homes: one unit per bedroom and living room; a single room gets none because there is
+ * nowhere to put one. Offices: every room except the washrooms, because a washroom is the
+ * one place an office does not cool.
  */
-export function defaultHomeAcAdditions(args: {
+function shouldAirCondition(projectType: string, roomType: string): boolean {
+  if (["one_bedroom", "two_bedroom", "three_bedroom", "four_bedroom_villa"].includes(projectType)) {
+    return HOME_AC_ROOMS.includes(roomType);
+  }
+  if (projectType === "office") return roomType !== "wc" && roomType !== "bathroom";
+  return false;
+}
+
+/**
+ * The rooms ESTIMO air conditions in a plan: a home's bedrooms and living areas, or an
+ * office's every room except the washrooms.
+ */
+export function acRoomsFor(projectType: string, spaces: SpaceInput[]): SpaceInput[] {
+  return spaces.filter((space) => shouldAirCondition(projectType, space.room_type));
+}
+
+/**
+ * The route a multi-unit load is priced at: the mean of the runs to every room it serves, so
+ * a single line's cable equals the sum of the individual runs whatever order the rooms come in.
+ */
+export function averageRouteFor(
+  routes: SpaceRouteRow[],
+  templateId: string | null | undefined,
+  spaces: SpaceInput[],
+): { route_length_m: number | null; route_source: "AUTO"; route_aggregate: true } {
+  // a row with quantity 3 stands for three rooms, so it weighs three times in the mean
+  const runs = spaces
+    .map((space) => ({
+      distance: autoRouteForSpace(routes, templateId, space.id),
+      units: Math.max(1, Math.round(space.quantity ?? 1)),
+    }))
+    .filter((run): run is { distance: number; units: number } => typeof run.distance === "number");
+  const units = runs.reduce((sum, run) => sum + run.units, 0);
+  const average = units
+    ? Math.round((runs.reduce((sum, run) => sum + run.distance * run.units, 0) / units) * 10) / 10
+    : null;
+  return { route_length_m: average, route_source: "AUTO", route_aggregate: true };
+}
+
+/**
+ * Rooms that start with an air conditioner, counted in the plan and carried by a single AC
+ * load, so the estimate prices them without being asked.
+ */
+export function defaultAcAdditions(args: {
   projectType: string;
   templateId: string;
   spaces: SpaceInput[];
@@ -1549,11 +1607,7 @@ export function defaultHomeAcAdditions(args: {
   overrides?: PointOverride[];
 }): { overrides: PointOverride[]; instances: SpecialLoadInstance[] } {
   const existing = args.overrides ?? [];
-  if (!AIR_CONDITIONED_HOMES.has(args.projectType)) return { overrides: [], instances: [] };
-
-  const acSpaces = args.spaces.filter(
-    (space) => space.room_type === "bedroom" || space.room_type === "living_room",
-  );
+  const acSpaces = acRoomsFor(args.projectType, args.spaces);
   if (!acSpaces.length) return { overrides: [], instances: [] };
 
   const overrides: PointOverride[] = acSpaces
@@ -1567,7 +1621,10 @@ export function defaultHomeAcAdditions(args: {
       // a standard 1 HP split, provisionally priced until the person picks the real units
       capacity_hp: 1,
       phase: "single",
-      quantity: acSpaces.length,
+      quantity: acSpaces.reduce((sum, space) => sum + Math.max(1, Math.round(space.quantity ?? 1)), 0),
+      // one line covers every cooled room, so its route is the average of their routes:
+      // the total cable equals the sum of the individual runs, in any order
+      ...averageRouteFor(args.routes, args.templateId, acSpaces),
       sizing_source: "ESTIMO_PROVISIONAL",
     },
   ];
@@ -1583,7 +1640,9 @@ export function autoRouteForSpace(
   spaceId: string | null | undefined,
 ): number | null {
   if (!templateId || !spaceId) return null;
-  const match = /-(\d+)$/.exec(spaceId);
+  // "T020-8" and its copies ("T020-8-1") both refer to space 8: the number right after
+  // the template, not the last one, which is the copy index
+  const match = /^[A-Za-z0-9]+-(\d+)/.exec(spaceId);
   if (!match) return null;
   const spaceNo = Number(match[1]);
   const row = routes.find((route) => route.template_id === templateId && route.space_no === spaceNo);
@@ -1597,7 +1656,9 @@ export function dbKeyForSpace(
   spaceId: string | null | undefined,
 ): string | null {
   if (!templateId || !spaceId) return null;
-  const match = /-(\d+)$/.exec(spaceId);
+  // "T020-8" and its copies ("T020-8-1") both refer to space 8: the number right after
+  // the template, not the last one, which is the copy index
+  const match = /^[A-Za-z0-9]+-(\d+)/.exec(spaceId);
   if (!match) return null;
   const spaceNo = Number(match[1]);
   const row = routes.find((route) => route.template_id === templateId && route.space_no === spaceNo);

@@ -494,6 +494,45 @@
     "notes": ""
   },
   {
+    "room_type": "server_room",
+    "spec_level": "economy",
+    "lighting_area_per_point_m2": 10,
+    "minimum_lighting_points": 1,
+    "socket_spacing_perimeter_m": 6,
+    "minimum_double_sockets": 2,
+    "fan_points_default": 0,
+    "ac_default": "yes",
+    "tv_points_default": 0,
+    "data_points_default": 1,
+    "notes": "Server room: cooling is essential, with a dedicated data feed."
+  },
+  {
+    "room_type": "server_room",
+    "spec_level": "standard",
+    "lighting_area_per_point_m2": 10,
+    "minimum_lighting_points": 1,
+    "socket_spacing_perimeter_m": 6,
+    "minimum_double_sockets": 2,
+    "fan_points_default": 0,
+    "ac_default": "yes",
+    "tv_points_default": 0,
+    "data_points_default": 1,
+    "notes": "Server room: cooling is essential, with a dedicated data feed."
+  },
+  {
+    "room_type": "server_room",
+    "spec_level": "premium",
+    "lighting_area_per_point_m2": 10,
+    "minimum_lighting_points": 1,
+    "socket_spacing_perimeter_m": 6,
+    "minimum_double_sockets": 2,
+    "fan_points_default": 0,
+    "ac_default": "yes",
+    "tv_points_default": 0,
+    "data_points_default": 1,
+    "notes": "Server room: cooling is essential, with a dedicated data feed."
+  },
+  {
     "room_type": "utility_room",
     "spec_level": "economy",
     "lighting_area_per_point_m2": 10,

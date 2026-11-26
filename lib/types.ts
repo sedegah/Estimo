@@ -69,6 +69,8 @@ export type SavedEstimate = {
   name: string;
   kind: "quick" | "materials";
   createdAt: string;
+  /** Last time this project was saved; the saved list is ordered by it. */
+  updatedAt?: string;
   detail: string;
   totalGhs: number | null;
   items?: SavedEstimateItem[];

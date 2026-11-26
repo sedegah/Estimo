@@ -241,6 +241,17 @@ const officeFields: SpaceField[] = [
       { name: "Light switch", unit: "switch", switches: 1 },
     ],
   },
+  {
+    key: "server",
+    label: "Server room",
+    note: "IT rack, cooling and a data feed",
+    items: [
+      { name: "Light points", unit: "point", lights: 1 },
+      { name: "Double sockets", unit: "socket", sockets: 2 },
+      { name: "AC point", unit: "point", acs: 1 },
+      { name: "Light switch", unit: "switch", switches: 1 },
+    ],
+  },
 ];
 
 const workshopFields: SpaceField[] = [
@@ -327,7 +338,7 @@ const DEFAULT_COUNTS: Record<string, Counts> = {
   "HOME-4B": { bedrooms: 4, bathrooms: 3, kitchens: 1, living: 2, porches: 1 },
   "SHOP-KIOSK": { serving: 1, storage: 1, signage: 1, washroom: 1 },
   "SHOP-RETAIL": { floor: 1, counter: 1, storage: 1, washroom: 1 },
-  "COMM-OFF-S": { open: 1, meeting: 1, kitchenette: 1, washroom: 1 },
+  "COMM-OFF-S": { open: 1, meeting: 1, kitchenette: 1, washroom: 1, server: 1 },
   "IND-WORK": { workshop: 1, machines: 1, store: 1, office: 1, external: 1 },
 };
 

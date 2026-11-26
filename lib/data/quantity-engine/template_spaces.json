@@ -1890,6 +1890,20 @@
     "notes": ""
   },
   {
+    "template_id": "T019",
+    "space_no": 5,
+    "space_name": "Server Room",
+    "room_type": "server_room",
+    "length_m": 2.5,
+    "width_m": 2.2,
+    "height_m": 3,
+    "quantity": 1,
+    "workstations": 0,
+    "checkout_counters": 0,
+    "machine_count": 0,
+    "notes": "IT rack; air conditioning is required."
+  },
+  {
     "template_id": "T020",
     "space_no": 1,
     "space_name": "Reception",
@@ -1986,6 +2000,20 @@
     "checkout_counters": 0,
     "machine_count": 0,
     "notes": ""
+  },
+  {
+    "template_id": "T020",
+    "space_no": 8,
+    "space_name": "Server Room",
+    "room_type": "server_room",
+    "length_m": 3,
+    "width_m": 2.4,
+    "height_m": 3,
+    "quantity": 1,
+    "workstations": 0,
+    "checkout_counters": 0,
+    "machine_count": 0,
+    "notes": "IT rack; air conditioning is required."
   },
   {
     "template_id": "T021",
@@ -2103,7 +2131,7 @@
     "template_id": "T021",
     "space_no": 9,
     "space_name": "Server Room",
-    "room_type": "utility_room",
+    "room_type": "server_room",
     "length_m": 3.5,
     "width_m": 3,
     "height_m": 3,

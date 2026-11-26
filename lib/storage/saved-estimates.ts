@@ -11,6 +11,11 @@ const DELETED_KEY = "estimo_deleted_estimates_v1";
 
 export const SAVED_EVENT = "estimo-saved-change";
 
+/** When an estimate was last written, which is how the list is ordered. */
+const savedAt = (entry: SavedEstimate): string => entry.updatedAt ?? entry.createdAt;
+
+const newestFirst = (a: SavedEstimate, b: SavedEstimate): number => savedAt(b).localeCompare(savedAt(a));
+
 export function listSavedEstimates(): SavedEstimate[] {
   if (typeof window === "undefined") return [];
   try {
@@ -18,7 +23,7 @@ export function listSavedEstimates(): SavedEstimate[] {
     const parsed = raw ? JSON.parse(raw) : [];
     if (!Array.isArray(parsed)) return [];
     const deleted = new Set(readDeleted());
-    return (parsed as SavedEstimate[]).filter((entry) => !deleted.has(entry.id)).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+    return (parsed as SavedEstimate[]).filter((entry) => !deleted.has(entry.id)).sort(newestFirst);
   } catch {
     return [];
   }
@@ -30,10 +35,12 @@ function persist(next: SavedEstimate[]): void {
 }
 
 export function saveEstimate(entry: Omit<SavedEstimate, "id" | "createdAt">): SavedEstimate {
+  const now = new Date().toISOString();
   const saved: SavedEstimate = {
     ...entry,
     id: `est-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-    createdAt: new Date().toISOString(),
+    createdAt: now,
+    updatedAt: now,
   };
   persist([saved, ...listSavedEstimates()]);
   return saved;
@@ -68,7 +75,8 @@ export function updateSavedEstimate(id: string, patch: Partial<Omit<SavedEstimat
   const current = listSavedEstimates();
   const existing = current.find((entry) => entry.id === id);
   if (!existing) return null;
-  const next: SavedEstimate = { ...existing, ...patch };
+  // saving an existing project moves it to the top of the list
+  const next: SavedEstimate = { ...existing, ...patch, updatedAt: new Date().toISOString() };
   persist(current.map((entry) => (entry.id === id ? next : entry)));
   return next;
 }
@@ -97,6 +105,8 @@ export function mergeSavedEstimates(entries: SavedEstimate[]): SavedEstimate[] {
             ...entry,
             items: entry.items?.length ? entry.items : current.items,
             quantities: current.quantities ?? entry.quantities,
+            // ordering follows the latest save from either side
+            updatedAt: [current.updatedAt, entry.updatedAt].filter(Boolean).sort().at(-1),
           }
         : entry,
     );

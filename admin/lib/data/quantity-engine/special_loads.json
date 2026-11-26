@@ -155,7 +155,7 @@
   },
   {
     "load_key": "ev_charger",
-    "space_context": "garage",
+    "space_context": "external",
     "selection_mode": "optional",
     "default_enabled": false,
     "circuit_policy": "dedicated",
@@ -165,7 +165,7 @@
     "default_cable_family": "load_sized_power_cable",
     "default_breaker_a": 32,
     "requires_user_rating": true,
-    "notes": "Future-ready; load-designed circuit and protection required."
+    "notes": "Set in the compound, with its own double-pole breaker. Load-designed circuit and protection required."
   },
   {
     "load_key": "workshop_machine",

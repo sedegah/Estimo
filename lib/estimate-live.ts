@@ -4,7 +4,7 @@ import { CATALOGUE_MATERIALS } from "@/lib/data/catalogue";
 import {
   acSuppressionOverrides,
   applySpecialLoads,
-  defaultHomeAcAdditions,
+  defaultAcAdditions,
   seedSpecialLoads,
   type SpaceRouteRow,
   type SpecialLoadInstance,
@@ -114,7 +114,7 @@ export function defaultPlanAdditions(args: {
   const routes = args.routes ?? (spaceRouteRows as unknown as SpaceRouteRow[]);
   const existing = args.overrides ?? [];
   const instances = defaultSpecialLoadsFor(args.templateId, args.spaces);
-  const home = defaultHomeAcAdditions({
+  const home = defaultAcAdditions({
     projectType: args.projectType,
     templateId: args.templateId,
     spaces: args.spaces,
@@ -154,6 +154,8 @@ export const COUNT_FOR_ROOM: Record<string, string> = {
   kitchens: "kitchen",
   living: "living_room",
   porches: "porch_veranda",
+  washroom: "wc",
+  server: "server_room",
 };
 
 /**
@@ -174,6 +176,8 @@ export function spacesFromCounts(templateId: string, counts: Record<string, numb
   const handled = new Set<string>();
 
   for (const [field, roomType] of Object.entries(COUNT_FOR_ROOM)) {
+    // a counter this project type does not have must not remove the template's rooms
+    if (!(field in counts)) continue;
     const wanted = Math.max(0, Math.round(counts[field] ?? 0));
     if (!byType.has(roomType) || handled.has(roomType)) continue;
     handled.add(roomType);

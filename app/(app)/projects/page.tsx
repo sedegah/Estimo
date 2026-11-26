@@ -17,6 +17,15 @@ import {
 import { pushDelete } from "@/lib/api/estimates";
 import type { SavedEstimate } from "@/lib/types";
 import { PROJECT_LABELS, totalSpaces, FITTINGS } from "@/lib/estimate-model";
+import {
+  defaultPlanAdditions,
+  fetchLivePrices,
+  liveEstimate,
+  PROJECT_TYPE_FOR_CODE,
+  spacesFromCounts,
+} from "@/lib/estimate-live";
+import type { PointOverride, SpaceInput, SpecLevel } from "@/lib/quantity-engine/types";
+import type { PriceEntry } from "@/lib/quantity-engine/catalogue";
 
 const qualityLabel = (value: string) => FITTINGS.find((entry) => entry.value === value)?.label ?? "Standard";
 
@@ -26,6 +35,58 @@ export default function ProjectsPage() {
   const [basketCount, setBasketCount] = useState(0);
   const [query, setQuery] = useState("");
   const [ready, setReady] = useState(false);
+  const [prices, setPrices] = useState<Record<string, PriceEntry> | null>(null);
+  const [liveTotals, setLiveTotals] = useState<Record<string, number>>({});
+
+  /**
+   * A project card is a price, so it is priced the way its own estimate is priced: with the
+   * current catalogue, not with whatever prices were live the day it was saved. A catalogue
+   * correction therefore shows up here as well as on the estimate itself.
+   */
+  useEffect(() => {
+    let cancelled = false;
+    fetchLivePrices().then((next) => {
+      if (!cancelled) setPrices(next);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!prices) return;
+    const next: Record<string, number> = {};
+    for (const project of projects) {
+      const quantities = project.quantities;
+      if (!quantities) continue;
+      const counts = (project.counts ?? {}) as Record<string, number>;
+      const templateId = quantities.templateId;
+      const spaces = (quantities.spaces?.length
+        ? (quantities.spaces as SpaceInput[])
+        : spacesFromCounts(templateId, counts)) as SpaceInput[];
+      if (!spaces.length) continue;
+      const defaults = quantities.specialLoadInstances?.length
+        ? null
+        : defaultPlanAdditions({
+            projectType: project.template ? (PROJECT_TYPE_FOR_CODE[project.template] ?? "two_bedroom") : "two_bedroom",
+            templateId,
+            spaces,
+          });
+      try {
+        next[project.id] = liveEstimate({
+          templateId,
+          specLevel: (quantities.specLevel ?? "standard") as SpecLevel,
+          spaces,
+          prices,
+          overrides: quantities.specialLoadInstances?.length
+            ? ((quantities.overrides ?? []) as PointOverride[])
+            : defaults?.overrides,
+          specialLoadInstances: quantities.specialLoadInstances?.length ? quantities.specialLoadInstances : defaults?.instances,
+        }).total;
+      } catch {}
+    }
+    setLiveTotals(next);
+  }, [projects, prices]);
 
   useEffect(() => {
     const syncProjects = () => setProjects(listSavedEstimates());
@@ -137,7 +198,7 @@ export default function ProjectsPage() {
                     <span className={isEstimated(project) ? "status-pill is-estimated" : "status-pill is-draft"}>
                       {statusLabel(project)}
                     </span>
-                    <span>{formatGhsOrNull(project.totalGhs) ?? "Pending"}</span>
+                    <span>{formatGhsOrNull(liveTotals[project.id] ?? project.totalGhs) ?? "Pending"}</span>
                   </span>
                 </div>
               </Link>

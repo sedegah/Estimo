@@ -18,9 +18,11 @@ import type {
 import type { CatalogueMaterialInfo } from "@/lib/quantity-engine/catalogue";
 import {
   STATUS_LABEL,
+  acRoomsFor,
   acSuppressionOverrides,
   applySpecialLoads,
   autoRouteForSpace,
+  averageRouteFor,
   configurationStatus,
   dbKeyForSpace,
   newSpecialLoadInstance,
@@ -115,6 +117,10 @@ const UNIT_LABEL: Record<string, string> = {
   "coil": "coils",
   "pair": "pairs",
 };
+
+/** The rulebook calls the outside scope "external"; on site it is the compound. */
+const contextLabel = (context: string) =>
+  context === "external" ? "compound" : context.replace(/_/g, " ");
 
 /** One card per load type: the quantity field covers multiples of the same load. */
 function dedupeLoads(instances: SpecialLoadInstance[]): SpecialLoadInstance[] {
@@ -225,7 +231,11 @@ export function QuantityView(props: Props) {
       if (type === "workshop") { contexts.add("workshop"); contexts.add("shop_or_workshop"); }
       if (type === "shop_floor" || type === "store") contexts.add("shop_or_workshop");
       if (type === "porch_veranda" || type === "external_area") contexts.add("external");
-      if (type === "garage") contexts.add("garage");
+      // a carport is still the compound: outside loads can sit there too
+      if (type === "garage") {
+        contexts.add("garage");
+        contexts.add("external");
+      }
     }
     const rows = props.specialLoads ?? [];
     return [...rows].sort((a, b) => {
@@ -308,16 +318,25 @@ export function QuantityView(props: Props) {
           : seedSpecialLoads([instance.load_key], spaces, routes, templateId)[0];
         const targetId = replacement ? replacement.target_space_id : instance.target_space_id;
         const distance = autoRouteForSpace(routes, templateId, targetId);
+        // an aggregate line (the plan's air conditioners) keeps the mean of the rooms it
+        // covers, so its price follows the plan rather than one room's distance
+        const aggregate =
+          instance.route_aggregate && instance.route_source === "AUTO"
+            ? averageRouteFor(routes, templateId, acRoomsFor(projectType, spaces))
+            : null;
         return {
           ...instance,
           target_space_id: targetId,
           serving_db_id: replacement ? replacement.serving_db_id : instance.serving_db_id,
-          route_length_m:
-            instance.route_source === "AUTO" ? (distance ?? instance.route_length_m) : instance.route_length_m,
+          route_length_m: aggregate
+            ? aggregate.route_length_m ?? instance.route_length_m
+            : instance.route_source === "AUTO"
+              ? (distance ?? instance.route_length_m)
+              : instance.route_length_m,
         };
       }),
     );
-  }, [spaces, templateId, props.spaceRoutes]);
+  }, [spaces, templateId, projectType, props.spaceRoutes]);
   const [livePrices, setLivePrices] = useState<Record<string, PriceEntry>>(props.prices);
 
   const pricesFetched = useRef(false);
@@ -456,14 +475,17 @@ export function QuantityView(props: Props) {
    * this as its quantity, so its circuit, materials and price multiply with the plan.
    */
   const acPointTotal = useMemo(() => {
+    const unitsBySpace = new Map(spaces.map((space) => [space.id, Math.max(1, Math.round(space.quantity ?? 1))]));
     const total = auto.spaces.reduce((sum, space) => {
       const override = overrides.find(
         (entry) => entry.space_id === space.space_id && entry.point_type === "ac" && entry.source === "user_override",
       );
-      return sum + (override ? override.value : space.ac_points);
+      // the rule's count already covers the space's quantity; an override is per unit, so
+      // three private offices with one AC each are three units, not one
+      return sum + (override ? override.value * (unitsBySpace.get(space.space_id) ?? 1) : space.ac_points);
     }, 0);
     return Math.max(0, Math.round(total));
-  }, [auto.spaces, overrides]);
+  }, [auto.spaces, overrides, spaces]);
 
   /** Adding the AC load after counting the ACs must pick the count up, not start at one. */
   const hasAcLoad = instances.some((instance) => instance.load_key === "air_conditioner");
@@ -1043,7 +1065,7 @@ export function QuantityView(props: Props) {
               >
                 <span>{specialLoadDefinition(load.load_key).name}</span>
                 <small className={status ? `is-${status.toLowerCase().replace(/_/g, "-")}` : undefined}>
-                  {status ? STATUS_LABEL[status] : load.space_context.replace(/_/g, " ")}
+                  {status ? STATUS_LABEL[status] : contextLabel(load.space_context)}
                 </small>
               </button>
             );
@@ -1063,6 +1085,9 @@ export function QuantityView(props: Props) {
                     <strong>{name}</strong>
                     <span className="quantities-load-card-summary">
                       {breakdown ? breakdown.summary : specialLoadSummary(instance)}
+                      {instance.route_aggregate && instance.quantity > 1
+                        ? ` · average of ${instance.quantity} rooms`
+                        : ""}
                     </span>
                   </button>
                   <span className="quantities-load-card-status">{STATUS_LABEL[status]}</span>

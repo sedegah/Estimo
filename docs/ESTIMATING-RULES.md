@@ -57,8 +57,21 @@ it stops a small unit being wired in a size that is only nominally adequate.
 
 Air conditioners counted in the Points table are the quantity of the configured AC load. The
 engine's generic AC point is switched off while that load covers it, so the same unit is
-never costed twice. A home is planned with one unit per bedroom and living room; a single
-room and the commercial types are not air conditioned by default.
+never costed twice.
+
+Defaults: a home is planned with one unit per bedroom and living room, except a single room.
+An office is planned with one unit in every room except the washrooms, including the
+reception and the server room. A row that stands for several rooms (three private offices)
+contributes one unit per room, not one per row.
+
+One AC line covers every cooled room, so its route is the mean of the runs to those rooms —
+weighted by how many units each row represents. The card says so ("average of 9 rooms").
+That keeps the price independent of which room happens to sort first, and the total cable on
+the line equals the sum of the individual runs.
+
+The EV charger is set in the compound (external), preferring the yard/porch over a carport,
+and carries its own double-pole breaker per unit alongside a 30 mA RCD and a local isolator.
+
 
 ## Price-list checks
 
@@ -79,3 +92,11 @@ the history and the newest `effective_from` wins.
 
 The catalogue response is cached (60 s in the browser, 300 s at the edge), so a price
 correction can take up to five minutes to appear on screens that are already open.
+
+## Saved projects
+
+The saved list is ordered by the **last save**, not the first: saving an existing project
+again moves it to the top. Cards show the project priced at **today's** catalogue prices,
+using the same engine and the same defaults as the estimate itself, so a catalogue
+correction updates the card as well as the bill. The stored total remains as the record of
+what was saved.
