@@ -1473,6 +1473,49 @@ export function acSuppressionOverrides(
   }));
 }
 
+/** Room types that satisfy a rulebook space context, for picking the space a load serves. */
+const CONTEXT_ROOM_TYPES: Record<string, string[]> = {
+  kitchen: ["kitchen"],
+  kitchen_or_utility: ["kitchen", "utility_room"],
+  kitchen_or_bathroom: ["kitchen", "bathroom", "wc"],
+  bathroom: ["bathroom", "wc"],
+  habitable_room: ["bedroom", "living_room", "dining_room", "private_office", "meeting_room", "reception"],
+  workshop: ["workshop"],
+  shop_or_workshop: ["shop_floor", "store", "workshop"],
+  external: ["porch_veranda", "external_area"],
+  garage: ["garage"],
+  building: [],
+};
+
+/**
+ * A selected load starts from the plan, not from a blank form: the space it serves and
+ * the ESTIMO distance to that space are filled in, so the first number a person sees is
+ * the project's own route rather than an 8 m placeholder.
+ *
+ * The simple summary and the itemized bill both seed their default loads through this, so
+ * the two screens price the same appliances from the same routes.
+ */
+export function seedSpecialLoads(
+  loadKeys: string[],
+  spaces: SpaceInput[],
+  routes: SpaceRouteRow[],
+  templateId: string,
+): SpecialLoadInstance[] {
+  return loadKeys.map((loadKey) => {
+    const instance = newSpecialLoadInstance(loadKey);
+    const context = specialLoadDefinition(loadKey).spaceContext;
+    const wanted = CONTEXT_ROOM_TYPES[context] ?? [];
+    const target = spaces.find((space) => wanted.includes(space.room_type)) ?? spaces[0] ?? null;
+    const targetId = target?.id ?? null;
+    return {
+      ...instance,
+      target_space_id: targetId,
+      serving_db_id: dbKeyForSpace(routes, templateId, targetId) ?? "DB1",
+      route_length_m: autoRouteForSpace(routes, templateId, targetId),
+    };
+  });
+}
+
 /**
  * The ESTIMO route for a space, read from the published route table. Space ids carry the
  * template and the space number ("T011-3"), so the automatic distance survives a reload.

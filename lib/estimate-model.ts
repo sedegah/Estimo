@@ -285,6 +285,14 @@ const workshopFields: SpaceField[] = [
     ],
   },
   {
+    key: "washroom",
+    label: "Washrooms",
+    note: "Staff washrooms, two as standard",
+    items: [
+      { name: "WC point", unit: "point", lights: 1, sockets: 1, heaters: 1, switches: 1 },
+    ],
+  },
+  {
     key: "external",
     label: "External and yard",
     note: "Security lighting and outdoor sockets",
@@ -327,10 +335,37 @@ export function projectType(code: string): ProjectType {
   return PROJECT_TYPES[code] ?? PROJECT_TYPES["HOME-2B"];
 }
 
+/**
+ * Offices, shops and workshops must provide at least two washrooms: staff and customers
+ * cannot share one, and a single WC fails the layouts these buildings are planned from.
+ */
+export const MINIMUM_WASHROOMS: Record<string, number> = {
+  "COMM-OFF-S": 2,
+  "SHOP-RETAIL": 2,
+  "IND-WORK": 2,
+};
+
+export function minimumWashrooms(code: string): number {
+  return MINIMUM_WASHROOMS[code] ?? 0;
+}
+
+/** The floor a stepper cannot go under, for any counter. */
+export function minimumCount(code: string, key: string): number {
+  return key === "washroom" ? minimumWashrooms(code) : 0;
+}
+
+/** Whole numbers, 0..20, and never below the building's minimum washrooms. */
+export function clampCount(code: string, key: string, value: number): number {
+  const rounded = Math.max(0, Math.min(20, Math.round(Number.isFinite(value) ? value : 0)));
+  return Math.max(minimumCount(code, key), rounded);
+}
+
 export function defaultCounts(code: string): Counts {
   const type = projectType(code);
   const defaults = DEFAULT_COUNTS[type.code] ?? DEFAULT_COUNTS["HOME-2B"];
-  return Object.fromEntries(type.fields.map((field) => [field.key, defaults[field.key] ?? 0]));
+  return Object.fromEntries(
+    type.fields.map((field) => [field.key, clampCount(type.code, field.key, defaults[field.key] ?? 0)]),
+  );
 }
 
 export function totalSpaces(counts: Counts): number {

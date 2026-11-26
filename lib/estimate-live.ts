@@ -3,6 +3,8 @@ import { MATERIAL_CATALOGUE, priceQuantities, type PriceEntry } from "@/lib/quan
 import { CATALOGUE_MATERIALS } from "@/lib/data/catalogue";
 import {
   applySpecialLoads,
+  seedSpecialLoads,
+  type SpaceRouteRow,
   type SpecialLoadInstance,
 } from "@/lib/quantity-engine/special-loads";
 import type { CatalogueMaterial } from "@/lib/types";
@@ -13,6 +15,8 @@ import assemblies from "@/lib/data/quantity-engine/assemblies.json";
 import assemblyItems from "@/lib/data/quantity-engine/assembly_items.json";
 import templateSpacesData from "@/lib/data/quantity-engine/template_spaces.json";
 import structureTemplates from "@/lib/data/quantity-engine/structure_templates.json";
+import specialLoadData from "@/lib/data/quantity-engine/special_loads.json";
+import spaceRouteData from "@/lib/data/quantity-engine/template_space_routes.json";
 import type {
   AssemblyItemRow,
   AssemblyRow,
@@ -34,6 +38,8 @@ const API_URL = process.env.NEXT_PUBLIC_ESTIMO_API_URL ?? "https://estimo-api.se
 const params = parametersFromRows(globalParameters as unknown as Parameters<typeof parametersFromRows>[0]);
 const rules = rulesByKey(roomRules as unknown as RoomRuleRow[]);
 const templates = structureTemplates as unknown as StructureTemplateRow[];
+const specialLoadRows = specialLoadData as unknown[];
+const spaceRouteRows = spaceRouteData as unknown[];
 const templateSpaces = templateSpacesData as unknown as TemplateSpaceRow[];
 
 export const TEMPLATE_FOR_CODE: Record<string, string> = {
@@ -67,6 +73,19 @@ export const templateForCode = (code: string): StructureTemplateRow | undefined 
   const id = TEMPLATE_FOR_CODE[code];
   return templates.find((row) => row.template_id === id) ?? templates.find((row) => row.template_id === "T011");
 };
+
+/**
+ * The loads the rulebook enables by default (today: the kitchen fridge). The itemized bill
+ * seeds these on any plan, so the simple summary must price them too: otherwise one plan
+ * quotes two totals depending on which screen is open.
+ */
+export function defaultSpecialLoadsFor(templateId: string, spaces: SpaceInput[]): SpecialLoadInstance[] {
+  const enabled = (specialLoadRows as { load_key: string; default_enabled: boolean }[])
+    .filter((row) => row.default_enabled)
+    .map((row) => row.load_key);
+  if (!enabled.length) return [];
+  return seedSpecialLoads(enabled, spaces, spaceRouteRows as unknown as SpaceRouteRow[], templateId);
+}
 
 /** Spaces as the itemized screen would start them for a template. */
 export function templatePlanSpaces(templateId: string): SpaceInput[] {

@@ -16,6 +16,7 @@ import {
 } from "@/lib/estimate-model";
 import { formatGhs } from "@/lib/format";
 import {
+  defaultSpecialLoadsFor,
   fetchLivePrices,
   liveEstimate,
   spacesFromCounts,
@@ -128,6 +129,15 @@ function SetupContent() {
     [carried, templateId, counts],
   );
 
+  /**
+   * The rulebook's default loads (the kitchen fridge) are part of the plan: the itemized
+   * bill always prices them, so this screen must too, whether or not it names them.
+   */
+  const instances = useMemo(
+    () => (carried ? carried.instances : defaultSpecialLoadsFor(templateId, planSpaces)),
+    [carried, templateId, planSpaces],
+  );
+
   // prices come from the same catalogue call the itemized screen makes
   const [prices, setPrices] = useState<Record<string, never> | null>(null);
   const [priceError, setPriceError] = useState("");
@@ -151,9 +161,9 @@ function SetupContent() {
         spaces: planSpaces,
         prices: (prices ?? {}) as Parameters<typeof liveEstimate>[0]["prices"],
         overrides: carried?.overrides,
-        specialLoadInstances: carried?.instances,
+        specialLoadInstances: instances,
       }),
-    [templateId, specLevel, planSpaces, prices, carried],
+    [templateId, specLevel, planSpaces, prices, carried, instances],
   );
 
   const total = live.total;
@@ -173,7 +183,7 @@ function SetupContent() {
           specLevel,
           spaces: planSpaces,
           overrides: carried?.overrides ?? [],
-          specialLoadInstances: carried?.instances ?? [],
+          specialLoadInstances: instances,
         }),
       );
     } catch {}

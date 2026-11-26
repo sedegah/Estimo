@@ -27,6 +27,7 @@ import {
   parseSpecialLoadInstances,
   specialLoadDefinition,
   specialLoadLabels,
+  seedSpecialLoads,
   specialLoadSummary,
   syncAcQuantity,
   type SpaceRouteRow,
@@ -113,46 +114,6 @@ const UNIT_LABEL: Record<string, string> = {
   "coil": "coils",
   "pair": "pairs",
 };
-
-/** Room types that satisfy a rulebook space context, for picking the space a load serves. */
-const CONTEXT_ROOM_TYPES: Record<string, string[]> = {
-  kitchen: ["kitchen"],
-  kitchen_or_utility: ["kitchen", "utility_room"],
-  kitchen_or_bathroom: ["kitchen", "bathroom", "wc"],
-  bathroom: ["bathroom", "wc"],
-  habitable_room: ["bedroom", "living_room", "dining_room", "private_office", "meeting_room", "reception"],
-  workshop: ["workshop"],
-  shop_or_workshop: ["shop_floor", "store", "workshop"],
-  external: ["porch_veranda", "external_area"],
-  garage: ["garage"],
-  building: [],
-};
-
-/**
- * A selected load starts from the plan, not from a blank form: the space it serves and
- * the ESTIMO distance to that space are filled in, so the first number a person sees is
- * the project's own route rather than an 8 m placeholder.
- */
-function seedSpecialLoads(
-  loadKeys: string[],
-  spaces: SpaceInput[],
-  routes: SpaceRouteRow[],
-  templateId: string,
-): SpecialLoadInstance[] {
-  return loadKeys.map((loadKey) => {
-    const instance = newSpecialLoadInstance(loadKey);
-    const context = specialLoadDefinition(loadKey).spaceContext;
-    const wanted = CONTEXT_ROOM_TYPES[context] ?? [];
-    const target = spaces.find((space) => wanted.includes(space.room_type)) ?? spaces[0] ?? null;
-    const targetId = target?.id ?? null;
-    return {
-      ...instance,
-      target_space_id: targetId,
-      serving_db_id: dbKeyForSpace(routes, templateId, targetId) ?? "DB1",
-      route_length_m: autoRouteForSpace(routes, templateId, targetId),
-    };
-  });
-}
 
 /** One card per load type: the quantity field covers multiples of the same load. */
 function dedupeLoads(instances: SpecialLoadInstance[]): SpecialLoadInstance[] {
