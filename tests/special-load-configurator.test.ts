@@ -501,7 +501,7 @@ test("homes and offices open air conditioned; the rooms that should not are left
     { id: "T020-3", space_name: "Private Office", room_type: "private_office", length_m: 3.8, width_m: 3.4, height_m: 3 },
     { id: "T020-4", space_name: "Meeting Room", room_type: "meeting_room", length_m: 5, width_m: 4, height_m: 3 },
     { id: "T020-5", space_name: "Kitchenette", room_type: "kitchen", length_m: 3, width_m: 2.5, height_m: 3 },
-    { id: "T020-6", space_name: "WC", room_type: "wc", length_m: 2, width_m: 1.6, height_m: 3 },
+    { id: "T020-6", space_name: "Washroom", room_type: "wc", length_m: 2, width_m: 1.6, height_m: 3 },
     { id: "T020-7", space_name: "Store", room_type: "store", length_m: 2.5, width_m: 2, height_m: 3 },
     { id: "T020-8", space_name: "Server Room", room_type: "server_room", length_m: 3, width_m: 2.4, height_m: 3 },
   ];
@@ -585,7 +585,7 @@ test("an office row of three private offices is three air conditioners", () => {
   const rooms: SpaceInput[] = [
     { id: "T020-1", space_name: "Reception", room_type: "reception", length_m: 4, width_m: 3, height_m: 3, quantity: 1 },
     { id: "T020-3", space_name: "Private Offices", room_type: "private_office", length_m: 3.8, width_m: 3.4, height_m: 3, quantity: 3 },
-    { id: "T020-6", space_name: "WC", room_type: "wc", length_m: 2, width_m: 1.6, height_m: 3, quantity: 2 },
+    { id: "T020-6", space_name: "Washroom", room_type: "wc", length_m: 2, width_m: 1.6, height_m: 3, quantity: 2 },
   ];
   const routes = [
     { template_id: "T020", space_no: 1, route_distance_from_db_m: 4, serving_db_id: "DB1" },

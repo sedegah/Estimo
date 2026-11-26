@@ -122,6 +122,30 @@ const UNIT_LABEL: Record<string, string> = {
 const contextLabel = (context: string) =>
   context === "external" ? "compound" : context.replace(/_/g, " ");
 
+/** Room-type keys are internal; the dropdown should read the way people speak. */
+const ROOM_TYPE_LABEL: Record<string, string> = {
+  wc: "Washroom",
+  bathroom: "Bathroom",
+  bedroom: "Bedroom",
+  living_room: "Living room",
+  dining_room: "Dining room",
+  kitchen: "Kitchen",
+  store: "Store",
+  shop_floor: "Shop floor",
+  private_office: "Private office",
+  open_office: "Open office",
+  meeting_room: "Meeting room",
+  reception: "Reception",
+  server_room: "Server room",
+  utility_room: "Utility room",
+  porch_veranda: "Porch / veranda",
+  external_area: "External area",
+  workshop: "Workshop",
+};
+
+const roomTypeLabel = (type: string): string =>
+  ROOM_TYPE_LABEL[type] ?? type.replace(/_/g, " ").replace(/^\w/, (character) => character.toUpperCase());
+
 /** One card per load type: the quantity field covers multiples of the same load. */
 function dedupeLoads(instances: SpecialLoadInstance[]): SpecialLoadInstance[] {
   const seen = new Set<string>();
@@ -929,7 +953,7 @@ export function QuantityView(props: Props) {
                         onChange={(event) => updateSpace(space.space_id, { room_type: event.target.value })}
                       >
                         {roomTypes.map((type) => (
-                          <option key={type} value={type}>{type.replace(/_/g, " ")}</option>
+                          <option key={type} value={type}>{roomTypeLabel(type)}</option>
                         ))}
                       </select>
                     </td>

@@ -14,7 +14,7 @@
     "space_no": 2,
     "space_name": "External/Porch",
     "db_key": "DB1",
-    "route_distance_from_db_m": 5.0,
+    "route_distance_from_db_m": 5,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -24,7 +24,7 @@
     "space_no": 1,
     "space_name": "Main Shop",
     "db_key": "DB1",
-    "route_distance_from_db_m": 2.0,
+    "route_distance_from_db_m": 2,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -44,7 +44,7 @@
     "space_no": 1,
     "space_name": "Main Shop",
     "db_key": "DB1",
-    "route_distance_from_db_m": 2.0,
+    "route_distance_from_db_m": 2,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -54,7 +54,7 @@
     "space_no": 2,
     "space_name": "Store",
     "db_key": "DB1",
-    "route_distance_from_db_m": 4.0,
+    "route_distance_from_db_m": 4,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -84,7 +84,7 @@
     "space_no": 1,
     "space_name": "Room",
     "db_key": "DB1",
-    "route_distance_from_db_m": 2.0,
+    "route_distance_from_db_m": 2,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -94,7 +94,7 @@
     "space_no": 1,
     "space_name": "Room",
     "db_key": "DB1",
-    "route_distance_from_db_m": 2.0,
+    "route_distance_from_db_m": 2,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -134,7 +134,7 @@
     "space_no": 4,
     "space_name": "Bathroom/WC",
     "db_key": "DB1",
-    "route_distance_from_db_m": 4.0,
+    "route_distance_from_db_m": 4,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -154,7 +154,7 @@
     "space_no": 6,
     "space_name": "Porch",
     "db_key": "DB1",
-    "route_distance_from_db_m": 5.0,
+    "route_distance_from_db_m": 5,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -234,7 +234,7 @@
     "space_no": 1,
     "space_name": "Living Room",
     "db_key": "DB1",
-    "route_distance_from_db_m": 12.0,
+    "route_distance_from_db_m": 12,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -282,7 +282,7 @@
   {
     "template_id": "T009",
     "space_no": 6,
-    "space_name": "Guest WC",
+    "space_name": "Guest Washroom",
     "db_key": "DB1",
     "route_distance_from_db_m": 3.7,
     "route_source": "template_estimate",
@@ -344,7 +344,7 @@
     "space_no": 4,
     "space_name": "Kitchen",
     "db_key": "DB1",
-    "route_distance_from_db_m": 7.0,
+    "route_distance_from_db_m": 7,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -362,7 +362,7 @@
   {
     "template_id": "T010",
     "space_no": 6,
-    "space_name": "WC",
+    "space_name": "Washroom",
     "db_key": "DB1",
     "route_distance_from_db_m": 3.6,
     "route_source": "template_estimate",
@@ -394,7 +394,7 @@
     "space_no": 1,
     "space_name": "Living Room",
     "db_key": "DB1",
-    "route_distance_from_db_m": 13.0,
+    "route_distance_from_db_m": 13,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -414,7 +414,7 @@
     "space_no": 3,
     "space_name": "Bedroom 1",
     "db_key": "DB1",
-    "route_distance_from_db_m": 10.0,
+    "route_distance_from_db_m": 10,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -694,7 +694,7 @@
     "space_no": 2,
     "space_name": "Dining",
     "db_key": "DB1",
-    "route_distance_from_db_m": 15.0,
+    "route_distance_from_db_m": 15,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -734,7 +734,7 @@
     "space_no": 6,
     "space_name": "Kitchen",
     "db_key": "DB1",
-    "route_distance_from_db_m": 10.0,
+    "route_distance_from_db_m": 10,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -744,7 +744,7 @@
     "space_no": 7,
     "space_name": "Master Bath",
     "db_key": "DB1",
-    "route_distance_from_db_m": 8.0,
+    "route_distance_from_db_m": 8,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -762,9 +762,9 @@
   {
     "template_id": "T014",
     "space_no": 9,
-    "space_name": "Guest WC",
+    "space_name": "Guest Washroom",
     "db_key": "DB1",
-    "route_distance_from_db_m": 5.0,
+    "route_distance_from_db_m": 5,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -784,7 +784,7 @@
     "space_no": 11,
     "space_name": "Corridor",
     "db_key": "DB1",
-    "route_distance_from_db_m": 2.0,
+    "route_distance_from_db_m": 2,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -874,7 +874,7 @@
     "space_no": 8,
     "space_name": "Bath 2",
     "db_key": "DB1",
-    "route_distance_from_db_m": 8.0,
+    "route_distance_from_db_m": 8,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -892,9 +892,9 @@
   {
     "template_id": "T015",
     "space_no": 10,
-    "space_name": "Guest WC",
+    "space_name": "Guest Washroom",
     "db_key": "DB1",
-    "route_distance_from_db_m": 5.0,
+    "route_distance_from_db_m": 5,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -914,7 +914,7 @@
     "space_no": 12,
     "space_name": "Corridor",
     "db_key": "DB1",
-    "route_distance_from_db_m": 2.0,
+    "route_distance_from_db_m": 2,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -944,7 +944,7 @@
     "space_no": 2,
     "space_name": "Dining",
     "db_key": "DB1",
-    "route_distance_from_db_m": 15.0,
+    "route_distance_from_db_m": 15,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -984,7 +984,7 @@
     "space_no": 6,
     "space_name": "Bedroom 4",
     "db_key": "DB1",
-    "route_distance_from_db_m": 10.0,
+    "route_distance_from_db_m": 10,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -1012,9 +1012,9 @@
   {
     "template_id": "T016",
     "space_no": 9,
-    "space_name": "Guest WC",
+    "space_name": "Guest Washroom",
     "db_key": "DB1",
-    "route_distance_from_db_m": 5.0,
+    "route_distance_from_db_m": 5,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -1034,7 +1034,7 @@
     "space_no": 11,
     "space_name": "Corridor",
     "db_key": "DB1",
-    "route_distance_from_db_m": 2.0,
+    "route_distance_from_db_m": 2,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -1124,7 +1124,7 @@
     "space_no": 8,
     "space_name": "Bathrooms",
     "db_key": "DB1",
-    "route_distance_from_db_m": 8.0,
+    "route_distance_from_db_m": 8,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -1132,7 +1132,7 @@
   {
     "template_id": "T017",
     "space_no": 9,
-    "space_name": "Guest WC",
+    "space_name": "Guest Washroom",
     "db_key": "DB1",
     "route_distance_from_db_m": 6.3,
     "route_source": "template_estimate",
@@ -1164,7 +1164,7 @@
     "space_no": 12,
     "space_name": "Corridor",
     "db_key": "DB1",
-    "route_distance_from_db_m": 2.0,
+    "route_distance_from_db_m": 2,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -1262,7 +1262,7 @@
   {
     "template_id": "T018",
     "space_no": 9,
-    "space_name": "Guest WC",
+    "space_name": "Guest Washroom",
     "db_key": "DB1",
     "route_distance_from_db_m": 5.1,
     "route_source": "template_estimate",
@@ -1274,7 +1274,7 @@
     "space_no": 10,
     "space_name": "Study",
     "db_key": "DB1",
-    "route_distance_from_db_m": 5.0,
+    "route_distance_from_db_m": 5,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -1284,7 +1284,7 @@
     "space_no": 11,
     "space_name": "Corridor",
     "db_key": "DB1",
-    "route_distance_from_db_m": 2.0,
+    "route_distance_from_db_m": 2,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -1324,7 +1324,7 @@
     "space_no": 2,
     "space_name": "Open Office",
     "db_key": "DB1",
-    "route_distance_from_db_m": 6.0,
+    "route_distance_from_db_m": 6,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -1334,7 +1334,7 @@
     "space_no": 3,
     "space_name": "Private Office",
     "db_key": "DB1",
-    "route_distance_from_db_m": 6.0,
+    "route_distance_from_db_m": 6,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -1342,7 +1342,7 @@
   {
     "template_id": "T019",
     "space_no": 4,
-    "space_name": "WC",
+    "space_name": "Washroom",
     "db_key": "DB1",
     "route_distance_from_db_m": 6.2,
     "route_source": "template_estimate",
@@ -1402,7 +1402,7 @@
   {
     "template_id": "T020",
     "space_no": 6,
-    "space_name": "WC",
+    "space_name": "Washroom",
     "db_key": "DB1",
     "route_distance_from_db_m": 8.8,
     "route_source": "template_estimate",
@@ -1424,7 +1424,7 @@
     "space_no": 1,
     "space_name": "Reception",
     "db_key": "DB1",
-    "route_distance_from_db_m": 2.0,
+    "route_distance_from_db_m": 2,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -1444,7 +1444,7 @@
     "space_no": 3,
     "space_name": "Open Office B",
     "db_key": "DB1",
-    "route_distance_from_db_m": 10.0,
+    "route_distance_from_db_m": 10,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -1482,7 +1482,7 @@
   {
     "template_id": "T021",
     "space_no": 7,
-    "space_name": "WC",
+    "space_name": "Washroom",
     "db_key": "DB1",
     "route_distance_from_db_m": 10.2,
     "route_source": "template_estimate",
@@ -1514,7 +1514,7 @@
     "space_no": 1,
     "space_name": "Shop Floor",
     "db_key": "DB1",
-    "route_distance_from_db_m": 2.0,
+    "route_distance_from_db_m": 2,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -1544,7 +1544,7 @@
     "space_no": 1,
     "space_name": "Shop Floor",
     "db_key": "DB1",
-    "route_distance_from_db_m": 2.0,
+    "route_distance_from_db_m": 2,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -1572,7 +1572,7 @@
   {
     "template_id": "T023",
     "space_no": 4,
-    "space_name": "WC",
+    "space_name": "Washroom",
     "db_key": "DB1",
     "route_distance_from_db_m": 6.2,
     "route_source": "template_estimate",
@@ -1594,7 +1594,7 @@
     "space_no": 1,
     "space_name": "Shop Floor",
     "db_key": "DB1",
-    "route_distance_from_db_m": 2.0,
+    "route_distance_from_db_m": 2,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -1614,7 +1614,7 @@
     "space_no": 3,
     "space_name": "Office",
     "db_key": "DB1",
-    "route_distance_from_db_m": 6.0,
+    "route_distance_from_db_m": 6,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -1622,7 +1622,7 @@
   {
     "template_id": "T024",
     "space_no": 4,
-    "space_name": "WC",
+    "space_name": "Washroom",
     "db_key": "DB1",
     "route_distance_from_db_m": 6.3,
     "route_source": "template_estimate",
@@ -1644,7 +1644,7 @@
     "space_no": 1,
     "space_name": "Workshop Floor",
     "db_key": "DB1",
-    "route_distance_from_db_m": 2.0,
+    "route_distance_from_db_m": 2,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -1672,7 +1672,7 @@
   {
     "template_id": "T025",
     "space_no": 4,
-    "space_name": "WC",
+    "space_name": "Washroom",
     "db_key": "DB1",
     "route_distance_from_db_m": 6.2,
     "route_source": "template_estimate",
@@ -1684,7 +1684,7 @@
     "space_no": 1,
     "space_name": "Workshop Floor",
     "db_key": "DB1",
-    "route_distance_from_db_m": 2.0,
+    "route_distance_from_db_m": 2,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -1694,7 +1694,7 @@
     "space_no": 2,
     "space_name": "Office",
     "db_key": "DB1",
-    "route_distance_from_db_m": 5.0,
+    "route_distance_from_db_m": 5,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -1722,7 +1722,7 @@
   {
     "template_id": "T026",
     "space_no": 5,
-    "space_name": "WC",
+    "space_name": "Washroom",
     "db_key": "DB1",
     "route_distance_from_db_m": 7.6,
     "route_source": "template_estimate",
@@ -1734,7 +1734,7 @@
     "space_no": 1,
     "space_name": "Workshop Floor",
     "db_key": "DB1",
-    "route_distance_from_db_m": 2.0,
+    "route_distance_from_db_m": 2,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -1754,7 +1754,7 @@
     "space_no": 3,
     "space_name": "Store",
     "db_key": "DB1",
-    "route_distance_from_db_m": 7.0,
+    "route_distance_from_db_m": 7,
     "route_source": "template_estimate",
     "user_editable": true,
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
@@ -1772,7 +1772,7 @@
   {
     "template_id": "T027",
     "space_no": 5,
-    "space_name": "WC",
+    "space_name": "Washroom",
     "db_key": "DB1",
     "route_distance_from_db_m": 7.7,
     "route_source": "template_estimate",

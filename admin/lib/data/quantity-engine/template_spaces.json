@@ -394,7 +394,7 @@
   {
     "template_id": "T009",
     "space_no": 6,
-    "space_name": "Guest WC",
+    "space_name": "Guest Washroom",
     "room_type": "wc",
     "length_m": 1.8,
     "width_m": 1.4,
@@ -506,7 +506,7 @@
   {
     "template_id": "T010",
     "space_no": 6,
-    "space_name": "WC",
+    "space_name": "Washroom",
     "room_type": "wc",
     "length_m": 1.5,
     "width_m": 1.2,
@@ -1066,7 +1066,7 @@
   {
     "template_id": "T014",
     "space_no": 9,
-    "space_name": "Guest WC",
+    "space_name": "Guest Washroom",
     "room_type": "wc",
     "length_m": 1.8,
     "width_m": 1.4,
@@ -1248,7 +1248,7 @@
   {
     "template_id": "T015",
     "space_no": 10,
-    "space_name": "Guest WC",
+    "space_name": "Guest Washroom",
     "room_type": "wc",
     "length_m": 2,
     "width_m": 1.5,
@@ -1416,7 +1416,7 @@
   {
     "template_id": "T016",
     "space_no": 9,
-    "space_name": "Guest WC",
+    "space_name": "Guest Washroom",
     "room_type": "wc",
     "length_m": 1.8,
     "width_m": 1.4,
@@ -1584,7 +1584,7 @@
   {
     "template_id": "T017",
     "space_no": 9,
-    "space_name": "Guest WC",
+    "space_name": "Guest Washroom",
     "room_type": "wc",
     "length_m": 2,
     "width_m": 1.5,
@@ -1766,7 +1766,7 @@
   {
     "template_id": "T018",
     "space_no": 9,
-    "space_name": "Guest WC",
+    "space_name": "Guest Washroom",
     "room_type": "wc",
     "length_m": 2.2,
     "width_m": 1.6,
@@ -1878,7 +1878,7 @@
   {
     "template_id": "T019",
     "space_no": 4,
-    "space_name": "WC",
+    "space_name": "Washroom",
     "room_type": "wc",
     "length_m": 1.8,
     "width_m": 1.5,
@@ -1962,7 +1962,7 @@
   {
     "template_id": "T020",
     "space_no": 6,
-    "space_name": "WC",
+    "space_name": "Washrooms",
     "room_type": "wc",
     "length_m": 2,
     "width_m": 1.6,
@@ -2074,7 +2074,7 @@
   {
     "template_id": "T021",
     "space_no": 7,
-    "space_name": "WC",
+    "space_name": "Washrooms",
     "room_type": "wc",
     "length_m": 2.2,
     "width_m": 1.8,
@@ -2200,7 +2200,7 @@
   {
     "template_id": "T023",
     "space_no": 4,
-    "space_name": "WC",
+    "space_name": "Washroom",
     "room_type": "wc",
     "length_m": 1.8,
     "width_m": 1.5,
@@ -2270,7 +2270,7 @@
   {
     "template_id": "T024",
     "space_no": 4,
-    "space_name": "WC",
+    "space_name": "Washrooms",
     "room_type": "wc",
     "length_m": 2,
     "width_m": 1.6,
@@ -2340,7 +2340,7 @@
   {
     "template_id": "T025",
     "space_no": 4,
-    "space_name": "WC",
+    "space_name": "Washroom",
     "room_type": "wc",
     "length_m": 1.8,
     "width_m": 1.5,
@@ -2410,7 +2410,7 @@
   {
     "template_id": "T026",
     "space_no": 5,
-    "space_name": "WC",
+    "space_name": "Washrooms",
     "room_type": "wc",
     "length_m": 2,
     "width_m": 1.6,
@@ -2480,7 +2480,7 @@
   {
     "template_id": "T027",
     "space_no": 5,
-    "space_name": "WC",
+    "space_name": "Washrooms",
     "room_type": "wc",
     "length_m": 2.2,
     "width_m": 1.8,
