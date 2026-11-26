@@ -18,6 +18,7 @@ VALUES
   ('prc-rod-16x1500-nov26',   'mat-ear-rod-16x1500', 155.00, 'GHS', 'Ghana market research', 'market average', 'Nov 2026 estimate', 'seed'),
   ('prc-gy-16-nov26',         'mat-cab-sc-gy-16',    26.00,  'GHS', 'Ghana market research', 'market average', 'Nov 2026 estimate', 'seed'),
   ('prc-box-2g-35-nov26',     'mat-acc-box-2g-35',  120.00,  'GHS', 'Ghana market research', 'market average', 'Nov 2026 estimate', 'seed'),
+  ('prc-cu-1p5-nov26',        'mat-cab-sc-cu-1p5',    3.50,  'GHS', 'Ghana market research (₵145–380 / 90 m)', 'market average', 'Nov 2026 research', 'seed'),
   ('prc-cu-2p5-nov26',        'mat-cab-sc-cu-2p5',    6.00,  'GHS', 'accra.cool (₵470–610 / 90 m)', 'Nexans / Kabelmetal class', 'Nov 2026 research', 'seed'),
   ('prc-gy-2p5-nov26',        'mat-cab-sc-gy-2p5',    6.50,  'GHS', 'Ghana market research', 'market average', 'Nov 2026 estimate', 'seed'),
   ('prc-swa-20s-nov26',       'mat-term-swa-20s',    45.00,  'GHS', 'Ghana market research', 'market average', 'Nov 2026 estimate', 'seed'),

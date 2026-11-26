@@ -70,5 +70,12 @@ example:
 > single-core is GHS 6.00/m. The smaller cable is priced higher, so small circuits look
 > dearer than large ones; check the price list.
 
-That warning is what explains a 1 HP air conditioner out-pricing a 2.5 HP one until the
-catalogue row is corrected. Fix the price in the admin console; the warning clears itself.
+That warning is what explained a 1 HP air conditioner out-pricing a 2.5 HP one until the
+catalogue row was corrected. The 1.5 mm² copper single-core row was corrected on
+26 November 2026 (GHS 25.00 → 3.50/m, from the November research note of ₵145–380 per 90 m)
+by `lib/db/migrations/0005_fix-cable-prices.sql`; the November seed carries the same figure
+so a fresh database starts correct. Prices are effective-dated, so the old row remains in
+the history and the newest `effective_from` wins.
+
+The catalogue response is cached (60 s in the browser, 300 s at the edge), so a price
+correction can take up to five minutes to appear on screens that are already open.
