@@ -36,7 +36,11 @@ import {
   type SpecialLoadInstance,
 } from "@/lib/quantity-engine/special-loads";
 import { SpecialLoadConfigurator } from "./special-load-configurator";
-import { defaultPlanAdditions } from "@/lib/estimate-live";
+import { defaultPlanAdditions, PROJECT_TYPE_FOR_CODE } from "@/lib/estimate-live";
+/** The short project code behind a project type, so the draft names the project it shows. */
+const CODE_FOR_PROJECT_TYPE: Record<string, string> = Object.fromEntries(
+  Object.entries(PROJECT_TYPE_FOR_CODE).map(([code, projectType]) => [projectType, code]),
+);
 import { pricedCount, pricedTotal } from "@/lib/estimate-total";
 import { unitLabel } from "@/lib/format";
 import { readBasket, writeBasket } from "@/lib/storage/basket";
@@ -314,17 +318,8 @@ export function QuantityView(props: Props) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  useEffect(() => {
-    if (!hydrated) return;
-    try {
-      localStorage.setItem(
-        "estimo_estimate_draft_v1",
-        JSON.stringify({ templateId, specLevel, spaces, overrides, specialLoadInstances: instances }),
-      );
-    } catch {}
-  }, [hydrated, templateId, specLevel, spaces, overrides, instances]);
-  // the priced bill is published below, once the lines exist: the simple summary reads it
-  // as the source of truth rather than pricing the plan a second way
+  // the plan and the priced bill are published together further down, once the lines exist:
+  // the simple summary reads that one draft as the source of truth
 
   /**
    * An automatic route follows the space it serves, until a person types one. When the
@@ -543,9 +538,11 @@ export function QuantityView(props: Props) {
   );
 
   /**
-   * Publishes the priced bill into the shared draft. The itemized screen is the source of
-   * truth for price: the simple summary reads this, so the two can never quote different
-   * money for the same estimate.
+   * Publishes the plan and the priced bill into the shared draft.
+   *
+   * The itemized screen is the source of truth for price, and the simple summary follows
+   * whatever is chosen here — project, template and specification — without a save, because
+   * the draft names the project code as well as the template id.
    */
   useEffect(() => {
     if (!hydrated) return;
@@ -553,6 +550,8 @@ export function QuantityView(props: Props) {
       localStorage.setItem(
         "estimo_estimate_draft_v1",
         JSON.stringify({
+          template: CODE_FOR_PROJECT_TYPE[projectType] ?? props.templateCode ?? null,
+          projectType,
           templateId,
           specLevel,
           spaces,
@@ -570,7 +569,7 @@ export function QuantityView(props: Props) {
         }),
       );
     } catch {}
-  }, [hydrated, templateId, specLevel, spaces, overrides, instances, lines]);
+  }, [hydrated, templateId, projectType, props.templateCode, specLevel, spaces, overrides, instances, lines]);
 
   /** What each configured load costs on its own, and how much of it has no price yet. */
   const loadCosts = useMemo(() => {

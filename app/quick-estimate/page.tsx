@@ -106,6 +106,7 @@ function SetupContent() {
    * and the itemized page can never quote different money for one estimate.
    */
   const [carried, setCarried] = useState<{
+    templateId: string;
     spaces: SpaceInput[];
     overrides: PointOverride[];
     instances: SpecialLoadInstance[];
@@ -143,6 +144,7 @@ function SetupContent() {
           return;
         }
         const draft = JSON.parse(raw) as {
+          template?: string | null;
           templateId?: string;
           specLevel?: string;
           spaces?: SpaceInput[];
@@ -150,9 +152,24 @@ function SetupContent() {
           specialLoadInstances?: unknown[];
           bill?: { totalGhs?: number; lines?: unknown[] };
         };
-        if (draft.templateId !== templateId || !draft.spaces?.length) {
+        if (!draft.spaces?.length) {
           setCarried(null);
           return;
+        }
+        /**
+         * The itemized screen may have switched project or template. Follow it: change this
+         * page's project so the two screens describe one estimate, even before it is saved.
+         */
+        if (draft.templateId !== templateId) {
+          const draftCode =
+            draft.template ??
+            Object.entries(TEMPLATE_FOR_CODE).find(([, id]) => id === draft.templateId)?.[0];
+          if (draftCode && draftCode in TEMPLATE_FOR_CODE && draftCode !== type.code) {
+            router.replace(`/quick-estimate?template=${encodeURIComponent(draftCode)}`);
+            return;
+          }
+          // the same project type with a different template variant: keep this page on its
+          // own template but adopt the plan and the bill the bill was priced from
         }
         // the specification chosen in the itemized bill comes back with it
         if (
@@ -181,6 +198,7 @@ function SetupContent() {
               }
             : null;
         setCarried({
+          templateId: draft.templateId ?? templateId,
           spaces: draft.spaces,
           overrides: draft.overrides ?? [],
           instances: parseSpecialLoadInstances(draft.specialLoadInstances),
@@ -212,6 +230,9 @@ function SetupContent() {
     [carried, templateId, counts],
   );
 
+  /** The plan being shown is the one the itemized bill is pricing, variant template included. */
+  const planTemplateId = carried?.templateId ?? templateId;
+
   /**
    * What the plan starts with: the rulebook's default loads (the kitchen fridge) and, for a
    * home, an air conditioner per bedroom and living area. The itemized bill seeds the same
@@ -221,10 +242,10 @@ function SetupContent() {
     () =>
       defaultPlanAdditions({
         projectType: PROJECT_TYPE_FOR_CODE[type.code] ?? "two_bedroom",
-        templateId,
+        templateId: planTemplateId,
         spaces: planSpaces,
       }),
-    [type.code, templateId, planSpaces],
+    [type.code, planTemplateId, planSpaces],
   );
   const instances = carried ? carried.instances : defaults.instances;
   /** The AC counts travel as point overrides, exactly as the itemized Points table holds them. */
@@ -248,14 +269,14 @@ function SetupContent() {
   const live = useMemo(
     () =>
       liveEstimate({
-        templateId,
+        templateId: planTemplateId,
         specLevel,
         spaces: planSpaces,
         prices: (prices ?? {}) as Parameters<typeof liveEstimate>[0]["prices"],
         overrides: planOverrides,
         specialLoadInstances: instances,
       }),
-    [templateId, specLevel, planSpaces, prices, carried, instances],
+    [planTemplateId, specLevel, planSpaces, prices, carried, instances],
   );
 
   /**
@@ -286,7 +307,8 @@ function SetupContent() {
       localStorage.setItem(
         "estimo_estimate_draft_v1",
         JSON.stringify({
-          templateId,
+          template: type.code,
+          templateId: planTemplateId,
           specLevel,
           spaces: planSpaces,
           overrides: planOverrides,
@@ -294,7 +316,9 @@ function SetupContent() {
         }),
       );
     } catch {}
-    router.push(`/itemized?template=${encodeURIComponent(type.code)}&quality=${quality}`);
+    router.push(
+      `/itemized?template=${encodeURIComponent(type.code)}&quality=${quality}&id=${encodeURIComponent(planTemplateId)}`,
+    );
   };
 
   const estimateQuery = () => {
@@ -374,7 +398,8 @@ function SetupContent() {
       localStorage.setItem(
         "estimo_estimate_draft_v1",
         JSON.stringify({
-          templateId,
+          template: type.code,
+          templateId: carried.templateId,
           specLevel: nextSpec,
           spaces: carried.spaces,
           overrides: carried.overrides,

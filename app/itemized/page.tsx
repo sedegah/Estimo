@@ -51,14 +51,19 @@ const PROJECT_TYPE_FOR_CODE: Record<string, string> = {
 export default async function QuickEstimatePage({
   searchParams,
 }: {
-  searchParams: Promise<{ template?: string; quality?: string; plan?: string; counts?: string }>;
+  searchParams: Promise<{ template?: string; quality?: string; plan?: string; counts?: string; id?: string }>;
 }) {
-  const { template, quality, plan, counts: countsParam } = await searchParams;
+  const { template, quality, plan, counts: countsParam, id } = await searchParams;
   const signedIn = await hasSessionCookie();
   const code = template ?? "HOME-2B";
-  const templateId = TEMPLATE_FOR_CODE[code] ?? "T011";
+  const projectType = PROJECT_TYPE_FOR_CODE[code] ?? "two_bedroom";
 
   const templates = listTemplates();
+  // the simple screen may hand over a template variant of the same project (a larger
+  // 2-bedroom, say); accept it only when it belongs to this project type
+  const variant =
+    id && templates.some((entry) => entry.id === id && entry.projectType === projectType) ? id : null;
+  const templateId = variant ?? TEMPLATE_FOR_CODE[code] ?? "T011";
   const spacesByTemplate = Object.fromEntries(
     templates.map((entry) => [entry.id, getTemplateSpaces(entry.id)]),
   );
@@ -91,7 +96,6 @@ export default async function QuickEstimatePage({
       planSpaces = [];
     }
   }
-  const projectType = PROJECT_TYPE_FOR_CODE[code] ?? "two_bedroom";
   const projectLabel = PROJECT_TYPES.find((type) => type.key === projectType)?.label ?? "2-Bedroom Home";
   const templateLabel = templates.find((entry) => entry.id === templateId)?.name ?? "";
 
