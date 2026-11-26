@@ -492,7 +492,7 @@ test("homes and offices open air conditioned; the rooms that should not are left
   assert.equal(home.instances.length, 1);
   assert.equal(home.instances[0].load_key, "air_conditioner");
   assert.equal(home.instances[0].quantity, 3, "the load is priced for all three units");
-  assert.equal(home.instances[0].capacity_hp, 1);
+  assert.equal(home.instances[0].capacity_hp, 2, "every room is planned at 2 HP until changed");
 
   // an office is air conditioned everywhere except the washrooms
   const officeRooms: SpaceInput[] = [

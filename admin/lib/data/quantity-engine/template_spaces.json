@@ -672,6 +672,20 @@
     "notes": ""
   },
   {
+    "template_id": "T011",
+    "space_no": 10,
+    "space_name": "Guest Washroom",
+    "room_type": "wc",
+    "length_m": 1.8,
+    "width_m": 1.4,
+    "height_m": 3,
+    "quantity": 1,
+    "workstations": 0,
+    "checkout_counters": 0,
+    "machine_count": 0,
+    "notes": "Guest washroom off the corridor."
+  },
+  {
     "template_id": "T012",
     "space_no": 1,
     "space_name": "Living Room",

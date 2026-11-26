@@ -332,10 +332,12 @@ export const PROJECT_LABELS: Record<string, string> = Object.fromEntries(
 
 const DEFAULT_COUNTS: Record<string, Counts> = {
   "HOME-1R": { bedrooms: 1, bathrooms: 1, kitchens: 1, living: 1, porches: 0 },
-  "HOME-1B": { bedrooms: 1, bathrooms: 1, kitchens: 1, living: 1, porches: 0 },
-  "HOME-2B": { bedrooms: 2, bathrooms: 1, kitchens: 1, living: 1, porches: 0 },
+  "HOME-1B": { bedrooms: 1, bathrooms: 1, kitchens: 1, living: 1, porches: 1 },
+  // the counters must describe the same house the template does, or opening a plan from
+  // the summary would price a different number of bathrooms and porches than the bill
+  "HOME-2B": { bedrooms: 2, bathrooms: 2, kitchens: 1, living: 1, porches: 1 },
   "HOME-3B": { bedrooms: 3, bathrooms: 2, kitchens: 1, living: 1, porches: 1 },
-  "HOME-4B": { bedrooms: 4, bathrooms: 3, kitchens: 1, living: 2, porches: 1 },
+  "HOME-4B": { bedrooms: 4, bathrooms: 4, kitchens: 1, living: 2, porches: 1 },
   "SHOP-KIOSK": { serving: 1, storage: 1, signage: 1, washroom: 1 },
   "SHOP-RETAIL": { floor: 1, counter: 1, storage: 1, washroom: 1 },
   "COMM-OFF-S": { open: 1, meeting: 1, kitchenette: 1, washroom: 1, server: 1 },

@@ -64,6 +64,11 @@ An office is planned with one unit in every room except the washrooms, including
 reception and the server room. A row that stands for several rooms (three private offices)
 contributes one unit per room, not one per row.
 
+Every planned unit is **2 HP** (1.8 kW, 16 A, 2.5 mm²) until someone opens the load and
+chooses a different rating; the card reads "Estimated" until a manufacturer figure is
+entered. A single room gets no AC by default, because there is nowhere external to put one.
+
+
 One AC line covers every cooled room, so its route is the mean of the runs to those rooms —
 weighted by how many units each row represents. The card says so ("average of 9 rooms").
 That keeps the price independent of which room happens to sort first, and the total cable on

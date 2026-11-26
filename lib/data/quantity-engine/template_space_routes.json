@@ -480,6 +480,13 @@
     "notes": "Estimated containment path from DB to space entry/zone. Override with actual route when known."
   },
   {
+    "template_id": "T011",
+    "space_no": 10,
+    "space_name": "Guest Washroom",
+    "route_distance_from_db_m": 6.8,
+    "db_key": "DB1"
+  },
+  {
     "template_id": "T012",
     "space_no": 1,
     "space_name": "Living Room",

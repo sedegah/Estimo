@@ -1618,8 +1618,9 @@ export function defaultAcAdditions(args: {
   const instances: SpecialLoadInstance[] = [
     {
       ...acLoad,
-      // a standard 1 HP split, provisionally priced until the person picks the real units
-      capacity_hp: 1,
+      // ESTIMO plans every cooled room at 2 HP until the person opens the load and picks
+      // the real unit; the estimate says it is provisional until then
+      capacity_hp: 2,
       phase: "single",
       quantity: acSpaces.reduce((sum, space) => sum + Math.max(1, Math.round(space.quantity ?? 1)), 0),
       // one line covers every cooled room, so its route is the average of their routes:
