@@ -13,7 +13,13 @@ import { useEffect, useState } from "react";
 import { estimateType, isEstimated, statusLabel } from "@/lib/estimates-view";
 import { formatDate, formatGhsOrNull } from "@/lib/format";
 import { fetchLivePrices, priceSavedEstimate, TEMPLATE_FOR_CODE } from "@/lib/estimate-live";
-import { SAVED_EVENT, deleteSavedEstimate, listSavedEstimates } from "@/lib/storage/saved-estimates";
+import {
+  SAVED_EVENT,
+  deleteSavedEstimate,
+  listSavedEstimates,
+  purgeExpiredEstimates,
+  touchSavedEstimate,
+} from "@/lib/storage/saved-estimates";
 import { pushDelete } from "@/lib/api/estimates";
 import type { PriceEntry } from "@/lib/quantity-engine/catalogue";
 import type { SavedEstimate } from "@/lib/types";
@@ -27,7 +33,11 @@ export default function SavedEstimatesPage() {
   const [liveTotals, setLiveTotals] = useState<Record<string, number>>({});
 
   useEffect(() => {
-    const sync = () => setProjects(listSavedEstimates());
+    const sync = () => {
+      // estimates nobody has opened in 40 days go, and their server copies with them
+      for (const id of purgeExpiredEstimates()) void pushDelete(id);
+      setProjects(listSavedEstimates());
+    };
     sync();
     window.addEventListener(SAVED_EVENT, sync);
     window.addEventListener("storage", sync);
@@ -59,6 +69,7 @@ export default function SavedEstimatesPage() {
 
   /** Reopens an estimate on the itemized bill, plan and all, without saving first. */
   const open = (project: SavedEstimate) => {
+    touchSavedEstimate(project.id);
     const quantities = project.quantities;
     const code = project.template ?? "HOME-2B";
     const templateId = quantities?.templateId ?? TEMPLATE_FOR_CODE[code] ?? "T011";

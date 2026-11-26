@@ -26,6 +26,7 @@ import {
   qualityForSpecLevel,
   TEMPLATE_FOR_CODE,
 } from "@/lib/estimate-live";
+import { touchSavedEstimate } from "@/lib/storage/saved-estimates";
 import { priceQuantities } from "@/lib/quantity-engine/catalogue";
 import type { PointOverride, SpaceInput, SpecLevel } from "@/lib/quantity-engine/types";
 import type { PriceEntry } from "@/lib/quantity-engine/catalogue";
@@ -89,6 +90,8 @@ export default function ProjectPage() {
   useEffect(() => {
     const sync = () => {
       const entry = getSavedEstimate(params.id);
+      // opening the estimate is what keeps it inside the 40-day window
+      if (entry) touchSavedEstimate(entry.id);
       setProject(entry);
       setReady(true);
       if (!entry) return;
@@ -414,6 +417,8 @@ export default function ProjectPage() {
     const loadPending = loadDetail.reduce((sum, entry) => sum + entry.unpriced, 0);
     /** The PDF is generated from this estimate's own lines, so the two always agree. */
     const downloadPdf = async () => {
+      // a download is a use of the estimate, so it counts against the retention window
+      touchSavedEstimate(project.id);
       const response = await fetch("/api/estimates/pdf", {
         method: "POST",
         headers: { "Content-Type": "application/json" },

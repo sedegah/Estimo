@@ -34,6 +34,8 @@ function installWindow() {
   };
 }
 
+const recent = (days: number) => new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+
 const entry = (name: string) => ({
   name,
   kind: "quick" as const,
@@ -74,8 +76,8 @@ test("projects saved before this rule still list by their creation date", async 
   installWindow();
   const { listSavedEstimates } = await import("../lib/storage/saved-estimates.ts");
   const legacy = [
-    { id: "old-1", name: "Older", kind: "quick", createdAt: "2026-01-01T10:00:00.000Z", detail: "", totalGhs: 1 },
-    { id: "old-2", name: "Newer", kind: "quick", createdAt: "2026-02-01T10:00:00.000Z", detail: "", totalGhs: 1 },
+    { id: "old-1", name: "Older", kind: "quick", createdAt: recent(3), detail: "", totalGhs: 1 },
+    { id: "old-2", name: "Newer", kind: "quick", createdAt: recent(2), detail: "", totalGhs: 1 },
   ];
   (globalThis as unknown as { window: { localStorage: MemoryStorage } }).window.localStorage.setItem(
     "estimo_saved_estimates_v1",
@@ -94,8 +96,8 @@ test("every estimate carries a readable code, including the ones saved before co
   storage.setItem(
     "estimo_saved_estimates_v1",
     JSON.stringify([
-      { id: "old-1", name: "Old one", kind: "quick", createdAt: "2026-01-01T10:00:00.000Z", detail: "", totalGhs: 1 },
-      { id: "old-2", name: "Old two", kind: "quick", createdAt: "2026-02-01T10:00:00.000Z", detail: "", totalGhs: 2 },
+      { id: "old-1", name: "Old one", kind: "quick", createdAt: recent(3), detail: "", totalGhs: 1 },
+      { id: "old-2", name: "Old two", kind: "quick", createdAt: recent(2), detail: "", totalGhs: 2 },
     ]),
   );
 
@@ -115,4 +117,37 @@ test("every estimate carries a readable code, including the ones saved before co
   const fresh = saveEstimate({ name: "New", kind: "quick", detail: "", totalGhs: 3 });
   assert.match(fresh.code ?? "", /^EST-[A-HJ-NP-Z2-9]{6}$/);
   assert.ok(!again.some((entry) => entry.code === fresh.code), "a new estimate gets a new code");
+});
+
+test("an estimate unused for 40 days is cleared; using it keeps it", async () => {
+  installWindow();
+  const { listSavedEstimates, touchSavedEstimate, purgeExpiredEstimates, RETENTION_DAYS } = await import(
+    "../lib/storage/saved-estimates.ts"
+  );
+  const storage = (globalThis as unknown as { window: { localStorage: MemoryStorage } }).window.localStorage;
+  assert.equal(RETENTION_DAYS, 40);
+
+  const daysAgo = (days: number) => new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+  storage.setItem(
+    "estimo_saved_estimates_v1",
+    JSON.stringify([
+      { id: "stale", name: "Stale", kind: "quick", createdAt: daysAgo(60), updatedAt: daysAgo(60), lastAccessedAt: daysAgo(41), detail: "", totalGhs: 1 },
+      { id: "live", name: "Live", kind: "quick", createdAt: daysAgo(60), updatedAt: daysAgo(60), lastAccessedAt: daysAgo(39), detail: "", totalGhs: 2 },
+      { id: "opened", name: "Opened today", kind: "quick", createdAt: daysAgo(60), updatedAt: daysAgo(60), lastAccessedAt: daysAgo(41), detail: "", totalGhs: 3 },
+    ]),
+  );
+
+  // opening one now keeps it
+  touchSavedEstimate("opened");
+
+  const purged = purgeExpiredEstimates();
+  assert.deepEqual(purged, ["stale"], "only the one untouched for 40 days goes");
+
+  const remaining = listSavedEstimates();
+  assert.deepEqual(remaining.map((entry) => entry.name).sort(), ["Live", "Opened today"]);
+  const persisted = JSON.parse(storage.getItem("estimo_saved_estimates_v1") ?? "[]");
+  assert.deepEqual(persisted.map((entry: { name: string }) => entry.name).sort(), ["Live", "Opened today"]);
+
+  // and it does not come back from an old local copy
+  assert.deepEqual(listSavedEstimates().map((entry) => entry.name).sort(), ["Live", "Opened today"]);
 });

@@ -7,6 +7,9 @@ import "../styles/admin.css";
 export const metadata: Metadata = { title: "ESTIMO Admin" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // the console signs in with the same production Clerk instance as the site: no test key
+  // fallback, because a stale instance silently refuses every real session
+  const publishableKey = process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY;
   return (
     <html lang="en">
       <head>
@@ -18,10 +21,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         />
       </head>
       <body style={{ margin: 0 }}>
-        <ClerkProvider publishableKey={process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "REMOVED_CLERK_KEY"}>
-          <RouteLoading />
-          {children}
-        </ClerkProvider>
+        {publishableKey ? (
+          <ClerkProvider publishableKey={publishableKey}>
+            <RouteLoading />
+            {children}
+          </ClerkProvider>
+        ) : (
+          <p style={{ fontFamily: "system-ui, sans-serif", padding: 32 }}>
+            Admin needs NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY (the production pk_live_ key) in its environment.
+          </p>
+        )}
       </body>
     </html>
   );

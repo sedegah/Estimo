@@ -73,6 +73,8 @@ export type SavedEstimate = {
   createdAt: string;
   /** Last time this project was saved; the saved list is ordered by it. */
   updatedAt?: string;
+  /** Last time it was opened or downloaded; an estimate unused for 40 days is cleared. */
+  lastAccessedAt?: string;
   detail: string;
   totalGhs: number | null;
   items?: SavedEstimateItem[];

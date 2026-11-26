@@ -8,10 +8,7 @@ export const env = {
   siteUrl: process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000",
   appEnv: process.env.NEXT_PUBLIC_APP_ENV ?? "development",
   appVersion: process.env.NEXT_PUBLIC_APP_VERSION ?? "0.0.0",
-  clerkPublishableKey:
-    process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY?.trim().startsWith("pk_live_")
-      ? process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY!.trim()
-      : "REMOVED_CLERK_KEY",
+  clerkPublishableKey: process.env.NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY ?? "",
 } as const;
 
 export const clerkEnabled = Boolean(env.clerkPublishableKey);

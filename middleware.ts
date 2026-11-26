@@ -1,6 +1,6 @@
 import { NextResponse, type NextFetchEvent, type NextRequest } from "next/server";
 import { clerkMiddleware } from "@clerk/nextjs/server";
-import { clerkEnabled, env } from "./lib/env";
+import { clerkEnabled } from "./lib/env";
 
 /**
  * Routes that hold a person's work. A visitor without a session is sent to sign in
@@ -10,19 +10,14 @@ import { clerkEnabled, env } from "./lib/env";
 const PROTECTED = [/^\/dashboard(\/|$)/, /^\/estimates(\/|$)/, /^\/projects(\/|$)/, /^\/settings(\/|$)/];
 
 const withClerk = clerkEnabled
-  ? clerkMiddleware(
-      async (auth, request) => {
-        if (!PROTECTED.some((pattern) => pattern.test(request.nextUrl.pathname))) return;
-        const { userId } = await auth();
-        if (userId) return;
-        const signIn = new URL("/signin", request.url);
-        signIn.searchParams.set("redirect_url", request.nextUrl.pathname + request.nextUrl.search);
-        return NextResponse.redirect(signIn);
-      },
-      {
-        publishableKey: env.clerkPublishableKey,
-      },
-    )
+  ? clerkMiddleware(async (auth, request) => {
+      if (!PROTECTED.some((pattern) => pattern.test(request.nextUrl.pathname))) return;
+      const { userId } = await auth();
+      if (userId) return;
+      const signIn = new URL("/signin", request.url);
+      signIn.searchParams.set("redirect_url", request.nextUrl.pathname + request.nextUrl.search);
+      return NextResponse.redirect(signIn);
+    })
   : null;
 
 export default function middleware(request: NextRequest, event: NextFetchEvent) {

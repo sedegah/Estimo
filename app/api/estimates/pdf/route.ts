@@ -187,7 +187,9 @@ function pdfResponse(pdf: Uint8Array, name: string): Response {
     headers: {
       "Content-Type": "application/pdf",
       "Content-Disposition": `attachment; filename="${filename}"`,
-      "Cache-Control": "no-store",
+      // built fresh for every request: never served from a browser or edge cache
+      "Cache-Control": "no-store, no-cache, max-age=0, must-revalidate",
+      Pragma: "no-cache",
     },
   });
 }

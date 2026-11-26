@@ -30,6 +30,19 @@ function nextCode(used: Set<string>): string {
   return `EST-${Date.now().toString(36).toUpperCase().slice(-6)}`;
 }
 
+/** Estimates nobody has opened for this long are cleared. */
+export const RETENTION_DAYS = 40;
+const RETENTION_MS = RETENTION_DAYS * 24 * 60 * 60 * 1000;
+
+/** The later of "saved" and "opened": an estimate stays alive while it is being used. */
+const lastSeen = (entry: SavedEstimate): string =>
+  entry.lastAccessedAt ?? entry.updatedAt ?? entry.createdAt;
+
+const expiredAt = (entry: SavedEstimate, now = Date.now()): boolean => {
+  const seen = Date.parse(lastSeen(entry));
+  return Number.isFinite(seen) && now - seen > RETENTION_MS;
+};
+
 /** When an estimate was last written, which is how the list is ordered. */
 const savedAt = (entry: SavedEstimate): string => entry.updatedAt ?? entry.createdAt;
 
@@ -52,7 +65,13 @@ export function listSavedEstimates(): SavedEstimate[] {
         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(entries));
       } catch {}
     }
-    return entries.sort(newestFirst);
+    const live = entries.filter((entry) => !expiredAt(entry));
+    if (live.length !== entries.length) {
+      try {
+        window.localStorage.setItem(STORAGE_KEY, JSON.stringify(live));
+      } catch {}
+    }
+    return live.sort(newestFirst);
   } catch {
     return [];
   }
@@ -99,6 +118,44 @@ export function deleteSavedEstimate(id: string): void {
   persist(listSavedEstimates().filter((entry) => entry.id !== id));
 }
 
+/**
+ * Marks an estimate as just used, so opening it keeps it inside the retention window.
+ * Deliberately does not reorder the list or fire the saved event.
+ */
+export function touchSavedEstimate(id: string): void {
+  if (typeof window === "undefined") return;
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const parsed = raw ? (JSON.parse(raw) as SavedEstimate[]) : [];
+    if (!Array.isArray(parsed)) return;
+    const now = new Date().toISOString();
+    let changed = false;
+    const next = parsed.map((entry) => {
+      if (entry.id !== id) return entry;
+      changed = true;
+      return { ...entry, lastAccessedAt: now };
+    });
+    if (changed) window.localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  } catch {}
+}
+
+/** Removes estimates past the retention window and returns their ids, for server cleanup. */
+export function purgeExpiredEstimates(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    const parsed = raw ? (JSON.parse(raw) as SavedEstimate[]) : [];
+    if (!Array.isArray(parsed)) return [];
+    const expired = parsed.filter((entry) => expiredAt(entry));
+    if (!expired.length) return [];
+    const keep = parsed.filter((entry) => !expiredAt(entry));
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(keep));
+    return expired.map((entry) => entry.id);
+  } catch {
+    return [];
+  }
+}
+
 export function getSavedEstimate(id: string): SavedEstimate | null {
   return listSavedEstimates().find((entry) => entry.id === id) ?? null;
 }
@@ -108,7 +165,8 @@ export function updateSavedEstimate(id: string, patch: Partial<Omit<SavedEstimat
   const existing = current.find((entry) => entry.id === id);
   if (!existing) return null;
   // saving an existing project moves it to the top of the list
-  const next: SavedEstimate = { ...existing, ...patch, updatedAt: new Date().toISOString() };
+  const now = new Date().toISOString();
+  const next: SavedEstimate = { ...existing, ...patch, updatedAt: now, lastAccessedAt: now };
   persist(current.map((entry) => (entry.id === id ? next : entry)));
   return next;
 }

@@ -2,6 +2,7 @@
 
 import { useUser } from "@clerk/nextjs";
 import { useEffect } from "react";
+import { clerkEnabled } from "@/lib/env";
 import { fetchServerEstimates, pushCreate } from "@/lib/api/estimates";
 import { listSavedEstimates, mergeSavedEstimates } from "@/lib/storage/saved-estimates";
 import { readOwner, reconcileOwner } from "@/lib/storage/reset";
@@ -14,8 +15,16 @@ import { readOwner, reconcileOwner } from "@/lib/storage/reset";
  * - ending the session wipes it;
  * - every sign-in merges the account's estimates in, keeping anything this browser
  *   saved that has not reached the server yet (and uploading it).
+ *
+ * Clerk hooks only exist inside a ClerkProvider, so this component stays out of the tree
+ * when the app was built without keys (local development, preview without secrets).
  */
 export function SessionGuard() {
+  if (!clerkEnabled) return null;
+  return <SessionSync />;
+}
+
+function SessionSync() {
   const { isLoaded, isSignedIn, user } = useUser();
 
   useEffect(() => {

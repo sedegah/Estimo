@@ -12,6 +12,7 @@ import {
   SAVED_EVENT,
   deleteSavedEstimate,
   listSavedEstimates,
+  purgeExpiredEstimates,
   saveEstimate,
 } from "@/lib/storage/saved-estimates";
 import { pushDelete } from "@/lib/api/estimates";
@@ -57,7 +58,10 @@ export default function ProjectsPage() {
   }, [projects, prices]);
 
   useEffect(() => {
-    const syncProjects = () => setProjects(listSavedEstimates());
+    const syncProjects = () => {
+      for (const id of purgeExpiredEstimates()) void pushDelete(id);
+      setProjects(listSavedEstimates());
+    };
     const syncDraft = () => setDraft(readDraft());
     const syncBasket = () => setBasketCount(basketMaterialCount(readBasket()));
 

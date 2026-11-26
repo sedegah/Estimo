@@ -9,5 +9,9 @@ import { clerkEnabled, env } from "@/lib/env";
  */
 export function ClerkBoundary({ children, enabled = true }: { children: ReactNode; enabled?: boolean }) {
   if (!enabled || !clerkEnabled) return <>{children}</>;
-  return <ClerkProvider publishableKey={env.clerkPublishableKey}>{children}</ClerkProvider>;
+  return (
+    <ClerkProvider publishableKey={env.clerkPublishableKey} afterSignOutUrl="/">
+      {children}
+    </ClerkProvider>
+  );
 }
