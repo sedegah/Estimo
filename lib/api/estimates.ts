@@ -2,7 +2,7 @@ import { PROJECT_LABELS } from "@/lib/estimate-model";
 import { fromSnapshot, toSnapshot } from "@/lib/estimate-snapshot";
 import type { SavedEstimate } from "@/lib/types";
 
-const API_URL = process.env.NEXT_PUBLIC_ESTIMO_API_URL ?? "https://estimo-api.sedegahkimathi.workers.dev";
+import { API_URL } from "@/lib/api-base";
 
 type ApiEstimate = {
   id: string;

@@ -1,6 +1,10 @@
 import { cache } from "react";
 
-const API_URL = process.env.NEXT_PUBLIC_ESTIMO_API_URL ?? "https://estimo-api.sedegahkimathi.workers.dev";
+// kept free of aliased imports: this module is exercised directly by node --test
+const API_URL = (
+  process.env.NEXT_PUBLIC_ESTIMO_API_URL?.trim() ||
+  "https://api.estimo.live"
+).replace(/\/$/, "");
 const IMAGES_URL = process.env.NEXT_PUBLIC_ESTIMO_IMAGES_URL ?? `${API_URL}/images`;
 
 export type LivePrice = {

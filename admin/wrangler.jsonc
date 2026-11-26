@@ -15,7 +15,7 @@
     "enabled": true
   },
   "vars": {
-    "NEXT_PUBLIC_ESTIMO_API_URL": "https://estimo-api.sedegahkimathi.workers.dev"
+    "NEXT_PUBLIC_ESTIMO_API_URL": "https://api.estimo.live"
   },
   "preview_urls": false,
   "workers_dev": true

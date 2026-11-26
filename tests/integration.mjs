@@ -3,7 +3,7 @@
 import assert from "node:assert/strict";
 
 const site = process.env.ESTIMO_BASE_URL || "http://localhost:3000";
-const api = process.env.ESTIMO_API_URL || "https://estimo-api.sedegahkimathi.workers.dev";
+const api = process.env.ESTIMO_API_URL || "https://api.estimo.live";
 
 const results = [];
 

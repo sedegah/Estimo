@@ -19,6 +19,8 @@ type Env = {
   DB_PEPPER: string;
   ADMIN_USER_IDS?: string;
   ADMIN_CLERK_PUBLISHABLE_KEY?: string;
+  /** Comma-separated browser origins allowed to call this API, if not the defaults. */
+  ALLOWED_ORIGINS?: string;
 };
 
 type SessionClaims = { sub: string; exp?: number; nbf?: number; iss?: string };
@@ -93,10 +95,47 @@ function json(body: unknown, status = 200, cacheControl = "no-store"): Response 
     headers: {
       "Content-Type": "application/json",
       "Cache-Control": cacheControl,
-      "Access-Control-Allow-Origin": "*",
-      "Access-Control-Allow-Headers": "authorization, content-type",
-      "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
     },
+  });
+}
+
+/**
+ * The site and the API are different origins (estimo.live and api.estimo.live), so the
+ * browser needs an explicit permission. Only known origins get one: echoing any Origin
+ * back would let another site read a signed-in user's estimates.
+ */
+const DEFAULT_ORIGINS = ["https://estimo.live", "https://www.estimo.live"];
+
+function originAllowed(origin: string, allowed: string[]): boolean {
+  if (allowed.includes(origin)) return true;
+  // local development and Vercel preview deployments
+  if (/^http:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/.test(origin)) return true;
+  if (/^https:\/\/[a-z0-9-]+\.vercel\.app$/.test(origin)) return true;
+  return false;
+}
+
+function withCors(request: Request, env: Env, response: Response): Response {
+  const origin = request.headers.get("origin") ?? "";
+  const configured = (env.ALLOWED_ORIGINS ?? "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean);
+  const allowed = configured.length ? configured : DEFAULT_ORIGINS;
+  const headers = new Headers(response.headers);
+  headers.delete("Access-Control-Allow-Origin");
+  headers.delete("Access-Control-Allow-Headers");
+  headers.delete("Access-Control-Allow-Methods");
+  if (origin && originAllowed(origin, allowed)) {
+    headers.set("Access-Control-Allow-Origin", origin);
+    headers.set("Access-Control-Allow-Headers", "authorization, content-type");
+    headers.set("Access-Control-Allow-Methods", "GET, POST, PATCH, PUT, DELETE, OPTIONS");
+    headers.set("Access-Control-Max-Age", "86400");
+    headers.append("Vary", "Origin");
+  }
+  return new Response(response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers,
   });
 }
 
@@ -443,8 +482,15 @@ async function saveTemplate(env: Env, actor: string, body: Record<string, unknow
 
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
-    if (request.method === "OPTIONS") return json({ ok: true });
+    // preflight for the cross-origin site: answer it before any auth work
+    if (request.method === "OPTIONS") {
+      return withCors(request, env, new Response(null, { status: 204 }));
+    }
+    return withCors(request, env, await handle(request, env));
+  },
+};
 
+async function handle(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     if (url.pathname === "/catalogue" && request.method === "GET") return listCatalogue(env);
 
@@ -511,5 +557,4 @@ export default {
     }
 
     return json({ ok: false, error: "not_found" }, 404);
-  },
-};
+}
