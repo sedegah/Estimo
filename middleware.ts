@@ -9,13 +9,27 @@ import { clerkEnabled } from "./lib/env";
  */
 const PROTECTED = [/^\/dashboard(\/|$)/, /^\/estimates(\/|$)/, /^\/projects(\/|$)/, /^\/settings(\/|$)/];
 
+/** The auth screens. A session that already exists has no business on them. */
+const AUTH_PAGES = [/^\/signin(\/|$)/, /^\/signup(\/|$)/];
+
 const withClerk = clerkEnabled
   ? clerkMiddleware(async (auth, request) => {
-      if (!PROTECTED.some((pattern) => pattern.test(request.nextUrl.pathname))) return;
+      const path = request.nextUrl.pathname;
       const { userId } = await auth();
+
+      // a signed-in visitor on /signin or /signup is sent on: this is what used to leave
+      // people staring at the auth card after a successful sign-in
+      if (userId && AUTH_PAGES.some((pattern) => pattern.test(path))) {
+        const requested = request.nextUrl.searchParams.get("redirect_url");
+        const next = requested ? new URL(requested, request.url) : new URL("/dashboard", request.url);
+        // never follow a redirect off the site
+        return NextResponse.redirect(next.origin === request.nextUrl.origin ? next : new URL("/dashboard", request.url));
+      }
+
+      if (!PROTECTED.some((pattern) => pattern.test(path))) return;
       if (userId) return;
       const signIn = new URL("/signin", request.url);
-      signIn.searchParams.set("redirect_url", request.nextUrl.pathname + request.nextUrl.search);
+      signIn.searchParams.set("redirect_url", path + request.nextUrl.search);
       return NextResponse.redirect(signIn);
     })
   : null;

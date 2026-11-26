@@ -1,17 +1,21 @@
 /**
  * Local data lifecycle.
  *
- * Estimates, drafts and the basket belong to the account that created them. When a
- * different account signs in — or a session ends — the previous account's local data
- * is wiped so one person never sees another person's projects.
+ * Estimates belong to the account that created them, but signing out must not destroy
+ * work that has not reached the server yet: the stored estimates are the browser's copy
+ * and are kept, then adopted by the next sign-in and uploaded. Only the choices that are
+ * specific to a session (the in-progress draft, guest estimate and preferences) are
+ * cleared when the account changes or a session ends.
  */
 
-const DATA_KEYS = [
-  "estimo_saved_estimates_v1",
+const SESSION_KEYS = [
   "estimo_guest_estimate_v1",
   "estimo_draft_v1",
   "estimo_preferences_v1",
 ];
+
+/** Saved estimates are deliberately absent: losing them on sign-out is data loss. */
+const DATA_KEYS = ["estimo_saved_estimates_v1", ...SESSION_KEYS];
 
 const OWNER_KEY = "estimo_owner_v1";
 
@@ -26,6 +30,7 @@ export function writeOwner(owner: string): void {
   else window.localStorage.removeItem(OWNER_KEY);
 }
 
+/** Everything, including saved estimates. Used by a deliberate "delete my data". */
 export function clearLocalData(): void {
   if (typeof window === "undefined") return;
   for (const key of DATA_KEYS) window.localStorage.removeItem(key);
@@ -35,9 +40,19 @@ export function clearLocalData(): void {
   window.dispatchEvent(new Event("estimo-preferences-change"));
 }
 
+/** Ends a session without throwing away the estimates this browser holds. */
+export function clearSessionData(): void {
+  if (typeof window === "undefined") return;
+  for (const key of SESSION_KEYS) window.localStorage.removeItem(key);
+  window.dispatchEvent(new Event("estimo-draft-change"));
+  window.dispatchEvent(new Event("estimo-preferences-change"));
+}
+
 /**
- * Called whenever authentication state settles. Returns true when local data was
- * cleared because the account changed or the session ended.
+ * Called whenever authentication state settles. Returns true when session data was
+ * cleared. Saved estimates always survive: the next sign-in adopts them and pushes
+ * anything the server does not have yet, which is what keeps an estimate across a
+ * sign-out or a change of Clerk instance.
  */
 export function reconcileOwner(nextOwner: string): boolean {
   const previous = readOwner();
@@ -50,15 +65,15 @@ export function reconcileOwner(nextOwner: string): boolean {
   }
 
   if (signedIn && previous && nextOwner !== previous) {
-    // Different account on the same browser.
-    clearLocalData();
+    // Different account on the same browser: start clean, but keep the saved estimates.
+    clearSessionData();
     writeOwner(nextOwner);
     return true;
   }
 
   if (!signedIn && previous) {
-    // Session ended.
-    clearLocalData();
+    // Session ended: keep the estimates, drop the session's own state.
+    clearSessionData();
     writeOwner("");
     return true;
   }

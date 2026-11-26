@@ -4,7 +4,7 @@ import { useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { clerkEnabled } from "@/lib/env";
-import { clearLocalData } from "@/lib/storage/reset";
+import { clearSessionData } from "@/lib/storage/reset";
 
 /**
  * Clerk is the only session: signing out clears it and returns home.
@@ -30,7 +30,7 @@ function SignOutInner({ className }: { className: string }) {
         try {
           await clerk.signOut();
         } finally {
-          clearLocalData();
+          clearSessionData();
           router.push("/");
           router.refresh();
         }

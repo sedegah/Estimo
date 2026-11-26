@@ -27,7 +27,7 @@ function installWindow() {
   return { storage, events };
 }
 
-test("a different account clears the previous account's data", async () => {
+test("a different account clears session data but keeps the saved estimates", async () => {
   const { storage } = installWindow();
   const { reconcileOwner, readOwner } = await import("../lib/storage/reset.ts");
 
@@ -36,21 +36,25 @@ test("a different account clears the previous account's data", async () => {
   assert.equal(readOwner(), "user_A");
 
   storage.setItem("estimo_saved_estimates_v1", "[\"estimate\"]");
+  storage.setItem("estimo_draft_v1", "{\"draft\":true}");
   const cleared = reconcileOwner("user_B");
   assert.equal(cleared, true);
-  assert.equal(storage.getItem("estimo_saved_estimates_v1"), null);
+  assert.equal(storage.getItem("estimo_draft_v1"), null, "the session draft goes");
+  assert.equal(storage.getItem("estimo_saved_estimates_v1"), "[\"estimate\"]", "the estimate stays, ready to be adopted");
   assert.equal(readOwner(), "user_B");
 });
 
-test("signing out clears local data", async () => {
+test("signing out keeps the saved estimates", async () => {
   const { storage } = installWindow();
   const { reconcileOwner, readOwner } = await import("../lib/storage/reset.ts");
 
   reconcileOwner("user_A");
   storage.setItem("estimo_guest_estimate_v1", "[]");
+  storage.setItem("estimo_saved_estimates_v1", "[\"kept\"]");
   const cleared = reconcileOwner("");
   assert.equal(cleared, true);
-  assert.equal(storage.getItem("estimo_guest_estimate_v1"), null);
+  assert.equal(storage.getItem("estimo_guest_estimate_v1"), null, "session state goes");
+  assert.equal(storage.getItem("estimo_saved_estimates_v1"), "[\"kept\"]", "signing out must not destroy estimates");
   assert.equal(readOwner(), "");
 });
 
