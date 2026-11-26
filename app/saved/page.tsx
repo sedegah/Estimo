@@ -47,8 +47,6 @@ export default function SavedEstimatesPage() {
   const [prices, setPrices] = useState<Record<string, PriceEntry> | null>(null);
   const [liveTotals, setLiveTotals] = useState<Record<string, number>>({});
   const [query, setQuery] = useState("");
-  const [lookup, setLookup] = useState("");
-  const [lookupError, setLookupError] = useState("");
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
@@ -148,19 +146,6 @@ export default function SavedEstimatesPage() {
     deleteSavedEstimate(project.id);
   };
 
-  /** Pull an estimate by the code written on its card. */
-  const openByCode = () => {
-    const wanted = lookup.trim().toUpperCase();
-    if (!wanted) return;
-    const match = projects.find((project) => (project.code ?? "").toUpperCase() === wanted);
-    if (!match) {
-      setLookupError(`No estimate coded ${wanted} is saved on this device.`);
-      return;
-    }
-    setLookupError("");
-    open(match);
-  };
-
   return (
     <main className="container page-shell">
       <header className="app-head">
@@ -179,49 +164,21 @@ export default function SavedEstimatesPage() {
       </header>
 
       <section className="saved-toolbar">
-        <form
-          className="saved-lookup"
-          onSubmit={(event) => {
-            event.preventDefault();
-            openByCode();
-          }}
-        >
-          <label className="saved-lookup-label" htmlFor="estimate-code">
-            Open by code
-          </label>
-          <div className="saved-lookup-row">
-            <input
-              id="estimate-code"
-              type="text"
-              value={lookup}
-              onChange={(event) => {
-                setLookup(event.target.value);
-                setLookupError("");
-              }}
-              placeholder="EST-7K3M9Q"
-              autoComplete="off"
-              spellCheck={false}
-            />
-            <button className="btn-outline" type="submit">
-              Open
-            </button>
-          </div>
-          {lookupError ? <p className="saved-lookup-error">{lookupError}</p> : null}
-        </form>
-
         <div className="saved-find">
           <label className="saved-lookup-label" htmlFor="saved-search">
-            Find
+            Find an estimate
           </label>
           <input
             id="saved-search"
             type="search"
             value={query}
             onChange={(event) => setQuery(event.target.value)}
-            placeholder="Name, type or code"
-            aria-label="Search saved estimates"
+            placeholder="Name, type or code, e.g. EST-7K3M9Q"
+            aria-label="Search saved estimates by name, type or code"
           />
-          <p className="saved-lookup-hint">The code is printed on each card, so it can be read out and typed back.</p>
+          <p className="saved-lookup-hint">
+            Every card carries a code, so it can be read out and typed back here.
+          </p>
         </div>
       </section>
 

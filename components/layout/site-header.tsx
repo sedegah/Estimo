@@ -25,12 +25,15 @@ export function SiteHeader({ signedIn = false }: { signedIn?: boolean }) {
           <EstimoLogo height={26} />
         </Link>
         <nav className="nav">
-          <Link className={isActive("/") ? "is-active" : ""} href="/">Home</Link>
+          {/* a guest header carries Saved estimates, so the logo is Home; signed-in users
+              keep the explicit Home item */}
+          {signedIn ? <Link className={isActive("/") ? "is-active" : ""} href="/">Home</Link> : null}
           <Link className={isActive("/catalogue") ? "is-active" : ""} href="/catalogue">Catalogue</Link>
-          <EstimateBasketLink />
         </nav>
         <div className="topbar-auth">
           <HeaderAuth signedIn={signedIn} />
+          {/* the basket sits at the very end of the header */}
+          <EstimateBasketLink />
         </div>
       </div>
     </header>

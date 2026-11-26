@@ -382,38 +382,6 @@ button.chip:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px;
   .app-rail-footer { order: 3; margin-top: auto; }
 }
 /* ── signed-out saved estimates ─────────────────────────────────────────── */
-.saved-lookup {
-  margin: 0 0 22px;
-  padding: 18px 20px 16px;
-  max-width: 560px;
-  background: #ffffff;
-  border: 1px solid #e2e4dc;
-  border-radius: 14px;
-}
-.saved-lookup-label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 11px;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: #6b7684;
-}
-.saved-lookup-row { display: flex; gap: 10px; }
-.saved-lookup-row input {
-  flex: 1;
-  min-width: 0;
-  min-height: 42px;
-  padding: 0 12px;
-  border: 1px solid #d8dbe3;
-  border-radius: 8px;
-  font: inherit;
-  color: #0b1f3f;
-  background: #ffffff;
-}
-.saved-lookup-row input:focus { outline: 2px solid #f5b301; outline-offset: 1px; }
-.saved-lookup-row .btn-outline { white-space: nowrap; }
-.saved-lookup-hint { margin: 8px 0 0; font-size: 12.5px; color: #6b7684; }
-.saved-lookup-error { margin: 10px 0 0; font-size: 13px; color: #a63b2a; }
 
 .project-tile-open {
   display: block;
@@ -428,15 +396,6 @@ button.chip:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px;
 .project-tile-open:focus-visible { outline: 2px solid #f5b301; outline-offset: 2px; }
 .project-tile { overflow: hidden; }
 
-.saved-empty {
-  padding: 46px 22px;
-  text-align: center;
-  background: #ffffff;
-  border: 1px dashed #d8dbe3;
-  border-radius: 16px;
-}
-.saved-empty-title { margin: 0 0 8px; font-size: 20px; color: #0b1f3f; }
-.saved-empty-text { margin: 0 auto 18px; max-width: 440px; color: #5f6b7a; }
 
 /* ── signed-out saved estimates ─────────────────────────────────────────── */
 .saved-toolbar {
@@ -446,10 +405,9 @@ button.chip:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px;
   gap: 16px 20px;
   margin: 0 0 24px;
 }
-.saved-lookup,
 .saved-find {
-  flex: 1 1 260px;
-  max-width: 420px;
+  flex: 1 1 320px;
+  max-width: 520px;
   padding: 16px 18px 14px;
   background: #ffffff;
   border: 1px solid #e2e4dc;
@@ -463,8 +421,6 @@ button.chip:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px;
   text-transform: uppercase;
   color: #6b7684;
 }
-.saved-lookup-row { display: flex; gap: 10px; }
-.saved-lookup-row input,
 .saved-find input {
   width: 100%;
   min-width: 0;
@@ -476,12 +432,8 @@ button.chip:focus-visible { outline: 3px solid var(--navy); outline-offset: 2px;
   color: #0b1f3f;
   background: #ffffff;
 }
-.saved-lookup-row input { flex: 1; }
-.saved-lookup-row input:focus,
 .saved-find input:focus { outline: 2px solid #f5b301; outline-offset: 1px; }
-.saved-lookup-row .btn-outline { white-space: nowrap; }
 .saved-lookup-hint { margin: 8px 0 0; font-size: 12.5px; line-height: 1.45; color: #6b7684; }
-.saved-lookup-error { margin: 10px 0 0; font-size: 13px; color: #a63b2a; }
 
 .project-tile-open {
   display: block;
