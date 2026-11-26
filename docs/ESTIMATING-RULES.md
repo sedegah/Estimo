@@ -46,6 +46,29 @@ quotient. Fans are a line item in every estimate, not an unstated assumption.
 
 ## Special loads and air conditioning
 
-See `docs/SPECIAL-LOADS.md`. Air conditioners counted in the Points table are the quantity of
-the configured AC load, and the engine's generic AC point is switched off while that load
-covers it, so the same unit is never costed twice.
+See `docs/SPECIAL-LOADS.md`. The configurator follows the handoff's four configuration
+states, with its labels: `Configuration required`, `Estimated`, `Verified` and
+`User override`. The priority is manufacturer instructions, then an approved professional
+override, then ESTIMO's provisional sizing, then unresolved.
+
+Motor loads — air conditioners, pumps, workshop machines and refrigeration plant — are run
+in 2.5 mm² minimum, whatever the design current allows. That is what the trade installs, and
+it stops a small unit being wired in a size that is only nominally adequate.
+
+Air conditioners counted in the Points table are the quantity of the configured AC load. The
+engine's generic AC point is switched off while that load covers it, so the same unit is
+never costed twice. A home is planned with one unit per bedroom and living room; a single
+room and the commercial types are not air conditioned by default.
+
+## Price-list checks
+
+The estimate refuses to be quietly wrong about cable. If a smaller conductor is published at
+more than 1.5× the next size up, the itemized bill carries a warning naming both prices, for
+example:
+
+> Catalogue price check: 1.5 mm² copper single-core is GHS 25.00/m but 2.5 mm² copper
+> single-core is GHS 6.00/m. The smaller cable is priced higher, so small circuits look
+> dearer than large ones; check the price list.
+
+That warning is what explains a 1 HP air conditioner out-pricing a 2.5 HP one until the
+catalogue row is corrected. Fix the price in the admin console; the warning clears itself.

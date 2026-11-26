@@ -27,7 +27,7 @@ import {
   type SpecialLoadInstance,
 } from "../lib/quantity-engine/special-loads.ts";
 import { calculateProject, parametersFromRows, rulesByKey } from "../lib/quantity-engine/engine.ts";
-import { priceQuantities, type PriceEntry } from "../lib/quantity-engine/catalogue.ts";
+import { conductorPriceWarnings, priceQuantities, type PriceEntry } from "../lib/quantity-engine/catalogue.ts";
 import { CATALOGUE_MATERIALS } from "../lib/data/catalogue.ts";
 import type {
   AssemblyItemRow,
@@ -276,20 +276,55 @@ test("the bill says which loads a shared material line belongs to", () => {
     route_length_m: 7.2,
     route_source: "USER_OVERRIDE",
   };
-  const ac: SpecialLoadInstance = {
-    ...newSpecialLoadInstance("air_conditioner", "origin-ac"),
-    capacity_hp: 1.5,
+  // a freezer shares the fridge's 1.5 mm² conductors, so the line carries both names
+  const freezer: SpecialLoadInstance = {
+    ...newSpecialLoadInstance("freezer", "origin-freezer"),
     phase: "single",
+    rated_power_kw: 0.8,
     route_length_m: 7.2,
     route_source: "USER_OVERRIDE",
   };
 
-  const outcome = applySpecialLoads(engine(), [fridge, ac], {});
+  const outcome = applySpecialLoads(engine(), [fridge, freezer], {});
   const pair = priceQuantities(outcome.materialQuantities, prices, catalogue);
   const copper = pair.find((line) => line.catalogueId === "mat-cab-sc-cu-1p5");
   assert.ok(copper, "the shared 1.5 mm² line exists");
-  assert.deepEqual([...copper.origins].sort(), ["Air conditioner", "Fridge"]);
+  assert.deepEqual([...copper.origins].sort(), ["Freezer", "Fridge"]);
   assert.equal(copper.mixed, false, "only the loads use this size, so it is theirs");
+});
+
+test("air conditioners are run in 2.5 mm² whatever their rating", () => {
+  for (const hp of [1, 1.5, 2, 2.5]) {
+    const ac: SpecialLoadInstance = {
+      ...newSpecialLoadInstance("air_conditioner", `ac-min-${hp}`),
+      capacity_hp: hp,
+      phase: "single",
+      route_length_m: 13,
+      route_source: "USER_OVERRIDE",
+    };
+    const sizing = sizeSpecialLoad(ac);
+    assert.equal(sizing.cableSizeMm2, 2.5, `${hp} HP cable`);
+    assert.ok(
+      sizing.basis.some((line) => /smallest cable .* run in/i.test(line)),
+      `${hp} HP basis explains the minimum`,
+    );
+  }
+});
+
+test("a smaller cable priced above a larger one is reported, not silently used", () => {
+  const inverted = {
+    "mat-cab-sc-cu-1p5": { price: 25, brand: null, source: null, updatedAt: null },
+    "mat-cab-sc-cu-2p5": { price: 6, brand: null, source: null, updatedAt: null },
+  };
+  const warnings = conductorPriceWarnings(inverted);
+  assert.equal(warnings.length, 1);
+  assert.match(warnings[0], /1\.5 mm².*25\.00.*2\.5 mm².*6\.00/);
+
+  const sane = {
+    "mat-cab-sc-cu-1p5": { price: 4, brand: null, source: null, updatedAt: null },
+    "mat-cab-sc-cu-2p5": { price: 6, brand: null, source: null, updatedAt: null },
+  };
+  assert.deepEqual(conductorPriceWarnings(sane), []);
 });
 
 test("adding the AC load after counting the ACs prices every one of them", () => {
@@ -304,7 +339,7 @@ test("adding the AC load after counting the ACs prices every one of them", () =>
   };
   const synced = syncAcQuantity([ac], 4);
   assert.equal(synced[0].quantity, 4);
-  assert.equal(specialLoadSummary(synced[0]), `4 × 2.5 HP · 2.25 kW · 13 m · 16 A · 2.5 mm²`);
+  assert.equal(specialLoadSummary(synced[0]), `4 × 2.5 HP · 2.25 kW · 13 m · 16 A · 2.5 mm² · from DB1`);
 
   const outcome = applySpecialLoads(engine(), synced, {});
   const device = outcome.materialQuantities.find((row) => row.material_key === "mcb_sp_16");
