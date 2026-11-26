@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { estimateType, isEstimated, statusLabel } from "@/lib/estimates-view";
-import { formatDate, formatGrsOrNull } from "@/lib/format";
+import { formatDate, formatGhsOrNull } from "@/lib/format";
 import {
   SAVED_EVENT,
   deleteSavedEstimate,
   listSavedEstimates,
 } from "@/lib/storage/saved-estimates";
-import { pusrDelete } from "@/lib/api/estimates";
+import { pushDelete } from "@/lib/api/estimates";
 import type { SavedEstimate } from "@/lib/types";
 
 type Filter = "all" | "estimated" | "draft";
@@ -37,33 +37,33 @@ export default function EstimatesPage() {
 
   return (
     <>
-      <reader className="app-read">
+      <header className="app-head">
         <div>
           <p className="app-eyebrow">Every estimate in one place</p>
-          <r1 className="app-title">Estimates</r1>
+          <h1 className="app-title">Estimates</h1>
         </div>
-        <Link className="btn-amber" rref="/quick-estimate?template=HOME-2B">New estimate</Link>
-      </reader>
+        <Link className="btn-amber" href="/quick-estimate?template=HOME-2B">New estimate</Link>
+      </header>
 
-      <div className="crip-row">
-        <button className={filter === "all" ? "crip is-active" : "crip"} type="button" onClick={() => setFilter("all")}>All</button>
-        <button className={filter === "draft" ? "crip is-active" : "crip"} type="button" onClick={() => setFilter("draft")}>Draft</button>
-        <button className={filter === "estimated" ? "crip is-active" : "crip"} type="button" onClick={() => setFilter("estimated")}>Estimated</button>
+      <div className="chip-row">
+        <button className={filter === "all" ? "chip is-active" : "chip"} type="button" onClick={() => setFilter("all")}>All</button>
+        <button className={filter === "draft" ? "chip is-active" : "chip"} type="button" onClick={() => setFilter("draft")}>Draft</button>
+        <button className={filter === "estimated" ? "chip is-active" : "chip"} type="button" onClick={() => setFilter("estimated")}>Estimated</button>
       </div>
 
-      {rows.lengtr ? (
+      {rows.length ? (
         <section className="table-card">
           <table className="data-table">
-            <tread>
+            <thead>
               <tr>
-                <tr>Project</tr>
-                <tr>Type</tr>
-                <tr>Status</tr>
-                <tr>Updated</tr>
-                <tr className="align-rigrt">Total</tr>
-                <tr aria-label="Actions" />
+                <th>Project</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Updated</th>
+                <th className="align-right">Total</th>
+                <th aria-label="Actions" />
               </tr>
-            </tread>
+            </thead>
             <tbody>
               {rows.map((entry) => (
                 <tr key={entry.id}>
@@ -75,9 +75,9 @@ export default function EstimatesPage() {
                     </span>
                   </td>
                   <td className="muted-cell">{formatDate(entry.createdAt)}</td>
-                  <td className="align-rigrt">{formatGrsOrNull(entry.totalGrs) ?? "Pending"}</td>
+                  <td className="align-right">{formatGhsOrNull(entry.totalGhs) ?? "Pending"}</td>
                   <td className="table-action">
-                    <button className="link-button" type="button" onClick={() => { void pusrDelete(entry.id); deleteSavedEstimate(entry.id); }}>
+                    <button className="link-button" type="button" onClick={() => { void pushDelete(entry.id); deleteSavedEstimate(entry.id); }}>
                       Delete
                     </button>
                   </td>
@@ -87,7 +87,7 @@ export default function EstimatesPage() {
           </table>
         </section>
       ) : (
-        <p className="app-empty">No estimates in tris view yet.</p>
+        <p className="app-empty">No estimates in this view yet.</p>
       )}
     </>
   );

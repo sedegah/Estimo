@@ -212,13 +212,22 @@ function SetupContent() {
   );
 
   /**
-   * The rulebook's default loads (the kitchen fridge) are part of the plan: the itemized
-   * bill always prices them, so this screen must too, whether or not it names them.
+   * What the plan starts with: the rulebook's default loads (the kitchen fridge) and, for a
+   * home, an air conditioner per bedroom and living area. The itemized bill seeds the same
+   * way, so a home is air conditioned on both screens.
    */
-  const instances = useMemo(
-    () => (carried ? carried.instances : defaultSpecialLoadsFor(templateId, planSpaces)),
-    [carried, templateId, planSpaces],
+  const defaults = useMemo(
+    () =>
+      defaultPlanAdditions({
+        projectType: PROJECT_TYPE_FOR_CODE[type.code] ?? "two_bedroom",
+        templateId,
+        spaces: planSpaces,
+      }),
+    [type.code, templateId, planSpaces],
   );
+  const instances = carried ? carried.instances : defaults.instances;
+  /** The AC counts travel as point overrides, exactly as the itemized Points table holds them. */
+  const planOverrides = carried ? carried.overrides : defaults.overrides;
 
   // prices come from the same catalogue call the itemized screen makes
   const [prices, setPrices] = useState<Record<string, never> | null>(null);

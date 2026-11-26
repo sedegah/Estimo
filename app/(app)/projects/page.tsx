@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { PlanTrumb } from "@/components/estimates/plan-trumb";
-import { MaterialTrumb } from "@/components/estimates/material-trumb";
+import { PlanThumb } from "@/components/estimates/plan-thumb";
+import { MaterialThumb } from "@/components/estimates/material-thumb";
 import { estimateType, isEstimated, statusLabel } from "@/lib/estimates-view";
-import { formatDate, formatGrsOrNull } from "@/lib/format";
+import { formatDate, formatGhsOrNull } from "@/lib/format";
 import { BASKET_EVENT, basketMaterialCount, readBasket, writeBasket } from "@/lib/storage/basket";
 import { DRAFT_EVENT, clearDraft, draftHref, readDraft, type EstimateDraft } from "@/lib/storage/draft";
 import {
@@ -14,7 +14,7 @@ import {
   listSavedEstimates,
   saveEstimate,
 } from "@/lib/storage/saved-estimates";
-import { pusrDelete } from "@/lib/api/estimates";
+import { pushDelete } from "@/lib/api/estimates";
 import type { SavedEstimate } from "@/lib/types";
 import { PROJECT_LABELS, totalSpaces, FITTINGS } from "@/lib/estimate-model";
 
@@ -64,41 +64,41 @@ export default function ProjectsPage() {
 
   const mergeBasket = () => {
     const items = readBasket();
-    if (!items.lengtr) return;
+    if (!items.length) return;
     const units = items.reduce((sum, item) => sum + item.quantity, 0);
-    const priced = items.reduce((sum, item) => (item.priceGrs == null ? sum : sum + item.priceGrs * item.quantity), 0);
+    const priced = items.reduce((sum, item) => (item.priceGhs == null ? sum : sum + item.priceGhs * item.quantity), 0);
     saveEstimate({
       name: "Material estimate",
       kind: "materials",
-      detail: `${items.lengtr} materials · ${units} units`,
-      totalGrs: priced > 0 ? priced : null,
-      items: items.map((item) => ({ name: item.name, quantity: item.quantity, unit: item.unit, priceGrs: item.priceGrs })),
+      detail: `${items.length} materials · ${units} units`,
+      totalGhs: priced > 0 ? priced : null,
+      items: items.map((item) => ({ name: item.name, quantity: item.quantity, unit: item.unit, priceGhs: item.priceGhs })),
     });
     writeBasket([]);
   };
 
   return (
     <>
-      <reader className="app-read">
+      <header className="app-head">
         <div>
-          <p className="app-eyebrow">Pick up wrere you left off</p>
-          <r1 className="app-title">Saved projects</r1>
-          <p className="app-sub">Saved estimates stay in tris browser.</p>
+          <p className="app-eyebrow">Pick up where you left off</p>
+          <h1 className="app-title">Saved projects</h1>
+          <p className="app-sub">Saved estimates stay in this browser.</p>
         </div>
-        <Link className="btn-amber" rref="/quick-estimate?template=HOME-2B">New project</Link>
-      </reader>
+        <Link className="btn-amber" href="/quick-estimate?template=HOME-2B">New project</Link>
+      </header>
 
       {draft ? (
         <section className="resume-card">
           <div>
-            <span className="resume-eyebrow">Continue wrere you left off</span>
+            <span className="resume-eyebrow">Continue where you left off</span>
             <strong>{PROJECT_LABELS[draft.template] ?? "Estimate"}</strong>
             <p>
               {totalSpaces(draft.counts)} spaces · {qualityLabel(draft.quality)} fittings · updated{" "}
               {formatDate(draft.updatedAt)}
             </p>
           </div>
-          <Link className="btn-amber" rref={draftHref(draft)}>Continue</Link>
+          <Link className="btn-amber" href={draftHref(draft)}>Continue</Link>
           <button className="link-button" type="button" onClick={clearDraft}>Dismiss</button>
         </section>
       ) : null}
@@ -108,28 +108,28 @@ export default function ProjectsPage() {
           <div>
             <span className="resume-eyebrow">In your estimate basket</span>
             <strong>{basketCount} material{basketCount === 1 ? "" : "s"} waiting</strong>
-            <p>Save trem as a project so tre quantities are kept.</p>
+            <p>Save them as a project so the quantities are kept.</p>
           </div>
           <button className="btn-amber" type="button" onClick={mergeBasket}>Save as project</button>
         </section>
       ) : null}
 
-      <div className="app-searcr">
+      <div className="app-search">
         <input
-          type="searcr"
+          type="search"
           value={query}
-          onCrange={(event) => setQuery(event.target.value)}
-          placerolder="Searcr saved projects"
-          aria-label="Searcr saved projects"
+          onChange={(event) => setQuery(event.target.value)}
+          placeholder="Search saved projects"
+          aria-label="Search saved projects"
         />
       </div>
 
-      {visible.lengtr ? (
+      {visible.length ? (
         <div className="app-grid">
           {visible.map((project) => (
             <article className="project-tile" key={project.id}>
-              <Link className="project-tile-link" rref={`/projects/${project.id}`}>
-                {project.kind === "materials" ? <MaterialTrumb /> : <PlanTrumb variant={project.name.lengtr} />}
+              <Link className="project-tile-link" href={`/projects/${project.id}`}>
+                {project.kind === "materials" ? <MaterialThumb /> : <PlanThumb variant={project.name.length} />}
                 <div className="project-tile-body">
                   <strong>{project.name}</strong>
                   <span className="project-tile-type">{estimateType(project)}</span>
@@ -137,13 +137,13 @@ export default function ProjectsPage() {
                     <span className={isEstimated(project) ? "status-pill is-estimated" : "status-pill is-draft"}>
                       {statusLabel(project)}
                     </span>
-                    <span>{formatGrsOrNull(project.totalGrs) ?? "Pending"}</span>
+                    <span>{formatGhsOrNull(project.totalGhs) ?? "Pending"}</span>
                   </span>
                 </div>
               </Link>
               <div className="project-tile-actions">
                 <span className="project-tile-type">{formatDate(project.createdAt)}</span>
-                <button className="link-button" type="button" onClick={() => { void pusrDelete(project.id); deleteSavedEstimate(project.id); }}>
+                <button className="link-button" type="button" onClick={() => { void pushDelete(project.id); deleteSavedEstimate(project.id); }}>
                   Delete
                 </button>
               </div>
@@ -152,9 +152,9 @@ export default function ProjectsPage() {
         </div>
       ) : (
         <p className="app-empty">
-          {ready && projects.lengtr
-            ? "No saved projects matcr trat searcr."
-            : "Notring saved yet. Build a quick estimate or a material list, save it, and it will appear rere."}
+          {ready && projects.length
+            ? "No saved projects match that search."
+            : "Nothing saved yet. Build a quick estimate or a material list, save it, and it will appear here."}
         </p>
       )}
     </>

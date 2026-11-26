@@ -34,6 +34,7 @@ import {
   type SpecialLoadInstance,
 } from "@/lib/quantity-engine/special-loads";
 import { SpecialLoadConfigurator } from "./special-load-configurator";
+import { defaultPlanAdditions } from "@/lib/estimate-live";
 import { pricedCount, pricedTotal } from "@/lib/estimate-total";
 import { unitLabel } from "@/lib/format";
 import { readBasket, writeBasket } from "@/lib/storage/basket";
@@ -256,12 +257,21 @@ export function QuantityView(props: Props) {
         const draftSpaces = tidyNames(draft.spaces);
         setSpecLevel(draft.specLevel ?? "standard");
         setSpaces(draftSpaces);
-        setOverrides(draft.overrides ?? []);
         // new drafts carry whole instances; older ones only carried load keys
         const stored = dedupeLoads(parseSpecialLoadInstances(draft.specialLoadInstances));
+        const defaults = defaultPlanAdditions({
+          projectType: firstTemplate.projectType,
+          templateId: draft.templateId,
+          spaces: draftSpaces,
+          routes: props.spaceRoutes ?? [],
+          overrides: draft.overrides ?? [],
+        });
+        setOverrides(draft.overrides?.length ? draft.overrides : defaults.overrides);
         if (stored.length) setInstances(stored);
         else if (Array.isArray(draft.loads)) {
           setInstances(seedSpecialLoads(draft.loads, draftSpaces, props.spaceRoutes ?? [], draft.templateId));
+        } else {
+          setInstances(defaults.instances);
         }
         if (props.initialSpecLevel) setSpecLevel(props.initialSpecLevel);
       }
@@ -529,17 +539,36 @@ export function QuantityView(props: Props) {
     setProjectType(key);
     const next = props.templates.find((template) => template.projectType === key);
     if (next) {
+      const nextSpaces = props.spacesByTemplate[next.id] ?? [];
+      const defaults = defaultPlanAdditions({
+        projectType: next.projectType,
+        templateId: next.id,
+        spaces: nextSpaces,
+        routes: props.spaceRoutes ?? [],
+      });
       setTemplateId(next.id);
-      setSpaces(props.spacesByTemplate[next.id] ?? []);
-      setOverrides([]);
+      setSpaces(nextSpaces);
+      setOverrides(defaults.overrides);
+      setInstances(defaults.instances);
+      setOpenLoadId(null);
       setAdded("");
     }
   };
 
   const pickTemplate = (id: string) => {
+    const nextTemplate = props.templates.find((template) => template.id === id);
+    const nextSpaces = props.spacesByTemplate[id] ?? [];
+    const defaults = defaultPlanAdditions({
+      projectType: nextTemplate?.projectType ?? projectType,
+      templateId: id,
+      spaces: nextSpaces,
+      routes: props.spaceRoutes ?? [],
+    });
     setTemplateId(id);
-    setSpaces(props.spacesByTemplate[id] ?? []);
-    setOverrides([]);
+    setSpaces(nextSpaces);
+    setOverrides(defaults.overrides);
+    setInstances(defaults.instances);
+    setOpenLoadId(null);
     setAdded("");
   };
 
