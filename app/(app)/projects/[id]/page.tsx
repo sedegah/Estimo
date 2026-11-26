@@ -6,7 +6,9 @@ import { useEffect, useMemo, useState } from "react";
 import {
   FITTINGS,
   PROJECT_LABELS,
+  clampCount,
   defaultCounts,
+  minimumCount,
   projectType,
   totalSpaces,
   type Counts,
@@ -88,7 +90,14 @@ export default function ProjectPage() {
       setReady(true);
       if (!entry) return;
       const nextTemplate = entry.template ?? "HOME-2B";
-      const nextCounts = entry.counts ?? defaultCounts(nextTemplate);
+      const storedCounts = entry.counts ?? defaultCounts(nextTemplate);
+      // stored counts may predate a rule (two washrooms in an office, say): re-apply it
+      const nextCounts = Object.fromEntries(
+        Object.entries(storedCounts).map(([key, value]) => [
+          key,
+          clampCount(nextTemplate, key, Number(value) || 0),
+        ]),
+      );
       setName(entry.name);
       setTemplate(nextTemplate);
       setCounts(nextCounts);
@@ -159,7 +168,7 @@ export default function ProjectPage() {
   }, [project, livePrices]);
 
   const changeSpace = (key: string, delta: number) => {
-    setCounts((current) => ({ ...current, [key]: clamp((current[key] ?? 0) + delta) }));
+    setCounts((current) => ({ ...current, [key]: clampCount(type.code, key, (current[key] ?? 0) + delta) }));
     setSavedMessage("");
   };
 
@@ -652,7 +661,14 @@ export default function ProjectPage() {
                       </svg>
                     </button>
                     <div className="stepper">
-                      <button type="button" onClick={() => changeSpace(field.key, -1)} aria-label={`Fewer ${field.label}`}>−</button>
+                      <button
+                        type="button"
+                        onClick={() => changeSpace(field.key, -1)}
+                        disabled={count <= minimumCount(type.code, field.key)}
+                        aria-label={`Fewer ${field.label}`}
+                      >
+                        −
+                      </button>
                       <span aria-live="polite">{count}</span>
                       <button type="button" onClick={() => changeSpace(field.key, 1)} aria-label={`More ${field.label}`}>+</button>
                     </div>

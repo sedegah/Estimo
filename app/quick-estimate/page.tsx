@@ -6,8 +6,9 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import {
   FITTINGS,
   PROJECT_LABELS,
-  computeEstimate,
+  clampCount,
   defaultCounts,
+  minimumCount,
   projectType,
   totalSpaces,
   type Counts,
@@ -29,8 +30,6 @@ import type { PointOverride, SpaceInput } from "@/lib/quantity-engine/types";
 import { saveEstimate } from "@/lib/storage/saved-estimates";
 import { saveDraft } from "@/lib/storage/draft";
 import { pushCreate } from "@/lib/api/estimates";
-
-const clampRoom = (value: number) => Math.max(0, Math.min(20, Math.round(value)));
 
 const itemQuantity = (item: SpaceItem) =>
   item.lights ?? item.sockets ?? item.acs ?? item.heaters ?? item.switches ?? item.cooking ?? 0;
@@ -59,7 +58,7 @@ function SetupContent() {
     const next: Counts = { ...defaults };
     for (const field of type.fields) {
       const raw = searchParams.get(field.key);
-      if (raw !== null && raw !== "") next[field.key] = clampRoom(Number(raw));
+      if (raw !== null && raw !== "") next[field.key] = clampCount(type.code, field.key, Number(raw));
     }
     return next;
   };
@@ -101,27 +100,51 @@ function SetupContent() {
   } | null>(null);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem("estimo_estimate_draft_v1");
-      if (!raw) return;
-      const draft = JSON.parse(raw) as {
-        templateId?: string;
-        spaces?: SpaceInput[];
-        overrides?: PointOverride[];
-        specialLoadInstances?: unknown[];
-      };
-      if (draft.templateId !== templateId || !draft.spaces?.length) {
+    /**
+     * Reads the take-off the itemized bill left behind. It is re-read whenever the page
+     * becomes visible again, so coming back from an edit there is always reflected here.
+     */
+    const read = () => {
+      try {
+        const raw = localStorage.getItem("estimo_estimate_draft_v1");
+        if (!raw) {
+          setCarried(null);
+          return;
+        }
+        const draft = JSON.parse(raw) as {
+          templateId?: string;
+          spaces?: SpaceInput[];
+          overrides?: PointOverride[];
+          specialLoadInstances?: unknown[];
+        };
+        if (draft.templateId !== templateId || !draft.spaces?.length) {
+          setCarried(null);
+          return;
+        }
+        setCarried({
+          spaces: draft.spaces,
+          overrides: draft.overrides ?? [],
+          instances: parseSpecialLoadInstances(draft.specialLoadInstances),
+        });
+      } catch {
         setCarried(null);
-        return;
       }
-      setCarried({
-        spaces: draft.spaces,
-        overrides: draft.overrides ?? [],
-        instances: parseSpecialLoadInstances(draft.specialLoadInstances),
-      });
-    } catch {
-      setCarried(null);
-    }
+    };
+
+    read();
+    const onVisible = () => {
+      if (document.visibilityState === "visible") read();
+    };
+    window.addEventListener("focus", read);
+    window.addEventListener("popstate", read);
+    window.addEventListener("pageshow", read);
+    document.addEventListener("visibilitychange", onVisible);
+    return () => {
+      window.removeEventListener("focus", read);
+      window.removeEventListener("popstate", read);
+      window.removeEventListener("pageshow", read);
+      document.removeEventListener("visibilitychange", onVisible);
+    };
   }, [templateId]);
 
   const planSpaces = useMemo(
@@ -250,7 +273,15 @@ function SetupContent() {
   const changeSpace = (key: string, delta: number) => {
     // editing the counters means going back to the counter-built plan
     setCarried(null);
-    setCounts((current) => ({ ...current, [key]: clampRoom((current[key] ?? 0) + delta) }));
+    setCounts((current) => ({ ...current, [key]: clampCount(type.code, key, (current[key] ?? 0) + delta) }));
+  };
+
+  /** Drops the edited take-off and prices the counters again. */
+  const useCounters = () => {
+    setCarried(null);
+    try {
+      localStorage.removeItem("estimo_estimate_draft_v1");
+    } catch {}
   };
 
   const toggleSpace = (key: string) => {
@@ -304,7 +335,14 @@ function SetupContent() {
                       </svg>
                     </button>
                     <div className="stepper">
-                      <button type="button" onClick={() => changeSpace(field.key, -1)} aria-label={`Fewer ${field.label}`}>−</button>
+                      <button
+                        type="button"
+                        onClick={() => changeSpace(field.key, -1)}
+                        disabled={count <= minimumCount(type.code, field.key)}
+                        aria-label={`Fewer ${field.label}`}
+                      >
+                        −
+                      </button>
                       <span aria-live="polite">{count}</span>
                       <button type="button" onClick={() => changeSpace(field.key, 1)} aria-label={`More ${field.label}`}>+</button>
                     </div>
@@ -373,6 +411,11 @@ function SetupContent() {
             {live.pricedCount} of {live.lines.length} priced ·{" "}
             {carried ? "carried over from the itemized bill" : "updates as you change the spaces"}.
           </p>
+          {carried ? (
+            <button className="link-button side-link" type="button" onClick={useCounters}>
+              Price the counters instead
+            </button>
+          ) : null}
           <button className="btn-outline side-secondary" type="button" onClick={() => void downloadSimplePdf()}>
             Download PDF
           </button>
