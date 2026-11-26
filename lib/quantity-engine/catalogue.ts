@@ -137,6 +137,21 @@ export const MATERIAL_CATALOGUE: Record<string, CatalogueLink> = {
   termination_lug_6: { id: "mat-term-lug-cu-6" },
   termination_lug_10: { id: "mat-term-lug-cu-10" },
   termination_lug_16: { id: "mat-term-lug-cu-16" },
+
+  // fan points: the fan itself, its regulator and its hook hang off the point count
+  ceiling_fan: { id: "mat-fan-ceiling-56" },
+  fan_regulator: { id: "mat-fan-regulator" },
+  fan_hook: { id: "mat-fan-hook" },
+};
+
+/**
+ * Budget rates for allowance items: things the estimate carries at a planning rate because
+ * the exact model is chosen on site. A published catalogue price always wins over these.
+ */
+export const ALLOWANCE_PRICES_GHS: Record<string, number> = {
+  "mat-fan-ceiling-56": 480,
+  "mat-fan-regulator": 65,
+  "mat-fan-hook": 30,
 };
 
 export interface PriceEntry {
@@ -226,7 +241,13 @@ export function priceQuantities(
 
   const lines: PricedLine[] = [];
   for (const [catalogueId, entry] of collected) {
-    const price = prices[catalogueId];
+    const published = prices[catalogueId];
+    const allowance = ALLOWANCE_PRICES_GHS[catalogueId];
+    const price: PriceEntry | undefined = published
+      ? published
+      : allowance !== undefined
+        ? { price: allowance, brand: "ESTIMO allowance", source: "allowance", updatedAt: null }
+        : undefined;
     // Priced on the measured quantity, rounded up to what is ordered: conduit in 3 m
     // lengths, everything else in whole units. Buying packs is a purchasing step; rounding
     // here would hide a load's cost inside a drum the plan has already paid for.

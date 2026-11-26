@@ -31,6 +31,10 @@ import { saveEstimate } from "@/lib/storage/saved-estimates";
 import { saveDraft } from "@/lib/storage/draft";
 import { pushCreate } from "@/lib/api/estimates";
 
+/** The estimate prints cedis as "GHS" with pesewas, matching the itemized bill exactly. */
+const money = (value: number) =>
+  `GHS ${value.toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
 const itemQuantity = (item: SpaceItem) =>
   item.lights ?? item.sockets ?? item.acs ?? item.heaters ?? item.switches ?? item.cooking ?? 0;
 
@@ -406,7 +410,7 @@ function SetupContent() {
           </dl>
           <div className="side-divider" />
           <span className="side-label">Estimated total</span>
-          <strong className="side-total">{formatGhs(total, 0)}</strong>
+          <strong className="side-total">{money(total)}</strong>
           <p className="side-note">
             {live.pricedCount} of {live.lines.length} priced ·{" "}
             {carried ? "carried over from the itemized bill" : "updates as you change the spaces"}.

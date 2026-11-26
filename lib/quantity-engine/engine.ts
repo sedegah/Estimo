@@ -48,6 +48,9 @@ const MATERIAL_LABELS: Record<string, string> = {
   double_13a_socket: "Double 13A socket outlet",
   socket_mounting_box: "Socket mounting box",
   light_fitting_allowance: "Light fitting (allowance)",
+  ceiling_fan: "Ceiling fan (allowance)",
+  fan_regulator: "Fan speed regulator",
+  fan_hook: "Ceiling fan hook and cover",
   ceiling_junction_box: "Ceiling junction box",
   switch_mechanism: "Switch mechanism",
   switch_mounting_box: "Switch mounting box",
@@ -453,7 +456,8 @@ function aggregateMaterials(args: {
   const extraPoints: { key: string; count: number; fixed: string[]; route: string[] }[] = [
     { key: "tv_point", count: totals.tv_points, fixed: ["double_13a_socket", "socket_mounting_box"], route: ["2.5mm2_phase_conductor", "2.5mm2_neutral_conductor", "cpc_conductor", "20mm_conduit"] },
     { key: "data_point", count: totals.data_points, fixed: ["socket_mounting_box"], route: ["data_cable"] },
-    { key: "fan_point", count: totals.fan_points, fixed: ["switch_mechanism", "switch_mounting_box"], route: ["lighting_conductors", "20mm_conduit"] },
+    // a fan point is the fan, its speed regulator and its hook, plus the switch and route
+    { key: "fan_point", count: totals.fan_points, fixed: ["ceiling_fan", "fan_regulator", "fan_hook", "switch_mechanism", "switch_mounting_box"], route: ["lighting_conductors", "20mm_conduit"] },
   ];
   const pointRouteM = args.loadRouteM ?? 8;
   for (const group of extraPoints) {

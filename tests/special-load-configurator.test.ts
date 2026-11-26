@@ -197,16 +197,16 @@ test("E. removing a load removes its circuit, route and materials", () => {
 });
 
 test("F. an unpriced material is never treated as zero", () => {
-  const outcome = applySpecialLoads(engine(), [waterHeater()], {});
-
-  // an empty price list is the "no trusted price" case: the lines stay, the money does not
-  const lines = priceQuantities(outcome.materialQuantities, {}, catalogue);
-  const unpricedLoadLine = lines.find((line) => line.amount === null);
-  assert.ok(unpricedLoadLine, "a line with no published price stays visible and unpriced");
+  // the load's own materials, with no price list at all: the lines stay, the money does not
+  const rows = specialLoadMaterials(waterHeater(), 8);
+  const lines = priceQuantities(rows, {}, catalogue);
+  const unpriced = lines.find((line) => line.amount === null);
+  assert.ok(unpriced, "a line with no published price stays visible and unpriced");
   const subtotal = lines.reduce((sum, line) => sum + (line.amount ?? 0), 0);
   assert.equal(subtotal, 0, "no price means no money is invented");
 
-  const priced = priceQuantities(outcome.materialQuantities, prices, catalogue);
+  // a published price fills the same line; pending and amount stay in step either way
+  const priced = priceQuantities(rows, prices, catalogue);
   assert.ok(priced.every((line) => (line.unitPrice === null) === (line.amount === null)));
 });
 

@@ -2644,6 +2644,57 @@ export const CATALOGUE_MATERIALS: CatalogueMaterial[] = [
     "category": "Lighting",
     "unitCode": "U-NO",
     "unit": "No."
+  },
+  {
+    "id": "mat-fan-ceiling-56",
+    "code": "FAN-CEIL-56",
+    "name": "56in Ceiling Fan (allowance)",
+    "purpose": "Standard ceiling fan for bedrooms and living rooms; an allowance, not a chosen model.",
+    "spec": "56 inch (1400mm) ceiling fan, 3-speed, with downrod",
+    "tier": "Standard",
+    "relevance": "High",
+    "keywords": [
+      "ceiling fan",
+      "fan allowance"
+    ],
+    "categoryCode": "CAT-ACC",
+    "category": "General Accessories",
+    "unitCode": "U-NO",
+    "unit": "No."
+  },
+  {
+    "id": "mat-fan-regulator",
+    "code": "FAN-REG-STD",
+    "name": "Ceiling Fan Speed Regulator",
+    "purpose": "Wall-mounted speed controller for a ceiling fan.",
+    "spec": "5-step fan regulator, 230V, white",
+    "tier": "Standard",
+    "relevance": "High",
+    "keywords": [
+      "fan regulator",
+      "fan speed control"
+    ],
+    "categoryCode": "CAT-ISO",
+    "category": "Isolators & Control",
+    "unitCode": "U-NO",
+    "unit": "No."
+  },
+  {
+    "id": "mat-fan-hook",
+    "code": "FAN-HOOK-STD",
+    "name": "Ceiling Fan Hook and Cover",
+    "purpose": "Hook, cover plate and fixings for hanging a ceiling fan.",
+    "spec": "Steel ceiling fan hook with cover and fixings",
+    "tier": "Standard",
+    "relevance": "High",
+    "keywords": [
+      "fan hook",
+      "fan mounting"
+    ],
+    "categoryCode": "CAT-ACC",
+    "category": "General Accessories",
+    "unitCode": "U-NO",
+    "unit": "No."
   }
 ];
 

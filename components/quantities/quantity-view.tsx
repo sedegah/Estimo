@@ -232,11 +232,15 @@ export function QuantityView(props: Props) {
     });
   }, [props.specialLoads, spaces]);
 
-  // The working estimate is kept in this browser, signed in or not.
+  // The working estimate is kept in this browser, signed in or not. Nothing is written
+  // until the draft has been read, so the first render cannot overwrite the plan it is
+  // about to restore.
+  const [hydrated, setHydrated] = useState(false);
+
   useEffect(() => {
-    // an explicit plan from the simple screen wins over whatever was drafted
-    if (props.initialSpaces?.length) return;
     try {
+      // an explicit plan from the simple screen wins over whatever was drafted
+      if (props.initialSpaces?.length) return;
       const raw = localStorage.getItem("estimo_estimate_draft_v1");
       if (!raw) return;
       const draft = JSON.parse(raw) as {
@@ -261,17 +265,21 @@ export function QuantityView(props: Props) {
         if (props.initialSpecLevel) setSpecLevel(props.initialSpecLevel);
       }
     } catch {}
+    setHydrated(true);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
+    if (!hydrated) return;
     try {
       localStorage.setItem(
         "estimo_estimate_draft_v1",
         JSON.stringify({ templateId, specLevel, spaces, overrides, specialLoadInstances: instances }),
       );
     } catch {}
-  }, [templateId, specLevel, spaces, overrides, instances]);
+  }, [hydrated, templateId, specLevel, spaces, overrides, instances]);
+  // the priced bill is published below, once the lines exist: the simple summary reads it
+  // as the source of truth rather than pricing the plan a second way
 
   /**
    * An automatic route follows the space it serves, until a person types one. When the
@@ -460,6 +468,36 @@ export function QuantityView(props: Props) {
 
   const total = pricedTotal(lines);
   const pricedCountValue = pricedCount(lines);
+
+  /**
+   * Publishes the priced bill into the shared draft. The itemized screen is the source of
+   * truth for price: the simple summary reads this, so the two can never quote different
+   * money for the same estimate.
+   */
+  useEffect(() => {
+    if (!hydrated) return;
+    try {
+      localStorage.setItem(
+        "estimo_estimate_draft_v1",
+        JSON.stringify({
+          templateId,
+          specLevel,
+          spaces,
+          overrides,
+          specialLoadInstances: instances,
+          bill: {
+            totalGhs: pricedTotal(lines),
+            lines: lines.map((line) => ({
+              name: line.catalogueName,
+              quantity: Math.max(1, Math.ceil(line.purchaseQuantity)),
+              unit: line.catalogueUnit,
+              priceGhs: line.unitPrice,
+            })),
+          },
+        }),
+      );
+    } catch {}
+  }, [hydrated, templateId, specLevel, spaces, overrides, instances, lines]);
 
   /** What each configured load costs on its own, and how much of it has no price yet. */
   const loadCosts = useMemo(() => {

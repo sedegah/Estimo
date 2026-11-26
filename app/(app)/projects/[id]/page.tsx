@@ -731,7 +731,7 @@ export default function ProjectPage() {
           </dl>
           <div className="side-divider" />
           <span className="side-label">Estimated total</span>
-          <strong className="side-total">{total === null ? "—" : formatGhs(total, 0)}</strong>
+          <strong className="side-total">{total === null ? "—" : `GHS ${total.toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</strong>
           <p className="side-note">
             Price of the materials in this plan, priced as the itemized bill prices them.
           </p>
