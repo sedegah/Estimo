@@ -17,9 +17,10 @@ import {
 } from "@/lib/estimate-model";
 import { formatGhs } from "@/lib/format";
 import {
-  defaultSpecialLoadsFor,
+  defaultPlanAdditions,
   fetchLivePrices,
   liveEstimate,
+  PROJECT_TYPE_FOR_CODE,
   qualityForSpecLevel,
   spacesFromCounts,
   specLevelForQuality,
