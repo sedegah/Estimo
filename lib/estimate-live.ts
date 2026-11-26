@@ -91,6 +91,63 @@ export function defaultSpecialLoadsFor(templateId: string, spaces: SpaceInput[])
   return seedSpecialLoads(enabled, spaces, spaceRouteRows as unknown as SpaceRouteRow[], templateId);
 }
 
+/**
+ * Homes are planned with air conditioning: one unit per bedroom and per living room. A
+ * single room is the exception, because there is nowhere to put one.
+ */
+const AIR_CONDITIONED_HOMES = new Set([
+  "one_bedroom",
+  "two_bedroom",
+  "three_bedroom",
+  "four_bedroom_villa",
+]);
+
+export type PlanDefaults = {
+  overrides: PointOverride[];
+  instances: SpecialLoadInstance[];
+};
+
+/**
+ * What a plan starts with, before the person changes anything: the rulebook's default
+ * loads, plus the air conditioners a home is expected to have. The simple summary and the
+ * itemized bill both seed through here, so a home is air conditioned on both screens.
+ */
+export function defaultPlanAdditions(args: {
+  projectType: string;
+  templateId: string;
+  spaces: SpaceInput[];
+  routes?: SpaceRouteRow[];
+  overrides?: PointOverride[];
+}): PlanDefaults {
+  const routes = args.routes ?? (spaceRouteRows as unknown as SpaceRouteRow[]);
+  const existing = args.overrides ?? [];
+  const instances = defaultSpecialLoadsFor(args.templateId, args.spaces);
+  if (!AIR_CONDITIONED_HOMES.has(args.projectType)) {
+    return { overrides: existing, instances };
+  }
+
+  const acSpaces = args.spaces.filter(
+    (space) => space.room_type === "bedroom" || space.room_type === "living_room",
+  );
+  if (!acSpaces.length) return { overrides: existing, instances };
+
+  const acOverrides: PointOverride[] = acSpaces
+    .filter((space) => !existing.some((entry) => entry.space_id === space.id && entry.point_type === "ac"))
+    .map((space) => ({ space_id: space.id, point_type: "ac" as const, value: 1, source: "user_override" as const }));
+
+  const [acLoad] = seedSpecialLoads(["air_conditioner"], args.spaces, routes, args.templateId);
+  const airConditioner: SpecialLoadInstance = {
+    ...acLoad,
+    // a standard 1 HP split, priced provisionally until the person picks the real units
+    capacity_hp: 1,
+    phase: "single",
+    quantity: acSpaces.length,
+    sizing_source: "ESTIMO_PROVISIONAL",
+  };
+
+  return { overrides: [...existing, ...acOverrides], instances: [...instances, airConditioner] };
+}
+
 /** Spaces as the itemized screen would start them for a template. */
 export function templatePlanSpaces(templateId: string): SpaceInput[] {
   const template = templates.find((row) => row.template_id === templateId);

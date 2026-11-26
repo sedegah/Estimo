@@ -32,7 +32,7 @@ function TemplateRow({ label, code, caption, featured }: Template) {
         </span>
         <span className="mega-row-caption">{caption}</span>
       </div>
-      <Link className="mega-row-cta" href={`/quick-estimate?template=${encodeURIComponent(code)}`}>
+      <Link className="mega-row-cta" href={`/quick-estimate?template=${encodeURIComponent(code)}&fresh=1`}>
         Start estimate
       </Link>
     </li>
@@ -56,7 +56,7 @@ export default function Home() {
               You can adjust the details later.
             </p>
             <div className="home-actions">
-              <Link className="home-cta" href="/quick-estimate?template=HOME-2B">Start an estimate</Link>
+              <Link className="home-cta" href="/quick-estimate?template=HOME-2B&fresh=1">Start an estimate</Link>
               <Link className="home-cta-outline" href="/catalogue">Check material prices</Link>
             </div>
           </div>

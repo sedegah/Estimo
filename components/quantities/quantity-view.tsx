@@ -196,19 +196,20 @@ export function QuantityView(props: Props) {
   const [projectType, setProjectType] = useState(firstTemplate.projectType);
   const [templateId, setTemplateId] = useState(firstTemplate.id);
   const [specLevel, setSpecLevel] = useState<SpecLevel>(props.initialSpecLevel ?? "standard");
-  const [spaces, setSpaces] = useState<SpaceInput[]>(
-    tidyNames(props.initialSpaces?.length ? props.initialSpaces : (props.spacesByTemplate[firstTemplate.id] ?? [])),
+  const openingSpaces = tidyNames(
+    props.initialSpaces?.length ? props.initialSpaces : (props.spacesByTemplate[firstTemplate.id] ?? []),
   );
-  const [overrides, setOverrides] = useState<PointOverride[]>([]);
+  const [spaces, setSpaces] = useState<SpaceInput[]>(openingSpaces);
+  // a home opens air conditioned (see defaultPlanAdditions), and with the rulebook's loads
+  const openingDefaults = defaultPlanAdditions({
+    projectType: firstTemplate.projectType,
+    templateId: firstTemplate.id,
+    spaces: openingSpaces,
+    routes: props.spaceRoutes ?? [],
+  });
+  const [overrides, setOverrides] = useState<PointOverride[]>(openingDefaults.overrides);
   const [added, setAdded] = useState("");
-  const [instances, setInstances] = useState<SpecialLoadInstance[]>(() =>
-    seedSpecialLoads(
-      (props.specialLoads ?? []).filter((load) => load.default_enabled).map((load) => load.load_key),
-      props.initialSpaces?.length ? props.initialSpaces : (props.spacesByTemplate[firstTemplate.id] ?? []),
-      props.spaceRoutes ?? [],
-      firstTemplate.id,
-    ),
-  );
+  const [instances, setInstances] = useState<SpecialLoadInstance[]>(openingDefaults.instances);
   const [openLoadId, setOpenLoadId] = useState<string | null>(null);
 
   /** Loads offered for the rooms in this plan, per the rulebook's space_context. */

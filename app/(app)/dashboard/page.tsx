@@ -51,7 +51,7 @@ export default function DashboardPage() {
               : "Start an estimate and it will show up here."}
           </p>
         </div>
-        <Link className="btn-amber" href="/quick-estimate?template=HOME-2B">New estimate</Link>
+        <Link className="btn-amber" href="/quick-estimate?template=HOME-2B&fresh=1">New estimate</Link>
       </header>
 
       {recent.length ? (
@@ -116,7 +116,7 @@ export default function DashboardPage() {
             </>
           ) : (
             <p className="settings-note">
-              No estimate in progress. <Link className="link-button" href="/quick-estimate?template=HOME-2B">Start one</Link>
+              No estimate in progress. <Link className="link-button" href="/quick-estimate?template=HOME-2B&fresh=1">Start one</Link>
             </p>
           )}
         </section>

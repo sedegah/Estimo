@@ -111,12 +111,30 @@ function SetupContent() {
     bill: { totalGhs: number; lines: { name: string; quantity: number; unit: string; priceGhs: number | null }[] } | null;
   } | null>(null);
 
+  /**
+   * "Start estimate" asks for a new estimate, so it must not reopen the last draft. The
+   * request is honoured once: the stored take-off is discarded and the flag is dropped from
+   * the URL, so coming back from the itemized bill still restores the plan made here.
+   */
+  const freshRef = useRef(searchParams.get("fresh") !== null);
+
   useEffect(() => {
     /**
      * Reads the take-off and bill the itemized page left behind. It is re-read whenever
      * the page becomes visible again, so an edit there is always reflected here.
      */
     const read = () => {
+      if (freshRef.current) {
+        // a new estimate: forget the draft and the counters it came from, once
+        freshRef.current = false;
+        try {
+          localStorage.removeItem("estimo_estimate_draft_v1");
+          localStorage.removeItem("estimo_draft_v1");
+        } catch {}
+        setCarried(null);
+        router.replace(`/quick-estimate?template=${encodeURIComponent(type.code)}`);
+        return;
+      }
       try {
         const raw = localStorage.getItem("estimo_estimate_draft_v1");
         if (!raw) {
