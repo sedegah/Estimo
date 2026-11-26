@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { calculateProject, rulesByKey } from "@/lib/quantity-engine/engine";
-import { priceQuantities } from "@/lib/quantity-engine/catalogue";
+import { conductorPriceWarnings, priceQuantities } from "@/lib/quantity-engine/catalogue";
 import type { PriceEntry } from "@/lib/quantity-engine/catalogue";
 import type {
   AssemblyItemRow,
@@ -487,6 +487,16 @@ export function QuantityView(props: Props) {
   const pricedCountValue = pricedCount(lines);
 
   /**
+   * Warnings the estimate must show: the engine's own, plus any price-list problem that
+   * would otherwise make a cable line quietly wrong (a smaller cable priced above a larger
+   * one, for example).
+   */
+  const estimateWarnings = useMemo(
+    () => [...result.warnings, ...conductorPriceWarnings(livePrices)],
+    [result.warnings, livePrices],
+  );
+
+  /**
    * Publishes the priced bill into the shared draft. The itemized screen is the source of
    * truth for price: the simple summary reads this, so the two can never quote different
    * money for the same estimate.
@@ -857,9 +867,9 @@ export function QuantityView(props: Props) {
         <div><span>Conduit</span><strong>{result.totals.total_containment_m} m</strong></div>
       </section>
 
-      {result.warnings.length ? (
+      {estimateWarnings.length ? (
         <ul className="quantities-warnings">
-          {result.warnings.map((warning) => <li key={warning}>{warning}</li>)}
+          {estimateWarnings.map((warning) => <li key={warning}>{warning}</li>)}
         </ul>
       ) : null}
 

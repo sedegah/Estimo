@@ -34,8 +34,8 @@ export type ConfigurationStatus = "NOT_CONFIGURED" | "PROVISIONAL" | "VERIFIED" 
 export const STATUS_LABEL: Record<ConfigurationStatus, string> = {
   NOT_CONFIGURED: "Configuration required",
   PROVISIONAL: "Estimated",
-  VERIFIED: "Fully specified",
-  OVERRIDDEN: "Professional override",
+  VERIFIED: "Verified",
+  OVERRIDDEN: "User override",
 };
 
 export type SpecialLoadFieldKey =
@@ -141,6 +141,8 @@ export interface SpecialLoadDefinition {
   isolator: "always" | "optional" | "never";
   /** Containment family for the run from the board. */
   containment: "conduit" | "trunking";
+  /** The smallest cable the trade would run for this load, whatever the sums say. */
+  minimumCableSizeMm2?: number;
   /** Used when the person has not supplied a power rating, per the rulebook defaults. */
   fallbackPowerKw: number;
   /** Used for air conditioners, which are normally specified in HP. */
@@ -542,6 +544,7 @@ export const SPECIAL_LOAD_DEFINITIONS: SpecialLoadDefinition[] = [
   {
     key: "air_conditioner",
     name: "Air conditioner",
+    minimumCableSizeMm2: 2.5,
     tagline: "Dedicated AC circuit with a local isolator.",
     spaceContext: "habitable_room",
     powerFactor: 0.9,
@@ -585,6 +588,7 @@ export const SPECIAL_LOAD_DEFINITIONS: SpecialLoadDefinition[] = [
   {
     key: "water_pump",
     name: "Water pump",
+    minimumCableSizeMm2: 2.5,
     tagline: "Pump feeder, motor protection and a local isolator.",
     spaceContext: "building",
     powerFactor: 0.85,
@@ -648,6 +652,7 @@ export const SPECIAL_LOAD_DEFINITIONS: SpecialLoadDefinition[] = [
   {
     key: "workshop_machine",
     name: "Workshop machine",
+    minimumCableSizeMm2: 2.5,
     tagline: "Machine feeder with isolation and motor protection.",
     spaceContext: "workshop",
     powerFactor: 0.85,
@@ -672,6 +677,7 @@ export const SPECIAL_LOAD_DEFINITIONS: SpecialLoadDefinition[] = [
   {
     key: "refrigeration_equipment",
     name: "Refrigeration plant",
+    minimumCableSizeMm2: 2.5,
     tagline: "Dedicated refrigeration supply with isolation.",
     spaceContext: "shop_or_workshop",
     powerFactor: 0.9,
@@ -922,7 +928,10 @@ export function sizeSpecialLoad(instance: SpecialLoadInstance): SpecialLoadSizin
   // 63 A is the largest single-circuit device the catalogue prices; beyond it the
   // circuit needs an engineered protective device, which the basis says.
   const protectiveDeviceA = Math.min(63, rawDevice);
-  const cableSizeMm2 = instance.manufacturer_cable_size_mm2 ?? cableFor(protectiveDeviceA, method);
+  // what the trade would run for this load, even when the sums allow something smaller
+  const minimumCable = definition.minimumCableSizeMm2 ?? 0;
+  const cableSizeMm2 =
+    instance.manufacturer_cable_size_mm2 ?? Math.max(cableFor(protectiveDeviceA, method), minimumCable);
   const cpcSizeMm2 = cpcFor(cableSizeMm2);
   const containmentMm = cableSizeMm2 <= 4 ? 20 : cableSizeMm2 <= 10 ? 25 : 32;
 
@@ -963,7 +972,9 @@ export function sizeSpecialLoad(instance: SpecialLoadInstance): SpecialLoadSizin
   basis.push(
     instance.manufacturer_cable_size_mm2
       ? `Cable size taken from the manufacturer at ${cableSizeMm2} mm².`
-      : `${cableSizeMm2} mm² copper carries ${protectiveDeviceA} A when ${method}.`,
+      : minimumCable > 0 && cableSizeMm2 === minimumCable
+        ? `${cableSizeMm2} mm² is the smallest cable ${definition.name.toLowerCase()} circuits are run in, and it carries ${protectiveDeviceA} A when ${method}.`
+        : `${cableSizeMm2} mm² copper carries ${protectiveDeviceA} A when ${method}.`,
   );
 
   return {
@@ -1220,6 +1231,7 @@ export function specialLoadSummary(instance: SpecialLoadInstance, defaultRouteM 
   if (definition.protection === "mcb") parts.push(`${sizing.protectiveDeviceA} A`);
   parts.push(`${sizing.cableSizeMm2} mm²`);
   if (instance.dedicated_circuit === false) parts.push("existing circuit");
+  if (instance.serving_db_id) parts.push(`from ${instance.serving_db_id}`);
   const count = instance.quantity > 1 ? `${instance.quantity} × ` : "";
   return `${count}${parts.join(" · ")}`;
 }

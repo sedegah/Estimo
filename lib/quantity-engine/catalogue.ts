@@ -277,5 +277,37 @@ export function priceQuantities(
   return lines.sort((a, b) => a.catalogueName.localeCompare(b.catalogueName));
 }
 
+/**
+ * Conductor sizes, smallest first, with the catalogue material that prices them. A smaller
+ * cable must never cost more than the next size up: when it does, the price list has a bad
+ * row and the estimate would be quietly wrong.
+ */
+const CONDUCTOR_PRICES: { id: string; label: string }[] = [
+  { id: "mat-cab-sc-cu-1p5", label: "1.5 mm² copper single-core" },
+  { id: "mat-cab-sc-cu-2p5", label: "2.5 mm² copper single-core" },
+  { id: "mat-cab-sc-cu-4", label: "4 mm² copper single-core" },
+  { id: "mat-cab-sc-cu-6", label: "6 mm² copper single-core" },
+  { id: "mat-cab-sc-cu-10", label: "10 mm² copper single-core" },
+  { id: "mat-cab-sc-cu-16", label: "16 mm² copper single-core" },
+  { id: "mat-cab-sc-cu-25", label: "25 mm² copper single-core" },
+];
+
+/** Price-list problems that would make a cable estimate wrong, in plain words. */
+export function conductorPriceWarnings(prices: Record<string, PriceEntry>): string[] {
+  const warnings: string[] = [];
+  for (let index = 0; index < CONDUCTOR_PRICES.length - 1; index += 1) {
+    const smaller = CONDUCTOR_PRICES[index];
+    const larger = CONDUCTOR_PRICES[index + 1];
+    const small = prices[smaller.id]?.price;
+    const big = prices[larger.id]?.price;
+    if (small === undefined || big === undefined) continue;
+    if (small > big * 1.5) {
+      warnings.push(
+        `Catalogue price check: ${smaller.label} is GHS ${small.toFixed(2)}/m but ${larger.label} is GHS ${big.toFixed(2)}/m. The smaller cable is priced higher, so small circuits look dearer than large ones; check the price list.`,
+      );
+    }
+  }
+  return warnings;
+}
 export const CONFIDENCE_NOTE =
   "Quantities are preliminary estimating outputs. They do not replace compliant electrical design and installation by qualified professionals.";
