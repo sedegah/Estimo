@@ -2,7 +2,8 @@
 
 import { SignIn, useClerk, useUser } from "@clerk/nextjs";
 import Link from "next/link";
-import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { deleteItem, listCatalogue, materialImageUrl, setPrice, setUnit, type CatalogueItem } from "@/lib/api";
 import { ConsoleRail } from "@/components/console-rail";
 import { AuthScreen } from "./auth-screen";
@@ -62,11 +63,17 @@ function Pager({ page, pageCount, onChange }: { page: number; pageCount: number;
   );
 }
 
-export default function AdminPage() {
+function AdminPageContent() {
   const { isLoaded, isSignedIn, user } = useUser();
   const { signOut } = useClerk();
+  const params = useSearchParams();
 
-  const [tab, setTab] = useState<Tab>("prices");
+  // The rail switches tabs by changing ?tab=, so the URL is the single source of
+  // truth. Deriving the tab here means a click from Prices to Materials updates
+  // the screen instead of changing the address bar only.
+  const requested = params.get("tab");
+  const tab: Tab = requested === "materials" || requested === "settings" ? requested : "prices";
+
   const [items, setItems] = useState<CatalogueItem[] | null>(null);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [units, setUnits] = useState<Record<string, string>>({});
@@ -94,20 +101,6 @@ export default function AdminPage() {
   useEffect(() => {
     setPage(1);
   }, [debouncedQuery, chip, tab]);
-
-  // links from other pages land here as /?tab=settings
-  useEffect(() => {
-    const requested = new URLSearchParams(window.location.search).get("tab");
-    if (requested === "prices" || requested === "materials" || requested === "settings") setTab(requested);
-  }, []);
-
-  /** Keeps the open tab in the address bar, so a reload lands on the same page. */
-  const selectTab = (next: Tab) => {
-    setTab(next);
-    try {
-      window.history.replaceState(null, "", next === "prices" ? window.location.pathname : `${window.location.pathname}?tab=${next}`);
-    } catch {}
-  };
 
   const categories = useMemo(
     () => Array.from(new Set((items ?? []).map((item) => item.category).filter(Boolean))).slice(0, 8),
@@ -499,5 +492,17 @@ export default function AdminPage() {
         </main>
       </div>
     </div>
+  );
+}
+
+/**
+ * useSearchParams opts this page into client-side rendering. The Suspense
+ * boundary is what Next.js asks for while prerendering the shell.
+ */
+export default function AdminPage() {
+  return (
+    <Suspense fallback={<LoadingScreen />}>
+      <AdminPageContent />
+    </Suspense>
   );
 }
