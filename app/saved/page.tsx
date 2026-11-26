@@ -47,6 +47,7 @@ export default function SavedEstimatesPage() {
   const [prices, setPrices] = useState<Record<string, PriceEntry> | null>(null);
   const [liveTotals, setLiveTotals] = useState<Record<string, number>>({});
   const [query, setQuery] = useState("");
+  const [lookup, setLookup] = useState("");
   const [lookupError, setLookupError] = useState("");
   const [ready, setReady] = useState(false);
 
@@ -148,8 +149,8 @@ export default function SavedEstimatesPage() {
   };
 
   /** Pull an estimate by the code written on its card. */
-  const lookup = (value: string) => {
-    const wanted = value.trim().toUpperCase();
+  const openByCode = () => {
+    const wanted = lookup.trim().toUpperCase();
     if (!wanted) return;
     const match = projects.find((project) => (project.code ?? "").toUpperCase() === wanted);
     if (!match) {
@@ -161,14 +162,15 @@ export default function SavedEstimatesPage() {
   };
 
   return (
-    <>
+    <main className="container page-shell">
       <header className="app-head">
         <div>
           <p className="app-eyebrow">Saved on this device</p>
           <h1 className="app-title">Saved estimates</h1>
           <p className="app-sub">
-            No account needed — they stay in this browser until you delete them. Each one is priced at
-            today&apos;s catalogue and clears after {RETENTION_DAYS} days without being opened.
+            {ready && projects.length
+              ? `${projects.length} estimate${projects.length === 1 ? "" : "s"} in this browser · priced at today’s catalogue · cleared after ${RETENTION_DAYS} days without being opened.`
+              : `No account needed. They stay in this browser, priced at today’s catalogue, and clear after ${RETENTION_DAYS} days without being opened.`}
           </p>
         </div>
         <Link className="btn-amber" href="/quick-estimate?template=HOME-2B&fresh=1">
@@ -176,12 +178,12 @@ export default function SavedEstimatesPage() {
         </Link>
       </header>
 
-      <section className="saved-lookup">
+      <section className="saved-toolbar">
         <form
-          className="saved-lookup-form"
+          className="saved-lookup"
           onSubmit={(event) => {
             event.preventDefault();
-            lookup(query);
+            openByCode();
           }}
         >
           <label className="saved-lookup-label" htmlFor="estimate-code">
@@ -190,22 +192,37 @@ export default function SavedEstimatesPage() {
           <div className="saved-lookup-row">
             <input
               id="estimate-code"
-              type="search"
-              value={query}
+              type="text"
+              value={lookup}
               onChange={(event) => {
-                setQuery(event.target.value);
+                setLookup(event.target.value);
                 setLookupError("");
               }}
               placeholder="EST-7K3M9Q"
               autoComplete="off"
+              spellCheck={false}
             />
             <button className="btn-outline" type="submit">
               Open
             </button>
           </div>
-          <p className="saved-lookup-hint">The code is printed on each card below.</p>
           {lookupError ? <p className="saved-lookup-error">{lookupError}</p> : null}
         </form>
+
+        <div className="saved-find">
+          <label className="saved-lookup-label" htmlFor="saved-search">
+            Find
+          </label>
+          <input
+            id="saved-search"
+            type="search"
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            placeholder="Name, type or code"
+            aria-label="Search saved estimates"
+          />
+          <p className="saved-lookup-hint">The code is printed on each card, so it can be read out and typed back.</p>
+        </div>
       </section>
 
       {visible.length ? (
@@ -234,18 +251,16 @@ export default function SavedEstimatesPage() {
                 </div>
               </button>
               <div className="project-tile-actions">
-                <span className="project-tile-type">
-                  {formatDate(project.lastAccessedAt ?? project.updatedAt ?? project.createdAt)}
-                  {project.quality ? ` · ${qualityLabel(project.quality)}` : ""}
-                </span>
-                <div className="project-tile-buttons">
-                  <button className="link-button" type="button" onClick={() => open(project)}>
-                    Open estimate
-                  </button>
-                  <button className="link-button" type="button" onClick={() => remove(project)}>
-                    Delete
-                  </button>
-                </div>
+                {formatDate(project.lastAccessedAt ?? project.updatedAt ?? project.createdAt)}
+                {project.quality ? ` · ${qualityLabel(project.quality)}` : ""}
+              </div>
+              <div className="saved-card-buttons">
+                <button className="btn-outline saved-card-open" type="button" onClick={() => open(project)}>
+                  Open
+                </button>
+                <button className="link-button" type="button" onClick={() => remove(project)}>
+                  Delete
+                </button>
               </div>
             </article>
           ))}
@@ -267,6 +282,6 @@ export default function SavedEstimatesPage() {
           ) : null}
         </section>
       )}
-    </>
+    </main>
   );
 }
