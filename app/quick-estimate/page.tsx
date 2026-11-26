@@ -93,20 +93,21 @@ function SetupContent() {
   const specLevel = specLevelForQuality(quality);
 
   /**
-   * The itemized bill lets a person edit the plan (spaces, point overrides, special
-   * loads). Coming back here must show that same plan and the same money, so the draft
-   * it left behind is picked up and priced instead of a fresh guess from the counters.
+   * The itemized bill is the source of truth for price. It publishes its priced lines and
+   * total into the shared draft; this screen reads that bill and prints it, so the summary
+   * and the itemized page can never quote different money for one estimate.
    */
   const [carried, setCarried] = useState<{
     spaces: SpaceInput[];
     overrides: PointOverride[];
     instances: SpecialLoadInstance[];
+    bill: { totalGhs: number; lines: { name: string; quantity: number; unit: string; priceGhs: number | null }[] } | null;
   } | null>(null);
 
   useEffect(() => {
     /**
-     * Reads the take-off the itemized bill left behind. It is re-read whenever the page
-     * becomes visible again, so coming back from an edit there is always reflected here.
+     * Reads the take-off and bill the itemized page left behind. It is re-read whenever
+     * the page becomes visible again, so an edit there is always reflected here.
      */
     const read = () => {
       try {
@@ -120,15 +121,35 @@ function SetupContent() {
           spaces?: SpaceInput[];
           overrides?: PointOverride[];
           specialLoadInstances?: unknown[];
+          bill?: { totalGhs?: number; lines?: unknown[] };
         };
         if (draft.templateId !== templateId || !draft.spaces?.length) {
           setCarried(null);
           return;
         }
+        const bill =
+          draft.bill &&
+          typeof draft.bill.totalGhs === "number" &&
+          Number.isFinite(draft.bill.totalGhs) &&
+          Array.isArray(draft.bill.lines) &&
+          draft.bill.lines.length
+            ? {
+                totalGhs: draft.bill.totalGhs,
+                lines: (draft.bill.lines as Record<string, unknown>[])
+                  .filter((line) => typeof line.name === "string")
+                  .map((line) => ({
+                    name: String(line.name),
+                    quantity: Math.max(1, Math.round(Number(line.quantity) || 1)),
+                    unit: typeof line.unit === "string" ? line.unit : "No.",
+                    priceGhs: typeof line.priceGhs === "number" ? line.priceGhs : null,
+                  })),
+              }
+            : null;
         setCarried({
           spaces: draft.spaces,
           overrides: draft.overrides ?? [],
           instances: parseSpecialLoadInstances(draft.specialLoadInstances),
+          bill,
         });
       } catch {
         setCarried(null);
@@ -193,7 +214,22 @@ function SetupContent() {
     [templateId, specLevel, planSpaces, prices, carried, instances],
   );
 
-  const total = live.total;
+  /**
+   * The itemized bill is the price. When it has published a bill, these are its own lines
+   * and its own total; only a plan that has never been opened itemized is priced here.
+   */
+  const estimateLines =
+    carried?.bill?.lines ??
+    live.lines.map((line) => ({
+      name: line.catalogueName,
+      quantity: Math.max(1, Math.ceil(line.purchaseQuantity)),
+      unit: line.catalogueUnit,
+      priceGhs: line.unitPrice,
+    }));
+  const total = carried?.bill?.totalGhs ?? live.total;
+  const pricedCountValue = carried?.bill
+    ? carried.bill.lines.filter((line) => line.priceGhs != null).length
+    : live.pricedCount;
   const fittingsLabel = FITTINGS.find((entry) => entry.value === quality)?.label ?? "Standard";
   const spaces = planSpaces.length;
 
@@ -230,13 +266,8 @@ function SetupContent() {
       template: type.code,
       specLevel,
       subtitle: `${planSpaces.length} spaces · ${specLevel}`,
-      items: live.lines.map((line) => ({
-        name: line.catalogueName,
-        quantity: Math.max(1, Math.ceil(line.purchaseQuantity)),
-        unit: line.catalogueUnit,
-        priceGhs: line.unitPrice,
-      })),
-      total: live.total,
+      items: estimateLines,
+      total,
       specialLoads: [],
     });
 
@@ -274,18 +305,18 @@ function SetupContent() {
     if (linked.ok) await save(await linked.blob());
   };
 
-  const changeSpace = (key: string, delta: number) => {
-    // editing the counters means going back to the counter-built plan
-    setCarried(null);
-    setCounts((current) => ({ ...current, [key]: clampCount(type.code, key, (current[key] ?? 0) + delta) }));
-  };
-
-  /** Drops the edited take-off and prices the counters again. */
+  /** Drops the edited take-off and bill, and prices the counters instead. */
   const useCounters = () => {
     setCarried(null);
     try {
       localStorage.removeItem("estimo_estimate_draft_v1");
     } catch {}
+  };
+
+  const changeSpace = (key: string, delta: number) => {
+    // editing the counters means going back to the counter-built plan
+    useCounters();
+    setCounts((current) => ({ ...current, [key]: clampCount(type.code, key, (current[key] ?? 0) + delta) }));
   };
 
   const toggleSpace = (key: string) => {
@@ -412,7 +443,7 @@ function SetupContent() {
           <span className="side-label">Estimated total</span>
           <strong className="side-total">{money(total)}</strong>
           <p className="side-note">
-            {live.pricedCount} of {live.lines.length} priced ·{" "}
+            {pricedCountValue} of {estimateLines.length} priced ·{" "}
             {carried ? "carried over from the itemized bill" : "updates as you change the spaces"}.
           </p>
           {carried ? (
