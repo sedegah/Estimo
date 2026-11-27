@@ -25,3 +25,4 @@ docs/PRODUCTION.md
 desktop/certs/
 *.blockmap
 .env*
+worker/api/wrangler.jsonc
