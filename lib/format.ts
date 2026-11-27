@@ -1,12 +1,8 @@
-/** Display formatting helpers (Ghana locale). */
+/** Display formatting helpers (Ghana locale, display currency aware). */
+import { formatMoney } from "@/lib/currency";
 
 export function formatGhs(value: number, fractionDigits = 2): string {
-  return new Intl.NumberFormat("en-GH", {
-    style: "currency",
-    currency: "GHS",
-    maximumFractionDigits: fractionDigits,
-    minimumFractionDigits: fractionDigits,
-  }).format(value);
+  return formatMoney(value, fractionDigits);
 }
 
 /** Whole-cedi amounts, or null when the value is unknown. */

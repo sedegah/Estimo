@@ -1,4 +1,5 @@
 "use client";
+import { useCurrency } from "@/components/currency/currency-provider";
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -30,6 +31,8 @@ function groupItems(items: BasketItem[]): Group[] {
 }
 
 export function EstimateBasket() {
+  // subscribe to the display currency so a change re-renders this view's prices
+  useCurrency();
   const router = useRouter();
   const [items, setItems] = useState<BasketItem[]>([]);
   const [ready, setReady] = useState(false);

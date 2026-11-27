@@ -1,4 +1,5 @@
 "use client";
+import { useCurrency } from "@/components/currency/currency-provider";
 
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -75,6 +76,8 @@ const itemQuantity = (item: SpaceItem) =>
   item.lights ?? item.sockets ?? item.acs ?? item.heaters ?? item.switches ?? item.cooking ?? 0;
 
 export default function ProjectPage() {
+  // subscribe to the display currency so a change re-renders this view's prices
+  useCurrency();
   const params = useParams<{ id: string }>();
   const router = useRouter();
   const [project, setProject] = useState<SavedEstimate | null>(null);

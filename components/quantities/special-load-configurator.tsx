@@ -1,5 +1,6 @@
 import { formatGhs } from "@/lib/format";
 "use client";
+import { useCurrency } from "@/components/currency/currency-provider";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 
@@ -96,6 +97,8 @@ export function SpecialLoadConfigurator({
   onRemove,
   onClose,
 }: Props) {
+  // subscribe to the display currency so a change re-renders this view's prices
+  useCurrency();
   const [draft, setDraft] = useState<SpecialLoadInstance>(instance);
   const dialogRef = useRef<HTMLDivElement | null>(null);
   const titleId = useId();

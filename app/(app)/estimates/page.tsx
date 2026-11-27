@@ -1,4 +1,5 @@
 "use client";
+import { useCurrency } from "@/components/currency/currency-provider";
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -15,6 +16,8 @@ import type { SavedEstimate } from "@/lib/types";
 type Filter = "all" | "estimated" | "draft";
 
 export default function EstimatesPage() {
+  // subscribe to the display currency so a change re-renders this view's prices
+  useCurrency();
   const [projects, setProjects] = useState<SavedEstimate[]>([]);
   const [filter, setFilter] = useState<Filter>("all");
 

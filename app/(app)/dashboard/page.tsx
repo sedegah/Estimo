@@ -1,4 +1,5 @@
 "use client";
+import { useCurrency } from "@/components/currency/currency-provider";
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -14,6 +15,8 @@ import type { PriceEntry } from "@/lib/quantity-engine/catalogue";
 import type { SavedEstimate } from "@/lib/types";
 
 export default function DashboardPage() {
+  // subscribe to the display currency so a change re-renders this view's prices
+  useCurrency();
   const [projects, setProjects] = useState<SavedEstimate[]>([]);
   const [draft, setDraft] = useState<EstimateDraft | null>(null);
   const [prices, setPrices] = useState<Record<string, PriceEntry> | null>(null);

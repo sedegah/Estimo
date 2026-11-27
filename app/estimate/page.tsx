@@ -1,4 +1,5 @@
 "use client";
+import { useCurrency } from "@/components/currency/currency-provider";
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -197,6 +198,8 @@ function EstimateContent() {
 }
 
 export default function EstimatePage() {
+  // subscribe to the display currency so a change re-renders this view's prices
+  useCurrency();
   return (
     <Suspense fallback={<main className="container page-shell"><p className="page-sub">Loading estimate…</p></main>}>
       <EstimateContent />

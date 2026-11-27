@@ -1,4 +1,5 @@
 "use client";
+import { useCurrency } from "@/components/currency/currency-provider";
 
 /**
  * Saved estimates for everyone — no account needed.
@@ -42,6 +43,8 @@ const qualityLabel = (value: string | undefined) =>
   FITTINGS.find((entry) => entry.value === value)?.label ?? "Standard";
 
 export default function SavedEstimatesPage() {
+  // subscribe to the display currency so a change re-renders this view's prices
+  useCurrency();
   const router = useRouter();
   const [projects, setProjects] = useState<SavedEstimate[]>([]);
   const [prices, setPrices] = useState<Record<string, PriceEntry> | null>(null);

@@ -1,4 +1,5 @@
 "use client";
+import { useCurrency } from "@/components/currency/currency-provider";
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
@@ -24,6 +25,8 @@ import type { PriceEntry } from "@/lib/quantity-engine/catalogue";
 const qualityLabel = (value: string) => FITTINGS.find((entry) => entry.value === value)?.label ?? "Standard";
 
 export default function ProjectsPage() {
+  // subscribe to the display currency so a change re-renders this view's prices
+  useCurrency();
   const [projects, setProjects] = useState<SavedEstimate[]>([]);
   const [draft, setDraft] = useState<EstimateDraft | null>(null);
   const [basketCount, setBasketCount] = useState(0);
