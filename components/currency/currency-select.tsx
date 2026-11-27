@@ -1,6 +1,6 @@
 "use client";
 
-import { CURRENCIES, type CurrencyCode } from "@/lib/currency";
+import { CURRENCIES, getExchangeRates, type CurrencyCode } from "@/lib/currency";
 import { useCurrency } from "./currency-provider";
 
 /**
@@ -9,6 +9,7 @@ import { useCurrency } from "./currency-provider";
  */
 export function CurrencySelect() {
   const { currency, setCurrency, ratesAsOf } = useCurrency();
+  const rate = getExchangeRates()[currency];
 
   return (
     <label className="currency-field">
@@ -18,7 +19,11 @@ export function CurrencySelect() {
         value={currency}
         onChange={(event) => setCurrency(event.target.value as CurrencyCode)}
         aria-label="Display currency"
-        title={ratesAsOf ? `Exchange rates updated ${new Date(ratesAsOf).toLocaleString("en-GH")}` : "Exchange rates"}
+        title={
+          currency === "GHS"
+            ? "Prices are in cedis"
+            : `1 ${currency} = GH₵${(1 / rate).toFixed(2)} · ${ratesAsOf ? `rates updated ${new Date(ratesAsOf).toLocaleString("en-GH")}` : "live rates"}`
+        }
       >
         {CURRENCIES.map((option) => (
           <option key={option.code} value={option.code}>
