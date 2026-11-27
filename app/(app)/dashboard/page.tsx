@@ -115,22 +115,34 @@ export default function DashboardPage() {
               </p>
             </>
           ) : projects.length ? (
-            <>
-              <p className="settings-note">
-                No estimate open right now, but your latest is <strong>{projects[0].name}</strong>
-                {projects[0].totalGhs != null ? ` · ${formatGhs(projects[0].totalGhs, 0)}` : ""} · saved{" "}
-                {formatDate(projects[0].updatedAt ?? projects[0].createdAt)}.
-              </p>
-              <p className="settings-note">
-                <Link className="link-button" href={`/projects/${projects[0].id}`}>
-                  Open latest estimate
-                </Link>{" "}
-                ·{" "}
+            <div className="dash-latest">
+              <div className="dash-latest-thumb">
+                {projects[0].kind === "materials" ? (
+                  <MaterialThumb />
+                ) : (
+                  <PlanThumb variant={projects[0].name.length} />
+                )}
+              </div>
+              <div className="dash-latest-body">
+                <span className="resume-eyebrow">Latest saved</span>
+                <strong>{projects[0].name}</strong>
+                <span className="dash-latest-meta">
+                  {estimateType(projects[0])} · saved{" "}
+                  {formatDate(projects[0].updatedAt ?? projects[0].createdAt)}
+                </span>
+                <span className="dash-latest-total">
+                  {formatGhsOrNull(projects[0].totalGhs) ?? "Price pending"}
+                </span>
+              </div>
+              <div className="dash-latest-actions">
+                <Link className="btn-amber" href={`/projects/${projects[0].id}`}>
+                  Open estimate
+                </Link>
                 <Link className="link-button" href="/quick-estimate?template=HOME-2B&fresh=1">
                   Start a new one
                 </Link>
-              </p>
-            </>
+              </div>
+            </div>
           ) : (
             <p className="settings-note">
               No estimate in progress. <Link className="link-button" href="/quick-estimate?template=HOME-2B&fresh=1">Start one</Link>
