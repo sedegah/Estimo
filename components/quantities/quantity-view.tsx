@@ -42,7 +42,7 @@ const CODE_FOR_PROJECT_TYPE: Record<string, string> = Object.fromEntries(
   Object.entries(PROJECT_TYPE_FOR_CODE).map(([code, projectType]) => [projectType, code]),
 );
 import { pricedCount, pricedTotal } from "@/lib/estimate-total";
-import { unitLabel, , formatGhs } from "@/lib/format";
+import { unitLabel, formatGhs } from "@/lib/format";
 import { readBasket, writeBasket } from "@/lib/storage/basket";
 import { listSavedEstimates, saveEstimate, updateSavedEstimate } from "@/lib/storage/saved-estimates";
 import { pushCreate, pushUpdate } from "@/lib/api/estimates";

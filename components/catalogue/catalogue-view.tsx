@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CATALOGUE_MATERIALS } from "@/lib/data/catalogue";
 import { getCatalogueData, materialImageUrl } from "@/lib/api/catalogue-prices";
-import { materialUnitLabel, , formatGhs } from "@/lib/format";
+import { materialUnitLabel, formatGhs } from "@/lib/format";
 import type { CatalogueMaterial } from "@/lib/types";
 import { CatalogueQuantityControl } from "./catalogue-quantity-control";
 import { CatalogueSummaryBar } from "./catalogue-summary-bar";
