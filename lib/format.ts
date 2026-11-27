@@ -48,8 +48,8 @@ export function materialUnitLabel(unit: string): string {
 /** Price text with the unit basis attached: "GHS 382.76 per metre". Single pieces
  * ("No.") are quoted on their own, so no basis is appended: "GHS 15". */
 export function formatPrice(price: number, unit: string): string {
-  const amount = Number.isInteger(price) ? price.toLocaleString("en-GH") : price.toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  return unit === "No." ? `GHS ${amount}` : `GHS ${amount} ${materialUnitLabel(unit)}`;
+  const amount = formatMoney(price, Number.isInteger(price) ? 0 : 2);
+  return unit === "No." ? amount : `${amount} ${materialUnitLabel(unit)}`;
 }
 
 export function formatDate(iso: string): string {

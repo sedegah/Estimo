@@ -42,7 +42,7 @@ const CODE_FOR_PROJECT_TYPE: Record<string, string> = Object.fromEntries(
   Object.entries(PROJECT_TYPE_FOR_CODE).map(([code, projectType]) => [projectType, code]),
 );
 import { pricedCount, pricedTotal } from "@/lib/estimate-total";
-import { unitLabel } from "@/lib/format";
+import { unitLabel, , formatGhs } from "@/lib/format";
 import { readBasket, writeBasket } from "@/lib/storage/basket";
 import { listSavedEstimates, saveEstimate, updateSavedEstimate } from "@/lib/storage/saved-estimates";
 import { pushCreate, pushUpdate } from "@/lib/api/estimates";
@@ -225,10 +225,7 @@ const tidyNames = (list: SpaceInput[]): SpaceInput[] => {
     return { ...space, space_name: repeats ? `${name} ${repeats + 1}` : name };
   });
 };
-const money = (value: number | null) =>
-  value === null || value === undefined
-    ? "—"
-    : `GHS ${value.toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const money = (value: number | null) => (value === null || value === undefined ? "—" : formatGhs(value, 2));
 
 /** A load whose lines are all unpriced is "pending", never GHS 0.00. */
 const loadCostLabel = (cost: { total: number; unpriced: number } | undefined) => {

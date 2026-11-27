@@ -1,3 +1,4 @@
+import { formatGhs } from "@/lib/format";
 "use client";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";

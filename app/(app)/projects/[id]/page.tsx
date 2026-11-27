@@ -310,7 +310,7 @@ export default function ProjectPage() {
     const priced = lines.reduce((sum, line) => (line.priceGhs == null ? sum : sum + line.priceGhs * line.quantity), 0);
     const unpriced = lines.filter((line) => line.priceGhs == null).length;
     const money = (value: number) =>
-      `GHS ${value.toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      formatGhs(value, 2);
 
     return (
       <>
@@ -761,7 +761,7 @@ export default function ProjectPage() {
           </dl>
           <div className="side-divider" />
           <span className="side-label">Estimated total</span>
-          <strong className="side-total">{total === null ? "—" : `GHS ${total.toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}</strong>
+          <strong className="side-total">{total === null ? "—" : formatGhs(total, 2)}</strong>
           <p className="side-note">
             Price of the materials in this plan, priced as the itemized bill prices them.
           </p>

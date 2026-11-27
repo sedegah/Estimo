@@ -35,8 +35,7 @@ import { saveDraft } from "@/lib/storage/draft";
 import { pushCreate } from "@/lib/api/estimates";
 
 /** The estimate prints cedis as "GHS" with pesewas, matching the itemized bill exactly. */
-const money = (value: number) =>
-  `GHS ${value.toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+const money = (value: number) => formatGhs(value, 2);
 
 const itemQuantity = (item: SpaceItem) =>
   item.lights ?? item.sockets ?? item.acs ?? item.heaters ?? item.switches ?? item.cooking ?? 0;

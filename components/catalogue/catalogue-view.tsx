@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { CATALOGUE_MATERIALS } from "@/lib/data/catalogue";
 import { getCatalogueData, materialImageUrl } from "@/lib/api/catalogue-prices";
-import { materialUnitLabel } from "@/lib/format";
+import { materialUnitLabel, , formatGhs } from "@/lib/format";
 import type { CatalogueMaterial } from "@/lib/types";
 import { CatalogueQuantityControl } from "./catalogue-quantity-control";
 import { CatalogueSummaryBar } from "./catalogue-summary-bar";
@@ -160,10 +160,7 @@ export async function CatalogueView({
   const priceOf = (material: CatalogueMaterial) => {
     const entry = prices[material.id];
     if (!entry) return null;
-    const amount = `GHS ${entry.price.toLocaleString("en-GH", {
-      minimumFractionDigits: Number.isInteger(entry.price) ? 0 : 2,
-      maximumFractionDigits: 2,
-    })}`;
+    const amount = formatGhs(entry.price, Number.isInteger(entry.price) ? 0 : 2);
     const basis = material.unit === "No." ? "" : materialUnitLabel(material.unit);
     return { entry, amount, basis };
   };
