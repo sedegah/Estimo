@@ -14,8 +14,8 @@ const SESSION_KEYS = [
   "estimo_preferences_v1",
 ];
 
-/** Saved estimates are deliberately absent: losing them on sign-out is data loss. */
-const DATA_KEYS = ["estimo_saved_estimates_v1", ...SESSION_KEYS];
+/** Saved estimates are kept per account; nothing here deletes them except clearLocalData. */
+const DATA_KEYS = [...SESSION_KEYS];
 
 const OWNER_KEY = "estimo_owner_v1";
 
@@ -30,10 +30,15 @@ export function writeOwner(owner: string): void {
   else window.localStorage.removeItem(OWNER_KEY);
 }
 
-/** Everything, including saved estimates. Used by a deliberate "delete my data". */
+/** Everything, including every account's saved estimates. Used by a deliberate "delete my data". */
 export function clearLocalData(): void {
   if (typeof window === "undefined") return;
   for (const key of DATA_KEYS) window.localStorage.removeItem(key);
+  // saved estimates live under the base key and under per-account keys
+  for (let index = window.localStorage.length - 1; index >= 0; index -= 1) {
+    const key = window.localStorage.key(index);
+    if (key && key.startsWith("estimo_saved_estimates_v1")) window.localStorage.removeItem(key);
+  }
   window.dispatchEvent(new Event("estimo-saved-change"));
   window.dispatchEvent(new Event("estimo-basket-change"));
   window.dispatchEvent(new Event("estimo-draft-change"));

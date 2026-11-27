@@ -151,3 +151,28 @@ test("an estimate unused for 40 days is cleared; using it keeps it", async () =>
   // and it does not come back from an old local copy
   assert.deepEqual(listSavedEstimates().map((entry) => entry.name).sort(), ["Live", "Opened today"]);
 });
+
+test("guest estimates are hidden from an account, then adopted on sign-in", async () => {
+  installWindow();
+  const { saveEstimate, listSavedEstimates, adoptGuestEstimates } = await import(
+    "../lib/storage/saved-estimates.ts"
+  );
+  const { writeOwner } = await import("../lib/storage/reset.ts");
+
+  writeOwner("");
+  const guest = saveEstimate({ name: "Guest estimate", kind: "quick", detail: "", totalGhs: 1 });
+  assert.equal(listSavedEstimates().length, 1, "the guest sees their own work");
+
+  writeOwner("user_A");
+  assert.deepEqual(listSavedEstimates(), [], "an account never sees guest work as its own");
+
+  const moved = adoptGuestEstimates("user_A");
+  assert.deepEqual(moved.map((entry) => entry.id), [guest.id]);
+  assert.deepEqual(listSavedEstimates().map((entry) => entry.name), ["Guest estimate"]);
+
+  writeOwner("");
+  assert.deepEqual(listSavedEstimates(), [], "account work is hidden from a signed-out visitor");
+
+  writeOwner("user_A");
+  assert.deepEqual(listSavedEstimates().map((entry) => entry.name), ["Guest estimate"], "and returns on sign-in");
+});

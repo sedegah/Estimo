@@ -4,8 +4,8 @@ import { useUser } from "@clerk/nextjs";
 import { useEffect } from "react";
 import { clerkEnabled } from "@/lib/env";
 import { fetchServerEstimates, pushCreate } from "@/lib/api/estimates";
-import { listSavedEstimates, mergeSavedEstimates } from "@/lib/storage/saved-estimates";
-import { readOwner, reconcileOwner } from "@/lib/storage/reset";
+import { adoptGuestEstimates, mergeSavedEstimates } from "@/lib/storage/saved-estimates";
+import { reconcileOwner } from "@/lib/storage/reset";
 
 /**
  * Keeps browser data tied to the signed-in account and synchronises it with the
@@ -32,17 +32,18 @@ function SessionSync() {
 
     const signedIn = Boolean(isSignedIn && user);
     const owner = signedIn && user ? user.id : "";
-    const firstSignIn = signedIn && !readOwner();
 
     reconcileOwner(owner);
 
     if (!signedIn) return;
 
+    // guest work becomes this account's work, then is uploaded; a signed-in visitor is
+    // never shown guest estimates as if they already belonged to the account
+    const adopted = adoptGuestEstimates(owner);
+
     void (async () => {
-      if (firstSignIn) {
-        for (const entry of listSavedEstimates()) {
-          await pushCreate(entry);
-        }
+      for (const entry of adopted) {
+        await pushCreate(entry);
       }
       const server = await fetchServerEstimates();
       if (!server) return;
