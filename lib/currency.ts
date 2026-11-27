@@ -9,11 +9,11 @@
  */
 export type CurrencyCode = "GHS" | "USD" | "GBP" | "EUR";
 
-export const CURRENCIES: { code: CurrencyCode; label: string; short: string }[] = [
-  { code: "GHS", label: "Cedis", short: "GHS" },
-  { code: "USD", label: "US dollars", short: "USD" },
-  { code: "GBP", label: "Pounds", short: "GBP" },
-  { code: "EUR", label: "Euros", short: "EUR" },
+export const CURRENCIES: { code: CurrencyCode; label: string; short: string; symbol: string }[] = [
+  { code: "GHS", label: "Cedis", short: "GHS", symbol: "GH₵" },
+  { code: "USD", label: "US dollar", short: "USD", symbol: "$" },
+  { code: "GBP", label: "Pound", short: "GBP", symbol: "£" },
+  { code: "EUR", label: "Euro", short: "EUR", symbol: "€" },
 ];
 
 const CURRENCY_KEY = "estimo_currency_v1";
