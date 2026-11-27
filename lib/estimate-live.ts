@@ -169,6 +169,12 @@ export const ROOM_NAMES: Record<string, string> = {
   shop_floor: "Shop Floor",
   external_area: "External Area",
 };
+/**
+ * Every counter the simple screen offers, mapped to the room it adds. The commercial
+ * counters used to be missing here, so changing them rebuilt the same default plan and
+ * the money never moved. "counter" and "machines" are attributes of a room rather than
+ * rooms, and are applied to the first matching space below.
+ */
 export const COUNT_FOR_ROOM: Record<string, string> = {
   bedrooms: "bedroom",
   bathrooms: "bathroom",
@@ -177,6 +183,23 @@ export const COUNT_FOR_ROOM: Record<string, string> = {
   porches: "porch_veranda",
   washroom: "wc",
   server: "server_room",
+  serving: "shop_floor",
+  floor: "shop_floor",
+  storage: "store",
+  store: "store",
+  signage: "porch_veranda",
+  external: "porch_veranda",
+  open: "open_office",
+  meeting: "meeting_room",
+  kitchenette: "kitchen",
+  workshop: "workshop",
+  office: "private_office",
+};
+
+/** Counters that describe something inside a room rather than a room of their own. */
+const ROOM_ATTRIBUTES: Record<string, { roomType: string; attribute: "checkout_counters" | "machine_count" }> = {
+  counter: { roomType: "shop_floor", attribute: "checkout_counters" },
+  machines: { roomType: "workshop", attribute: "machine_count" },
 };
 
 /**
@@ -225,6 +248,15 @@ export function spacesFromCounts(templateId: string, counts: Record<string, numb
   for (const space of base) {
     if (handled.has(space.room_type)) continue;
     next.push(space);
+  }
+
+  // counters that are attributes (tills, machines) land on the room that carries them
+  for (const [field, rule] of Object.entries(ROOM_ATTRIBUTES)) {
+    if (!(field in counts)) continue;
+    const target = next.find((space) => space.room_type === rule.roomType);
+    if (!target) continue;
+    const value = Math.max(0, Math.min(99, Math.round(counts[field] ?? 0)));
+    (target as SpaceInput & Record<string, number>)[rule.attribute] = value;
   }
 
   return next;
