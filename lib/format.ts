@@ -13,11 +13,13 @@ const moneyState = (): MoneyState =>
 export function formatGhs(value: number, fractionDigits = 2): string {
   const { currency, rates } = moneyState();
   const converted = value * (rates[currency] ?? 1);
+  // a whole-cedi amount converted to dollars needs its cents, or $0.51 prints as $1
+  const digits = currency === "GHS" ? fractionDigits : Math.max(2, fractionDigits);
   return new Intl.NumberFormat("en-GH", {
     style: "currency",
     currency,
-    maximumFractionDigits: fractionDigits,
-    minimumFractionDigits: fractionDigits,
+    maximumFractionDigits: digits,
+    minimumFractionDigits: digits,
   }).format(converted);
 }
 
