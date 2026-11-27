@@ -7,13 +7,17 @@ import { MaterialThumb } from "@/components/estimates/material-thumb";
 import { computeEstimate, defaultCounts, estimateLines, projectType, totalSpaces } from "@/lib/estimate-model";
 import { estimateType, isEstimated, statusLabel } from "@/lib/estimates-view";
 import { formatDate, formatGhs, formatGhsOrNull } from "@/lib/format";
+import { fetchLivePrices, priceSavedEstimate } from "@/lib/estimate-live";
 import { DRAFT_EVENT, readDraft, type EstimateDraft } from "@/lib/storage/draft";
 import { SAVED_EVENT, listSavedEstimates } from "@/lib/storage/saved-estimates";
+import type { PriceEntry } from "@/lib/quantity-engine/catalogue";
 import type { SavedEstimate } from "@/lib/types";
 
 export default function DashboardPage() {
   const [projects, setProjects] = useState<SavedEstimate[]>([]);
   const [draft, setDraft] = useState<EstimateDraft | null>(null);
+  const [prices, setPrices] = useState<Record<string, PriceEntry> | null>(null);
+  const [liveTotals, setLiveTotals] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const syncProjects = () => setProjects(listSavedEstimates());
@@ -34,6 +38,32 @@ export default function DashboardPage() {
       window.removeEventListener("storage", syncDraft);
     };
   }, []);
+
+  /**
+   * Cards are prices, so they are priced the way the project page prices them: at today's
+   * catalogue, not whatever was live the day the estimate was saved.
+   */
+  useEffect(() => {
+    let cancelled = false;
+    fetchLivePrices().then((next) => {
+      if (!cancelled) setPrices(next);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!prices) return;
+    const next: Record<string, number> = {};
+    for (const project of projects) {
+      const total = priceSavedEstimate(project, prices);
+      if (total !== null) next[project.id] = total;
+    }
+    setLiveTotals(next);
+  }, [projects, prices]);
+
+  const totalFor = (project: SavedEstimate) => liveTotals[project.id] ?? project.totalGhs;
 
   const draftTotal = draft ? computeEstimate(draft.template, draft.counts, draft.quality) : 0;
   const draftLines = draft ? estimateLines(draftTotal, draft.template, draft.counts) : [];
@@ -66,7 +96,7 @@ export default function DashboardPage() {
                   <span className={isEstimated(project) ? "status-pill is-estimated" : "status-pill is-draft"}>
                     {statusLabel(project)}
                   </span>
-                  <span>{formatGhsOrNull(project.totalGhs) ?? "Pending"}</span>
+                  <span>{formatGhsOrNull(totalFor(project)) ?? "Pending"}</span>
                 </span>
               </span>
             </Link>
@@ -116,13 +146,6 @@ export default function DashboardPage() {
             </>
           ) : projects.length ? (
             <div className="dash-latest">
-              <div className="dash-latest-thumb">
-                {projects[0].kind === "materials" ? (
-                  <MaterialThumb />
-                ) : (
-                  <PlanThumb variant={projects[0].name.length} />
-                )}
-              </div>
               <div className="dash-latest-body">
                 <span className="resume-eyebrow">Latest saved</span>
                 <strong>{projects[0].name}</strong>
@@ -131,7 +154,7 @@ export default function DashboardPage() {
                   {formatDate(projects[0].updatedAt ?? projects[0].createdAt)}
                 </span>
                 <span className="dash-latest-total">
-                  {formatGhsOrNull(projects[0].totalGhs) ?? "Price pending"}
+                  {formatGhsOrNull(totalFor(projects[0])) ?? "Price pending"}
                 </span>
               </div>
               <div className="dash-latest-actions">
