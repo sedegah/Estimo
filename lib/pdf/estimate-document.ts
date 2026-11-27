@@ -237,8 +237,10 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
     strongText(page, line, { x: margin, y: height - 126 - index * titleLead, size: title.size, font: bold, color: WHITE });
   });
 
+  // the built-in PDF fonts have no "·"; print a dash rather than a missing glyph
+  const cleanText = (value: string) => value.replace(/·/g, "-").replace(/₵/g, "GHS");
   const subtitleY = height - 126 - (title.lines.length - 1) * titleLead - 20;
-  page.drawText(subtitle ?? `${type.label} · ${fittings} fittings · ${spaces} spaces`, {
+  page.drawText(cleanText(subtitle ?? `${type.label} · ${fittings} fittings · ${spaces} spaces`), {
     x: margin,
     y: subtitleY,
     size: 10,
