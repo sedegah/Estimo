@@ -158,6 +158,12 @@ export async function loadExchangeRates(): Promise<Record<CurrencyCode, number>>
 }
 
 /** Converts a cedi amount into the currency on display. */
+/** The currency fields a PDF request carries, so the document prints what the site shows. */
+export function displayMoneyPayload(): { currency: CurrencyCode; rate: number } {
+  const code = getDisplayCurrency();
+  return { currency: code, rate: getExchangeRates()[code] ?? 1 };
+}
+
 export function convertFromGhs(value: number, code: CurrencyCode = display): number {
   return value * (rates[code] ?? 1);
 }

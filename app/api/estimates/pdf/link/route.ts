@@ -23,6 +23,8 @@ export async function POST(request: Request) {
     items?: { name?: unknown; quantity?: unknown; unit?: unknown; priceGhs?: unknown }[];
     total?: number;
     subtitle?: string;
+    currency?: string;
+    rate?: number;
   };
   try {
     body = JSON.parse(raw);
@@ -68,6 +70,8 @@ export async function POST(request: Request) {
     items: items.length ? items : undefined,
     total: typeof body.total === "number" && Number.isFinite(body.total) ? body.total : undefined,
     subtitle: typeof body.subtitle === "string" ? body.subtitle.slice(0, 120) : undefined,
+    currency: typeof body.currency === "string" && ["GHS", "USD", "GBP", "EUR"].includes(body.currency) ? body.currency : undefined,
+    rate: typeof body.rate === "number" && Number.isFinite(body.rate) && body.rate > 0 ? body.rate : undefined,
   });
   return Response.json(
     { url: `/api/estimates/pdf?token=${encodeURIComponent(token)}`, expiresInSeconds: 600 },

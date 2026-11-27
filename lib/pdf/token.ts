@@ -17,6 +17,9 @@ export type PdfLinkPayload = {
   items?: { name: string; quantity: number; unit: string; priceGhs: number | null }[];
   total?: number;
   subtitle?: string;
+  /** Display currency the document should print, and its cedi rate. */
+  currency?: string;
+  rate?: number;
   /** Unix seconds. */
   exp: number;
 };

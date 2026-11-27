@@ -1,4 +1,5 @@
 "use client";
+import { displayMoneyPayload } from "@/lib/currency";
 import { useCurrency } from "@/components/currency/currency-provider";
 
 import Link from "next/link";
@@ -330,6 +331,7 @@ function SetupContent() {
   /** The simple estimate downloads the same document the itemized page produces. */
   const downloadSimplePdf = async () => {
     const body = JSON.stringify({
+    ...displayMoneyPayload(),
       name: `${type.label} estimate`,
       template: type.code,
       specLevel,

@@ -25,6 +25,9 @@ const money = (value: number, digits = Number.isInteger(value) ? 0 : 2) =>
   `GHS ${value.toLocaleString("en-GH", { maximumFractionDigits: digits, minimumFractionDigits: digits })}`;
 
 type Input = {
+  /** Display currency for the document; amounts stay in cedis internally. */
+  currency?: string;
+  rate?: number;
   template: string;
   quality: FittingQuality;
   counts: Counts;
@@ -137,7 +140,17 @@ function fitTitle(text: string, font: PDFFont, maxWidth: number, maxLines = 2) {
   return { size, lines };
 }
 
-export async function buildEstimatePdf({ template, quality, counts, name, issuedAt = new Date(), specialLoads = [], specialLoadSummaries = [], specialLoadsDetail = [], specialLoadsSubtotal = null, specialLoadsPending = 0, items, totalOverride, subtitle }: Input): Promise<Uint8Array> {
+export async function buildEstimatePdf({ template, quality, counts, name, issuedAt = new Date(), specialLoads = [], specialLoadSummaries = [], specialLoadsDetail = [], specialLoadsSubtotal = null, specialLoadsPending = 0, items, totalOverride, subtitle, currency = "GHS", rate = 1 }: Input): Promise<Uint8Array> {
+  const fmt = (value: number, digits = Number.isInteger(value) ? 0 : 2) => {
+    const converted = value * (rate > 0 ? rate : 1);
+    const places = currency === "GHS" ? digits : Math.max(2, digits);
+    return new Intl.NumberFormat("en-GH", {
+      style: "currency",
+      currency,
+      maximumFractionDigits: places,
+      minimumFractionDigits: places,
+    }).format(converted);
+  };
   const type = projectType(template);
   const model = computeEstimate(type.code, counts, quality);
   const quantityLines = items?.map((line) => {
@@ -237,7 +250,7 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
   page.drawRectangle({ x: margin, y: y - 74, width: pageWidth - margin * 2, height: 74, color: PLASTER });
   page.drawRectangle({ x: margin, y: y - 74, width: 4, height: 74, color: AMBER });
   strongText(page, "ESTIMATED TOTAL", { x: margin + 20, y: y - 24, size: 8, font: bold, color: MUTED });
-  strongText(page, money(total), { x: margin + 20, y: y - 58, size: 28, font: bold, color: NAVY });
+  strongText(page, fmt(total), { x: margin + 20, y: y - 58, size: 28, font: bold, color: NAVY });
 
   const cardRight = pageWidth - margin - 20;
   rightText(page, quantityLines ? "Materials only, at catalogue prices." : "Materials only.", cardRight, y - 30, 8.5, font, MUTED);
@@ -276,8 +289,8 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
       rightText(page, "Pending", columns.unit, y - 17, 9.5, font, MUTED);
       rightText(page, "—", columns.amount, y - 17, 9.5, font, MUTED);
     } else {
-      rightText(page, money(line.unitPrice), columns.unit, y - 17, 9.5, font, MUTED);
-      rightStrong(page, money(line.amount), columns.amount, y - 17, 9.5, bold, NAVY);
+      rightText(page, fmt(line.unitPrice), columns.unit, y - 17, 9.5, font, MUTED);
+      rightStrong(page, fmt(line.amount), columns.amount, y - 17, 9.5, bold, NAVY);
     }
     page.drawLine({ start: { x: margin, y: y - rowHeight }, end: { x: tableRight, y: y - rowHeight }, thickness: 0.6, color: LINE });
     y -= rowHeight;
@@ -287,7 +300,7 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
   if (y - 52 < bottomLimit) y = newPage();
   page.drawLine({ start: { x: margin, y }, end: { x: tableRight, y }, thickness: 2, color: NAVY });
   strongText(page, "Total", { x: columns.item, y: y - 20, size: 10.5, font: bold, color: NAVY });
-  rightStrong(page, money(total), columns.amount, y - 20, 11, bold, NAVY);
+  rightStrong(page, fmt(total), columns.amount, y - 20, 11, bold, NAVY);
   y -= 46;
 
   /** Starts a page when a block would otherwise cross into the footer. */
@@ -361,7 +374,7 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
       if (entry.costGhs == null) {
         rightText(page, unconfirmed ? "—" : "included", costColumn, y - 16, 8.5, font, MUTED);
       } else {
-        rightStrong(page, money(entry.costGhs, 2), costColumn, y - 16, 9, bold, NAVY);
+        rightStrong(page, fmt(entry.costGhs, 2), costColumn, y - 16, 9, bold, NAVY);
       }
       page.drawLine({ start: { x: margin, y: y - 24 }, end: { x: tableRight, y: y - 24 }, thickness: 0.6, color: LINE });
       y -= 24;
@@ -371,7 +384,7 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
       if (y - 34 < bottomLimit) y = newPage();
       page.drawLine({ start: { x: margin, y }, end: { x: tableRight, y }, thickness: 1.4, color: NAVY });
       strongText(page, "Special loads, materials", { x: loadColumn, y: y - 16, size: 9, font: bold, color: NAVY });
-      rightStrong(page, money(specialLoadsSubtotal, 2), costColumn, y - 16, 9.5, bold, NAVY);
+      rightStrong(page, fmt(specialLoadsSubtotal, 2), costColumn, y - 16, 9.5, bold, NAVY);
       y -= 26;
     }
 

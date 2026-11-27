@@ -1,4 +1,5 @@
 "use client";
+import { displayMoneyPayload } from "@/lib/currency";
 import { useCurrency } from "@/components/currency/currency-provider";
 
 import Link from "next/link";
@@ -770,6 +771,7 @@ export function QuantityView(props: Props) {
   /** Downloads the current take-off as a PDF, signed in or as a short-lived link. */
   const downloadEstimatePdf = async () => {
     const body = JSON.stringify({
+    ...displayMoneyPayload(),
       name: `${templateName} estimate`,
       template: props.templateCode ?? "HOME-2B",
       specLevel,

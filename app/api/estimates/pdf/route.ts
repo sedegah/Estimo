@@ -9,6 +9,15 @@ export const runtime = "nodejs";
 type SavedLine = { name: string; quantity: number; unit: string; priceGhs: number | null };
 
 const MAX_BODY_BYTES = 200_000;
+const DISPLAY_CURRENCIES = new Set(["GHS", "USD", "GBP", "EUR"]);
+
+/** Only known currencies and a sane rate reach the document. */
+function displayMoney(source: { currency?: unknown; rate?: unknown }): { currency: string; rate: number } {
+  const currency = typeof source.currency === "string" && DISPLAY_CURRENCIES.has(source.currency) ? source.currency : "GHS";
+  const rate = typeof source.rate === "number" && Number.isFinite(source.rate) && source.rate > 0 && source.rate < 100_000 ? source.rate : 1;
+  return { currency, rate: currency === "GHS" ? 1 : rate };
+}
+
 const MAX_LINES = 200;
 
 /**
@@ -152,6 +161,7 @@ export async function POST(request: Request) {
     items,
     totalOverride: total,
     subtitle: typeof body.subtitle === "string" ? body.subtitle.slice(0, 120) : undefined,
+    ...displayMoney(body as { currency?: unknown; rate?: unknown }),
     specialLoads: (Array.isArray(body.specialLoads) ? body.specialLoads : [])
       .filter((key) => typeof key === "string")
       .slice(0, 20),

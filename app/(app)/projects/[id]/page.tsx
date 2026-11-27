@@ -1,4 +1,5 @@
 "use client";
+import { displayMoneyPayload } from "@/lib/currency";
 import { useCurrency } from "@/components/currency/currency-provider";
 
 import Link from "next/link";
@@ -229,6 +230,7 @@ export default function ProjectPage() {
     if (!livePrices) return;
     const specLevel = specLevelForQuality(quality);
     const body = JSON.stringify({
+    ...displayMoneyPayload(),
       name: name.trim() || project.name,
       template: type.code,
       specLevel,
@@ -426,6 +428,7 @@ export default function ProjectPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
+    ...displayMoneyPayload(),
           name: project.name,
           template: project.template ?? "HOME-2B",
           specLevel: takeOff.specLevel,

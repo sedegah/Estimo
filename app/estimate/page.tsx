@@ -1,4 +1,5 @@
 "use client";
+import { displayMoneyPayload } from "@/lib/currency";
 import { useCurrency } from "@/components/currency/currency-provider";
 
 import Link from "next/link";
@@ -87,6 +88,7 @@ function EstimateContent() {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
+    ...displayMoneyPayload(),
         template: type.code,
         quality,
         name: `${type.label} estimate`,
