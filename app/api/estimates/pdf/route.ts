@@ -60,6 +60,7 @@ export async function GET(request: Request) {
         items: link.items,
         totalOverride: link.total ?? known,
         subtitle: link.subtitle,
+        ...displayMoney(link),
         specialLoads: link.loads ?? [],
       });
       return pdfResponse(linkedPdf, link.name ?? linkedType.label);
@@ -75,6 +76,7 @@ export async function GET(request: Request) {
       quality: link.quality,
       counts,
       name: link.name,
+      ...displayMoney(link),
       specialLoads: link.loads ?? [],
     });
     return pdfResponse(pdf, link.name ?? linkedType.label);
