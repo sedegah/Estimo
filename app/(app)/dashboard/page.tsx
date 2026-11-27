@@ -114,6 +114,23 @@ export default function DashboardPage() {
                 </Link>
               </p>
             </>
+          ) : projects.length ? (
+            <>
+              <p className="settings-note">
+                No estimate open right now, but your latest is <strong>{projects[0].name}</strong>
+                {projects[0].totalGhs != null ? ` · ${formatGhs(projects[0].totalGhs, 0)}` : ""} · saved{" "}
+                {formatDate(projects[0].updatedAt ?? projects[0].createdAt)}.
+              </p>
+              <p className="settings-note">
+                <Link className="link-button" href={`/projects/${projects[0].id}`}>
+                  Open latest estimate
+                </Link>{" "}
+                ·{" "}
+                <Link className="link-button" href="/quick-estimate?template=HOME-2B&fresh=1">
+                  Start a new one
+                </Link>
+              </p>
+            </>
           ) : (
             <p className="settings-note">
               No estimate in progress. <Link className="link-button" href="/quick-estimate?template=HOME-2B&fresh=1">Start one</Link>
