@@ -221,7 +221,6 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
 
   let page = pdf.addPage([pageWidth, pageHeight]);
 
-  // ── header (first page) ───────────────────────────────────────────────────
   const title = fitTitle(documentTitle, bold, pageWidth - margin * 2);
   const titleLead = 26;
   const headerHeight = 168 + (title.lines.length - 1) * titleLead;
@@ -249,7 +248,6 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
   });
   rightText(page, dateLabel, pageWidth - margin, subtitleY, 10, font, PALE);
 
-  // ── total card ────────────────────────────────────────────────────────────
   let y = height - headerHeight - 36;
   page.drawRectangle({ x: margin, y: y - 74, width: pageWidth - margin * 2, height: 74, color: PLASTER });
   page.drawRectangle({ x: margin, y: y - 74, width: 4, height: 74, color: AMBER });
@@ -260,7 +258,6 @@ export async function buildEstimatePdf({ template, quality, counts, name, issued
   rightText(page, quantityLines ? "Materials only, at catalogue prices." : "Materials only.", cardRight, y - 30, 8.5, font, MUTED);
   rightText(page, quantityLines ? "Preliminary take-off, not a quotation." : "Illustrative planning figure, not a quotation.", cardRight, y - 43, 8.5, font, MUTED);
 
-  // ── table, paginated ──────────────────────────────────────────────────────
   y -= 110;
   y = drawTableHead(page, y);
 

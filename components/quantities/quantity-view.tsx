@@ -708,7 +708,6 @@ export function QuantityView(props: Props) {
     setAdded("");
   };
 
-  /** One action: files the estimate under Saved projects and fills the basket. */
   /**
    * Saves the take-off as a project, exactly as the simple screen's "Save for later" does:
    * the browser keeps it either way, and a signed-in account also gets a server copy.
@@ -830,7 +829,6 @@ export function QuantityView(props: Props) {
   };
 
   /** Every line goes in, priced or not, so the estimate shows the full take-off. */
-  /**
   /**
    * Saves the estimate as a project, the same file the simple screen keeps. A signed-in
    * account also gets a server copy; a guest keeps it in this browser. Either way the

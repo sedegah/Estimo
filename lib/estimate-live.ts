@@ -147,7 +147,6 @@ export function templatePlanSpaces(templateId: string): SpaceInput[] {
     }));
 }
 
-/** Room-type counts behind the simple summary. */
 /** Room names for copies the summary creates, so a plural template row reads naturally. */
 export const ROOM_NAMES: Record<string, string> = {
   bedroom: "Bedroom",

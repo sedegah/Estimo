@@ -78,7 +78,6 @@ export function EstimateBasket() {
     persist(items.filter((item) => (item.groupId ?? DEFAULT_GROUP.id) !== groupId));
   };
 
-  /** Saves one estimate as its own material list and takes it out of the basket. */
   const saveGroup = (group: Group) => {
     const priced = group.items.reduce((sum, item) => (item.priceGhs == null ? sum : sum + item.priceGhs * item.quantity), 0);
     const units = group.items.reduce((sum, item) => sum + item.quantity, 0);

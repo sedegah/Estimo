@@ -157,7 +157,6 @@ export async function loadExchangeRates(): Promise<Record<CurrencyCode, number>>
   return rates;
 }
 
-/** Converts a cedi amount into the currency on display. */
 /** The currency fields a PDF request carries, so the document prints what the site shows. */
 export function displayMoneyPayload(): { currency: CurrencyCode; rate: number } {
   const code = getDisplayCurrency();

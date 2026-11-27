@@ -94,7 +94,6 @@ function SetupContent() {
     setSaved(false);
   }, [type.code]);
 
-  // Keep a resumable draft of the current setup.
   useEffect(() => {
     saveDraft({ template: type.code, counts, quality });
   }, [type.code, counts, quality]);

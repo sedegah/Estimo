@@ -245,7 +245,6 @@ const UPLOAD_TYPES: Record<string, string> = {
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 
-/** Stores a material photo in R2 and points the catalogue item at it. */
 async function uploadCatalogueImage(env: Env, actor: string, request: Request): Promise<Response> {
   if (!env.IMAGES) return json({ ok: false, error: "image storage is not configured" }, 500);
 
@@ -351,7 +350,6 @@ async function updateCatalogueItem(env: Env, actor: string, id: string, body: Re
   return json({ ok: true });
 }
 
-/** Removes a material, its price history and its photo. */
 async function deleteCatalogueItem(env: Env, actor: string, id: string): Promise<Response> {
   const item = await env.DB
     .prepare("SELECT id, image_key FROM catalogue_items WHERE id = ?")
@@ -441,8 +439,6 @@ async function saveTemplate(env: Env, actor: string, body: Record<string, unknow
   return json({ ok: true, id });
 }
 
-/* ── exchange rates ─────────────────────────────────────────────────────── */
-
 const RATE_SOURCE = "https://open.er-api.com/v6/latest/GHS";
 const RATE_CODES = ["USD", "GBP", "EUR"] as const;
 const RATE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
@@ -456,7 +452,6 @@ async function storedRates(env: Env): Promise<StoredRate[]> {
   return ((result as { results?: StoredRate[] }).results ?? []) as StoredRate[];
 }
 
-/** Pulls today's rates from the free provider and keeps them in D1. */
 async function refreshRates(env: Env): Promise<boolean> {
   const response = await fetch(RATE_SOURCE, { headers: { accept: "application/json" } });
   if (!response.ok) return false;

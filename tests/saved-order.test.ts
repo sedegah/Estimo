@@ -137,7 +137,6 @@ test("an estimate unused for 40 days is cleared; using it keeps it", async () =>
     ]),
   );
 
-  // opening one now keeps it
   touchSavedEstimate("opened");
 
   const purged = purgeExpiredEstimates();

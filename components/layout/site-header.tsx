@@ -32,7 +32,6 @@ export function SiteHeader({ signedIn = false }: { signedIn?: boolean }) {
         </nav>
         <div className="topbar-auth">
           <HeaderAuth signedIn={signedIn} />
-          {/* currency picker, or the basket once a material is added */}
           <HeaderTools />
         </div>
       </div>

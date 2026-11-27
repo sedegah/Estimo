@@ -1657,8 +1657,6 @@ export function dbKeyForSpace(
   spaceId: string | null | undefined,
 ): string | null {
   if (!templateId || !spaceId) return null;
-  // "T020-8" and its copies ("T020-8-1") both refer to space 8: the number right after
-  // the template, not the last one, which is the copy index
   const match = /^[A-Za-z0-9]+-(\d+)/.exec(spaceId);
   if (!match) return null;
   const spaceNo = Number(match[1]);

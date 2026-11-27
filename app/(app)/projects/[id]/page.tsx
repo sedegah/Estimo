@@ -53,7 +53,6 @@ import type { SavedEstimate } from "@/lib/types";
 
 const clamp = (value: number) => Math.max(0, Math.min(20, Math.round(value)));
 
-/** Readable special-load names, acronyms included. */
 const LOAD_NAMES: Record<string, string> = {
   refrigerator: "Refrigerator",
   freezer: "Freezer",

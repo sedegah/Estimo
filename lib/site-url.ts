@@ -1,4 +1,3 @@
-// Production fallback updated for estimo.live custom domain.
 const PRODUCTION_FALLBACK = "https://estimo.live";
 
 /**
