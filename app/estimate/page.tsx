@@ -67,7 +67,13 @@ function EstimateContent() {
   };
 
   const pdfHref = () => {
-    const params = new URLSearchParams({ template: type.code, quality, name: `${type.label} estimate` });
+    const params = new URLSearchParams({
+      template: type.code,
+      quality,
+      name: `${type.label} estimate`,
+      currency: displayMoneyPayload().currency,
+      rate: String(displayMoneyPayload().rate),
+    });
     for (const field of type.fields) params.set(field.key, String(counts[field.key] ?? 0));
     return `/api/estimates/pdf?${params.toString()}`;
   };

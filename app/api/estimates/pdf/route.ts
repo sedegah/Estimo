@@ -99,7 +99,17 @@ export async function GET(request: Request) {
     .map((key) => key.trim())
     .filter(Boolean)
     .slice(0, 20);
-  const pdf = await buildEstimatePdf({ template: type.code, quality, counts, name, specialLoads });
+  const pdf = await buildEstimatePdf({
+    template: type.code,
+    quality,
+    counts,
+    name,
+    ...displayMoney({
+      currency: url.searchParams.get("currency"),
+      rate: Number(url.searchParams.get("rate")),
+    }),
+    specialLoads,
+  });
 
   return pdfResponse(pdf, name ?? type.label);
 }
