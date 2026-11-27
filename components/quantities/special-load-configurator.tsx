@@ -1,6 +1,7 @@
-import { formatGhs } from "@/lib/format";
 "use client";
+
 import { useCurrency } from "@/components/currency/currency-provider";
+import { formatGhs } from "@/lib/format";
 
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 
