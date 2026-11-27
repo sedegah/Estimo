@@ -441,6 +441,57 @@ async function saveTemplate(env: Env, actor: string, body: Record<string, unknow
   return json({ ok: true, id });
 }
 
+/* ── exchange rates ─────────────────────────────────────────────────────── */
+
+const RATE_SOURCE = "https://open.er-api.com/v6/latest/GHS";
+const RATE_CODES = ["USD", "GBP", "EUR"] as const;
+const RATE_MAX_AGE_MS = 24 * 60 * 60 * 1000;
+
+type StoredRate = { code: string; rate: number; fetched_at: string };
+
+async function storedRates(env: Env): Promise<StoredRate[]> {
+  const result = await env.DB.prepare(
+    "SELECT code, rate, fetched_at FROM exchange_rates WHERE base = 'GHS'",
+  ).all();
+  return ((result as { results?: StoredRate[] }).results ?? []) as StoredRate[];
+}
+
+/** Pulls today's rates from the free provider and keeps them in D1. */
+async function refreshRates(env: Env): Promise<boolean> {
+  const response = await fetch(RATE_SOURCE, { headers: { accept: "application/json" } });
+  if (!response.ok) return false;
+  const body = (await response.json()) as { rates?: Record<string, number> };
+  const now = new Date().toISOString();
+  const rows = RATE_CODES.map((code) => ({ code, rate: Number(body.rates?.[code]) })).filter(
+    (row) => Number.isFinite(row.rate) && row.rate > 0,
+  );
+  if (!rows.length) return false;
+  await env.DB.batch(
+    rows.map((row) =>
+      env.DB
+        .prepare(
+          "INSERT INTO exchange_rates (base, code, rate, fetched_at) VALUES ('GHS', ?, ?, ?) ON CONFLICT(base, code) DO UPDATE SET rate = excluded.rate, fetched_at = excluded.fetched_at",
+        )
+        .bind(row.code, row.rate, now),
+    ),
+  );
+  return true;
+}
+
+async function getRates(env: Env): Promise<Response> {
+  let rows = await storedRates(env);
+  const newest = () => rows.reduce((latest, row) => (row.fetched_at > latest ? row.fetched_at : latest), "");
+  const stale = !rows.length || Date.now() - Date.parse(newest()) > RATE_MAX_AGE_MS;
+  if (stale) {
+    await refreshRates(env).catch(() => false);
+    rows = await storedRates(env);
+  }
+  if (!rows.length) return json({ ok: false, error: "rates_unavailable" }, 503);
+  const rates: Record<string, number> = { GHS: 1 };
+  for (const row of rows) rates[row.code] = row.rate;
+  return json({ ok: true, base: "GHS", rates, updatedAt: newest() }, 200, "public, max-age=3600");
+}
+
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     if (request.method === "OPTIONS") return json({ ok: true });
@@ -454,6 +505,9 @@ export default {
     if (url.pathname === "/health" || url.pathname === "/") {
       return json({ ok: true, service: "estimo-data-api", storage: "d1", isolation: "owner_key" });
     }
+
+    // public: the site converts cedi prices for display and needs today's rates
+    if (url.pathname === "/rates" && request.method === "GET") return getRates(env);
 
     const header = request.headers.get("authorization") ?? "";
     const token = header.startsWith("Bearer ") ? header.slice(7) : "";
@@ -511,5 +565,14 @@ export default {
     }
 
     return json({ ok: false, error: "not_found" }, 404);
+  },
+
+  /** Cloudflare cron: refresh the exchange rates once a day. */
+  async scheduled(
+    _event: unknown,
+    env: Env,
+    ctx: { waitUntil(promise: Promise<unknown>): void },
+  ): Promise<void> {
+    ctx.waitUntil(refreshRates(env));
   },
 };

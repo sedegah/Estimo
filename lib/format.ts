@@ -1,8 +1,24 @@
-/** Display formatting helpers (Ghana locale, display currency aware). */
-import { formatMoney } from "@/lib/currency";
+/** Display formatting helpers (Ghana locale, display currency aware).
+ *
+ * The currency module publishes the chosen currency and rates on globalThis so this
+ * module stays free of imports and remains loadable by node --test.
+ */
+type MoneyState = { currency: "GHS" | "USD" | "GBP" | "EUR"; rates: Record<string, number> };
+const moneyState = (): MoneyState =>
+  (globalThis as { __estimoMoney?: MoneyState }).__estimoMoney ?? {
+    currency: "GHS",
+    rates: { GHS: 1, USD: 0.084, GBP: 0.064, EUR: 0.077 },
+  };
 
 export function formatGhs(value: number, fractionDigits = 2): string {
-  return formatMoney(value, fractionDigits);
+  const { currency, rates } = moneyState();
+  const converted = value * (rates[currency] ?? 1);
+  return new Intl.NumberFormat("en-GH", {
+    style: "currency",
+    currency,
+    maximumFractionDigits: fractionDigits,
+    minimumFractionDigits: fractionDigits,
+  }).format(converted);
 }
 
 /** Whole-cedi amounts, or null when the value is unknown. */
@@ -44,7 +60,7 @@ export function materialUnitLabel(unit: string): string {
 /** Price text with the unit basis attached: "GHS 382.76 per metre". Single pieces
  * ("No.") are quoted on their own, so no basis is appended: "GHS 15". */
 export function formatPrice(price: number, unit: string): string {
-  const amount = formatMoney(price, Number.isInteger(price) ? 0 : 2);
+  const amount = formatGhs(price, Number.isInteger(price) ? 0 : 2);
   return unit === "No." ? amount : `${amount} ${materialUnitLabel(unit)}`;
 }
 

@@ -19,6 +19,11 @@ export const CURRENCIES: { code: CurrencyCode; label: string; short: string }[] 
 const CURRENCY_KEY = "estimo_currency_v1";
 const RATE_KEY = "estimo_exchange_rates_v1";
 const RATE_URL = "https://open.er-api.com/v6/latest/GHS";
+const API_BASE = (
+  process.env.NEXT_PUBLIC_ESTIMO_API_URL?.trim() || "https://estimo-api.sedegahkimathi.workers.dev"
+).replace(/\/$/, "");
+/** Our worker keeps the daily rates in D1; the provider is the fallback. */
+const API_RATES_URL = `${API_BASE}/rates`;
 const RATE_MAX_AGE_MS = 12 * 60 * 60 * 1000;
 
 /** Used only until the first fetch succeeds; roughly the current market. */
@@ -27,6 +32,19 @@ const FALLBACK_RATES: Record<CurrencyCode, number> = { GHS: 1, USD: 0.084, GBP: 
 let display: CurrencyCode = "GHS";
 let rates: Record<CurrencyCode, number> = { ...FALLBACK_RATES };
 let ratesUpdatedAt: string | null = null;
+
+/**
+ * format.ts is deliberately import-free, so the chosen currency and rates are published
+ * on globalThis for it to read. Publishing the market fallbacks at module load means a
+ * dollar price is never accidentally 1:1 with a cedi one, even before the first fetch.
+ */
+function publish(): void {
+  (globalThis as { __estimoMoney?: { currency: CurrencyCode; rates: Record<CurrencyCode, number> } }).__estimoMoney = {
+    currency: display,
+    rates,
+  };
+}
+publish();
 
 export const isCurrency = (value: unknown): value is CurrencyCode =>
   value === "GHS" || value === "USD" || value === "GBP" || value === "EUR";
@@ -44,6 +62,7 @@ export function storeCurrency(code: CurrencyCode): void {
 
 export function setDisplayCurrency(code: CurrencyCode): void {
   display = code;
+  publish();
 }
 
 export function getDisplayCurrency(): CurrencyCode {
@@ -67,6 +86,7 @@ export function setExchangeRates(next: Partial<Record<CurrencyCode, number>>, as
   }
   rates = merged;
   ratesUpdatedAt = asOf;
+  publish();
 }
 
 function applyRates(payload: unknown): boolean {
@@ -85,6 +105,7 @@ function applyRates(payload: unknown): boolean {
   if (!seen) return false;
   rates = next;
   ratesUpdatedAt = new Date().toISOString();
+  publish();
   return true;
 }
 
@@ -113,9 +134,16 @@ export async function loadExchangeRates(): Promise<Record<CurrencyCode, number>>
     return rates;
   }
   try {
-    const response = await fetch(RATE_URL);
-    if (!response.ok) throw new Error(`rates ${response.status}`);
-    const body = await response.json();
+    let body: unknown = null;
+    try {
+      const stored = await fetch(API_RATES_URL, { headers: { accept: "application/json" } });
+      if (stored.ok) body = await stored.json();
+    } catch {}
+    if (!applyRates(body)) {
+      const response = await fetch(RATE_URL);
+      if (!response.ok) throw new Error(`rates ${response.status}`);
+      body = await response.json();
+    }
     if (!applyRates(body)) throw new Error("rates malformed");
     try {
       window.localStorage.setItem(

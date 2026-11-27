@@ -1,0 +1,29 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "estimo-api",
+  "main": "index.ts",
+  "compatibility_date": "2026-11-16",
+  "observability": {
+    "enabled": true
+  },
+  // Secrets (CLERK_PUBLISHABLE_KEY, DB_PEPPER) and ADMIN_* vars live on the Worker;
+  // keep_vars preserves them across deploys.
+  "keep_vars": true,
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "estimo",
+      "database_id": "25bc7827-39e5-455f-a19a-1f08e4a0c1d9"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "IMAGES",
+      "bucket_name": "estimo-materials"
+    }
+  ],
+  // Refresh GHS → USD/GBP/EUR every day at 00:00 UTC.
+  "triggers": {
+    "crons": ["0 0 * * *"]
+  }
+}
