@@ -17,6 +17,7 @@ import { SiteHeader } from "@/components/layout/site-header";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { CookieNotice } from "@/components/layout/cookie-notice";
 import { ClerkBoundary } from "@/components/layout/clerk-boundary";
+import { CurrencyProvider } from "@/components/currency/currency-provider";
 
 export const metadata: Metadata = {
   title: "ESTIMO - Estimate Smarter. Build Better.",
@@ -58,12 +59,14 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
           crossOrigin="anonymous"
         />
         <ClerkBoundary enabled={signedIn}>
+        <CurrencyProvider>
         <div className="shell">
           <SiteHeader signedIn={signedIn} />
           {children}
           <SiteFooter year={new Date().getFullYear()} />
           <CookieNotice />
         </div>
+        </CurrencyProvider>
       </ClerkBoundary>
       </body>
     </html>

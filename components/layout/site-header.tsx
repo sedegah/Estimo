@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { HeaderAuth } from "./header-auth";
-import { EstimateBasketLink } from "@/components/estimate/estimate-basket-link";
+import { HeaderTools } from "./header-tools";
 import { EstimoLogo } from "./estimo-logo";
 
 export function SiteHeader({ signedIn = false }: { signedIn?: boolean }) {
@@ -32,8 +32,8 @@ export function SiteHeader({ signedIn = false }: { signedIn?: boolean }) {
         </nav>
         <div className="topbar-auth">
           <HeaderAuth signedIn={signedIn} />
-          {/* the basket sits at the very end of the header */}
-          <EstimateBasketLink />
+          {/* currency picker, or the basket once a material is added */}
+          <HeaderTools />
         </div>
       </div>
     </header>

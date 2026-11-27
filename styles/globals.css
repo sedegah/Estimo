@@ -343,3 +343,37 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { width: 0; height: 0; }
 @media (max-width: 420px) {
   .nav { gap: 16px; font-size: 12.5px; }
 }
+
+/* ── header currency picker ─────────────────────────────────────────────── */
+.currency-field { display: flex; align-items: center; }
+.currency-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+.currency-select {
+  appearance: none;
+  color-scheme: dark;
+  background-color: rgba(255, 255, 255, .08);
+  border: 1px solid rgba(255, 255, 255, .38);
+  border-radius: 8px;
+  color: #ffffff;
+  font: inherit;
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: .01em;
+  padding: 7px 26px 7px 10px;
+  cursor: pointer;
+  background-image: url("data:image/svg+xml;charset=utf-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23ffffff' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 9px center;
+}
+.currency-select:hover { background-color: rgba(255, 255, 255, .14); }
+.currency-select:focus-visible { outline: 2px solid #f5b301; outline-offset: 2px; }
+.currency-select option { color: #0b1f3f; background: #ffffff; }

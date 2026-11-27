@@ -69,9 +69,8 @@ const SOURCES: { value: SizingSource; label: string; hint: string }[] = [
   },
 ];
 
-/** The estimate prints cedis as "GHS"; the configurator matches it rather than the locale symbol. */
-const money = (value: number) =>
-  `GHS ${value.toLocaleString("en-GH", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+/** The configurator prints amounts in the display currency, like the bill. */
+const money = (value: number) => formatGhs(value, 2);
 
 const manufacturerField = (key: SpecialLoadFieldKey) =>
   key === "manufacturer_cable_size_mm2" || key === "manufacturer_breaker_rating_a";
