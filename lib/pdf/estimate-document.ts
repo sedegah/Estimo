@@ -141,15 +141,17 @@ function fitTitle(text: string, font: PDFFont, maxWidth: number, maxLines = 2) {
 }
 
 export async function buildEstimatePdf({ template, quality, counts, name, issuedAt = new Date(), specialLoads = [], specialLoadSummaries = [], specialLoadsDetail = [], specialLoadsSubtotal = null, specialLoadsPending = 0, items, totalOverride, subtitle, currency = "GHS", rate = 1 }: Input): Promise<Uint8Array> {
+  // The PDF's built-in fonts have no cedi glyph, so the document prints an ASCII-safe
+  // symbol (GHS, $, £, €) instead of the locale's GH₵.
+  const symbol = currency === "USD" ? "$" : currency === "GBP" ? "£" : currency === "EUR" ? "€" : "GHS";
   const fmt = (value: number, digits = Number.isInteger(value) ? 0 : 2) => {
     const converted = value * (rate > 0 ? rate : 1);
     const places = currency === "GHS" ? digits : Math.max(2, digits);
-    return new Intl.NumberFormat("en-GH", {
-      style: "currency",
-      currency,
+    const number = new Intl.NumberFormat("en-GH", {
       maximumFractionDigits: places,
       minimumFractionDigits: places,
     }).format(converted);
+    return `${symbol} ${number}`;
   };
   const type = projectType(template);
   const model = computeEstimate(type.code, counts, quality);
