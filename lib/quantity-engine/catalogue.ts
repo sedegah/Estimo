@@ -153,6 +153,9 @@ export const MATERIAL_CATALOGUE: Record<string, CatalogueLink> = {
   fan_regulator: { id: "mat-fan-regulator" },
   fan_hook: { id: "mat-fan-hook" },
 
+  // office server room dedicated provision allowance
+  server_room_provision: { id: "mat-srv-provision" },
+
   // signage & POS/counter wiring accessories
   flexible_conduit_20: { id: "mat-con-flx-20" },
   conduit_adaptor_20: { id: "mat-con-adapt-20" },
@@ -175,6 +178,7 @@ export const ALLOWANCE_PRICES_GHS: Record<string, number> = {
   "mat-fan-ceiling-56": 480,
   "mat-fan-regulator": 65,
   "mat-fan-hook": 30,
+  "mat-srv-provision": 300,
 };
 
 export interface PriceEntry {

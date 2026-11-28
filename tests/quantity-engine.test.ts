@@ -221,3 +221,20 @@ test("empty spaces or zeroed points produce zero materials", () => {
   assert.equal(zeroed.totals.total_containment_m, 0);
   assert.equal(zeroed.materialQuantities.length, 0);
 });
+
+test("office server room emits RJ45 data outlet and GHS 300 dedicated provision allowance", () => {
+  const serverSpace: SpaceInput = {
+    id: "T020-8",
+    space_name: "Server Room",
+    room_type: "server_room",
+    length_m: 3,
+    width_m: 2.4,
+    height_m: 3,
+    quantity: 1,
+  };
+  const res = run([serverSpace]);
+  const rj45 = res.materialQuantities.find((m) => m.material_key === "data_rj45_outlet");
+  const provision = res.materialQuantities.find((m) => m.material_key === "server_room_provision");
+  assert.equal(rj45?.engineering_quantity, 1, "server room data feed includes RJ45 outlet");
+  assert.equal(provision?.engineering_quantity, 1, "server room includes dedicated power & rack allowance");
+});

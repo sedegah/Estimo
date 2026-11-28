@@ -2695,6 +2695,23 @@ export const CATALOGUE_MATERIALS: CatalogueMaterial[] = [
     "category": "General Accessories",
     "unitCode": "U-NO",
     "unit": "No."
+  },
+  {
+    "id": "mat-srv-provision",
+    "code": "SRV-PROV-STD",
+    "name": "Server Room Dedicated Power & Rack Allowance",
+    "purpose": "Additional dedicated power, earthing and rack-mounting allowance for an office server room.",
+    "spec": "Server room power & rack provision allowance",
+    "tier": "Standard",
+    "relevance": "High",
+    "keywords": [
+      "server room",
+      "rack allowance"
+    ],
+    "categoryCode": "CAT-ACC",
+    "category": "General Accessories",
+    "unitCode": "U-NO",
+    "unit": "No."
   }
 ];
 

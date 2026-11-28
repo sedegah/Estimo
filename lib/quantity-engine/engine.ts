@@ -51,6 +51,8 @@ const MATERIAL_LABELS: Record<string, string> = {
   ceiling_fan: "Ceiling fan (allowance)",
   fan_regulator: "Fan speed regulator",
   fan_hook: "Ceiling fan hook and cover",
+  data_rj45_outlet: "Cat6 RJ45 data outlet",
+  server_room_provision: "Server room power & rack provision (allowance)",
   ceiling_junction_box: "Ceiling junction box",
   switch_mechanism: "Switch mechanism",
   switch_mounting_box: "Switch mounting box",
@@ -457,7 +459,7 @@ function aggregateMaterials(args: {
   // the same material family as the point they belong to.
   const extraPoints: { key: string; count: number; fixed: string[]; route: string[] }[] = [
     { key: "tv_point", count: totals.tv_points, fixed: ["double_13a_socket", "socket_mounting_box"], route: ["2.5mm2_phase_conductor", "2.5mm2_neutral_conductor", "cpc_conductor", "20mm_conduit"] },
-    { key: "data_point", count: totals.data_points, fixed: ["socket_mounting_box"], route: ["data_cable"] },
+    { key: "data_point", count: totals.data_points, fixed: ["data_rj45_outlet", "socket_mounting_box"], route: ["data_cable"] },
     // a fan point is the fan, its speed regulator and its hook, plus the switch and route
     { key: "fan_point", count: totals.fan_points, fixed: ["ceiling_fan", "fan_regulator", "fan_hook", "switch_mechanism", "switch_mounting_box"], route: ["lighting_conductors", "20mm_conduit"] },
   ];
@@ -495,6 +497,23 @@ function aggregateMaterials(args: {
           confidence: "estimated",
         });
     }
+  }
+
+  // Server room dedicated power & rack provision allowance (GHS 300 per server room).
+  const serverRoomCount = args.calculated
+    .filter((space) => space.room_type === "server_room")
+    .reduce((sum, space) => sum + Math.max(1, Math.round(space.quantity || 1)), 0);
+  if (serverRoomCount > 0) {
+    rows.set("server_room_provision", {
+      material_key: "server_room_provision",
+      name: MATERIAL_LABELS.server_room_provision,
+      unit: "each",
+      engineering_quantity: serverRoomCount,
+      purchase_quantity: serverRoomCount,
+      pack_size: null,
+      trace: [`${serverRoomCount} server room${serverRoomCount === 1 ? "" : "s"}`],
+      confidence: "estimated",
+    });
   }
 
   // accessory allowances and pack rounding
