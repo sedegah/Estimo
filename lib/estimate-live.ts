@@ -5,6 +5,7 @@ import {
   acSuppressionOverrides,
   applySpecialLoads,
   defaultAcAdditions,
+  defaultCommercialAdditions,
   seedSpecialLoads,
   type SpaceRouteRow,
   type SpecialLoadInstance,
@@ -122,9 +123,15 @@ export function defaultPlanAdditions(args: {
     routes,
     overrides: existing,
   });
+  const commercial = defaultCommercialAdditions({
+    projectType: args.projectType,
+    templateId: args.templateId,
+    spaces: args.spaces,
+    routes,
+  });
   return {
     overrides: [...existing, ...home.overrides],
-    instances: [...instances, ...home.instances],
+    instances: [...instances, ...home.instances, ...commercial],
   };
 }
 

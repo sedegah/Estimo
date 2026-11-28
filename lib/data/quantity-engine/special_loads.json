@@ -194,5 +194,33 @@
     "default_breaker_a": 25,
     "requires_user_rating": true,
     "notes": "Dedicated refrigeration supply; final sizing by equipment data."
+  },
+  {
+    "load_key": "illuminated_sign",
+    "space_context": "external",
+    "selection_mode": "optional",
+    "default_enabled": false,
+    "circuit_policy": "dedicated",
+    "assembly_key": "illuminated_sign_point",
+    "default_power_kw": 0.3,
+    "default_phase": "single",
+    "default_cable_family": "1.5mm2_single_core",
+    "default_breaker_a": 10,
+    "requires_user_rating": false,
+    "notes": "Outdoor illuminated sign feed: FCU switch, 1.5mm² cable, 20mm PVC & flexible conduit, junction box and terminations."
+  },
+  {
+    "load_key": "pos_counter",
+    "space_context": "shop_or_workshop",
+    "selection_mode": "optional",
+    "default_enabled": false,
+    "circuit_policy": "dedicated",
+    "assembly_key": "pos_counter_point",
+    "default_power_kw": 2.5,
+    "default_phase": "single",
+    "default_cable_family": "2.5mm2_single_core",
+    "default_breaker_a": 16,
+    "requires_user_rating": false,
+    "notes": "POS, card machines and back-office counter setup: 2.5mm² sockets, USB outlet, Cat6 RJ45 data points and counter trunking."
   }
 ]

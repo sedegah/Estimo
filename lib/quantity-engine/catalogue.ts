@@ -152,6 +152,19 @@ export const MATERIAL_CATALOGUE: Record<string, CatalogueLink> = {
   ceiling_fan: { id: "mat-fan-ceiling-56" },
   fan_regulator: { id: "mat-fan-regulator" },
   fan_hook: { id: "mat-fan-hook" },
+
+  // signage & POS/counter wiring accessories
+  flexible_conduit_20: { id: "mat-con-flx-20" },
+  conduit_adaptor_20: { id: "mat-con-adapt-20" },
+  conduit_saddle_20: { id: "mat-con-saddle-20" },
+  junction_box_100: { id: "mat-con-jbox-100" },
+  terminal_strip_15a: { id: "mat-acc-connector-15a" },
+  insulation_tape_pvc: { id: "mat-acc-tape-pvc" },
+  socket_13a_double_usb: { id: "mat-sws-soc-13a-2g-usb" },
+  data_rj45_outlet: { id: "mat-sws-data-rj45" },
+  trunking_flat_bend: { id: "mat-trk-flat-bend" },
+  trunking_in_corner: { id: "mat-trk-in-corner" },
+  trunking_joiner: { id: "mat-trk-joiner" },
 };
 
 /**

@@ -699,6 +699,53 @@ export const SPECIAL_LOAD_DEFINITIONS: SpecialLoadDefinition[] = [
     provisionalNote:
       "Refrigeration plant draws locked-rotor current on start. Confirm the manufacturer's circuit data before ordering.",
   },
+  {
+    key: "illuminated_sign",
+    name: "Illuminated sign",
+    tagline: "Signage supply: local FCU switch, 20 mm PVC & flexible conduit, outdoor junction box.",
+    spaceContext: "external",
+    powerFactor: 1,
+    motorLoad: false,
+    outlet: "fcu",
+    protection: "mcb",
+    rcd: "unknown",
+    isolator: "never",
+    containment: "conduit",
+    fallbackPowerKw: 0.3,
+    required: ["quantity", "phase"],
+    fields: circuitFields(),
+    presets: [
+      { code: "SIGN_LED", name: "LED fascia / lightbox (0.3 kW)", values: { rated_power_kw: 0.3, phase: "single" } },
+      { code: "SIGN_LARGE", name: "Large illuminated sign (1 kW)", values: { rated_power_kw: 1, phase: "single" } },
+      ...CUSTOM_PRESET,
+    ],
+    provisionalNote:
+      "Covers the electrical feed, containment, FCU switch and outdoor junction materials only (not the sign itself).",
+  },
+  {
+    key: "pos_counter",
+    name: "Counter & tills (POS)",
+    minimumCableSizeMm2: 2.5,
+    tagline: "POS, card machines and back-office: 2.5 mm² sockets, USB outlet, Cat6 data and trunking.",
+    spaceContext: "shop_or_workshop",
+    powerFactor: 1,
+    motorLoad: false,
+    outlet: "none",
+    protection: "mcb",
+    rcd: "unknown",
+    isolator: "never",
+    containment: "conduit",
+    fallbackPowerKw: 2.5,
+    required: ["quantity", "phase"],
+    fields: circuitFields(),
+    presets: [
+      { code: "POS_STANDARD", name: "Standard counter (2.5 kW)", values: { rated_power_kw: 2.5, phase: "single" } },
+      { code: "POS_BUSY", name: "Busy checkout (3.5 kW)", values: { rated_power_kw: 3.5, phase: "single" } },
+      ...CUSTOM_PRESET,
+    ],
+    provisionalNote:
+      "Covers counter power, USB charging, Cat6 data outlets and PVC trunking (excludes POS and card terminal hardware).",
+  },
 ];
 
 const BY_KEY = new Map(SPECIAL_LOAD_DEFINITIONS.map((definition) => [definition.key, definition]));
@@ -1217,6 +1264,33 @@ export function specialLoadMaterials(
     );
   }
 
+  // signage & POS counter wiring kits (materials only, scaled per unit)
+  if (instance.load_key === "illuminated_sign") {
+    add(material("flexible_conduit_20", "20mm Flexible Conduit", "m", 2 * units, null, "Flexible final entry to sign housing", "estimated"));
+    add(material("conduit_adaptor_20", "20mm Male/Female Conduit Adaptor", "each", 2 * units, null, "Rigid-to-flexible conduit entry", "estimated"));
+    const saddles = Math.ceil(perUnitRoute * units);
+    if (saddles > 0) {
+      add(material("conduit_saddle_20", "20mm Conduit Saddle", "each", saddles, null, "External conduit fixing", "estimated"));
+    }
+    add(material("junction_box_100", "100x100mm Junction Box", "each", units, null, "Weatherproof connection enclosure at sign", "medium"));
+    add(material("terminal_strip_15a", "15A Terminal Connector Strip", "strip", units, null, "Sign cable termination block", "medium"));
+    add(material("insulation_tape_pvc", "PVC Electrical Insulation Tape", "roll", units, null, "Weather/joint sealing tape", "medium"));
+  } else if (instance.load_key === "pos_counter") {
+    add(material("socket_13a_double", "Double 13A socket outlet", "each", 3 * units, null, "POS and back-office power points", "high"));
+    add(material("socket_13a_double_usb", "13A Double Socket with USB Charging", "each", units, null, "Card machine / handheld charging point", "high"));
+    add(material("socket_box_2g", "2-gang socket mounting box", "each", 4 * units, null, "Flush boxes for counter sockets", "high"));
+    add(material("data_rj45_outlet", "Cat6 RJ45 Data Outlet", "each", 3 * units, null, "POS, card terminal and back-office data", "high"));
+    add(material("switch_mounting_box", "1-Gang 35mm Flush Box", "each", 3 * units, null, "Flush boxes for RJ45 outlets", "high"));
+    const dataLength = Math.round(perUnitRoute * 3 * units * 10) / 10;
+    if (dataLength > 0) {
+      add(material("data_cable", "Cat6 UTP Data Cable", "m", dataLength, null, `${perUnitRoute} m × 3 Cat6 runs per counter`, "estimated"));
+    }
+    add(material("trunking_38x25", "38x25mm PVC Trunking", "m", 15 * units, "trunking", "Counter and back-office perimeter trunking", "estimated"));
+    add(material("trunking_flat_bend", "PVC Trunking Flat Bend", "each", 2 * units, null, "Counter trunking turns", "estimated"));
+    add(material("trunking_in_corner", "PVC Trunking Internal Corner", "each", 2 * units, null, "Counter trunking corners", "estimated"));
+    add(material("trunking_joiner", "PVC Trunking Joiner", "each", 3 * units, null, "Counter trunking couplers", "estimated"));
+  }
+
   // the bill tags these rows, so a technician can see which load bought what
   return rows.map((row) => ({ ...row, origins: [definition.name] }));
 }
@@ -1630,6 +1704,56 @@ export function defaultAcAdditions(args: {
     },
   ];
   return { overrides, instances };
+}
+
+/**
+ * Commercial plan additions derived from the selected spaces:
+ * - Kiosks with outdoor/signage space get an illuminated sign circuit
+ * - Shop floors with checkout counters get POS/till power, USB, Cat6 data and trunking
+ */
+export function defaultCommercialAdditions(args: {
+  projectType: string;
+  templateId: string;
+  spaces: SpaceInput[];
+  routes: SpaceRouteRow[];
+}): SpecialLoadInstance[] {
+  if (!args.spaces.length) return [];
+  const added: SpecialLoadInstance[] = [];
+
+  if (args.projectType === "container_kiosk") {
+    const porchSpaces = args.spaces.filter((space) => space.room_type === "porch_veranda");
+    const signCount = porchSpaces.reduce((sum, space) => sum + Math.max(1, Math.round(space.quantity ?? 1)), 0);
+    if (signCount > 0) {
+      const [signLoad] = seedSpecialLoads(["illuminated_sign"], porchSpaces, args.routes, args.templateId);
+      added.push({
+        ...signLoad,
+        rated_power_kw: 0.3,
+        phase: "single",
+        quantity: signCount,
+        sizing_source: "ESTIMO_PROVISIONAL",
+      });
+    }
+  }
+
+  const counterSpaces = args.spaces.filter(
+    (space) => space.room_type === "shop_floor" && (space.checkout_counters ?? 0) > 0,
+  );
+  const counterCount = counterSpaces.reduce(
+    (sum, space) => sum + Math.max(0, Math.round(space.checkout_counters ?? 0)) * Math.max(1, Math.round(space.quantity ?? 1)),
+    0,
+  );
+  if (counterCount > 0) {
+    const [posLoad] = seedSpecialLoads(["pos_counter"], counterSpaces, args.routes, args.templateId);
+    added.push({
+      ...posLoad,
+      rated_power_kw: 2.5,
+      phase: "single",
+      quantity: counterCount,
+      sizing_source: "ESTIMO_PROVISIONAL",
+    });
+  }
+
+  return added;
 }
 /**
  * The ESTIMO route for a space, read from the published route table. Space ids carry the
