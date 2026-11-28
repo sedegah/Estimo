@@ -202,6 +202,23 @@ const ROOM_ATTRIBUTES: Record<string, { roomType: string; attribute: "checkout_c
   machines: { roomType: "workshop", attribute: "machine_count" },
 };
 
+function fallbackPrototype(templateId: string, roomType: string, defaultHeightM: number): SpaceInput | null {
+  const sample = templateSpaces.find((space) => space.room_type === roomType);
+  if (!sample) return null;
+  return {
+    id: `${templateId}-${roomType}`,
+    space_name: ROOM_NAMES[roomType] ?? sample.space_name,
+    room_type: roomType,
+    length_m: sample.length_m,
+    width_m: sample.width_m,
+    height_m: defaultHeightM || sample.height_m,
+    quantity: 1,
+    workstations: 0,
+    checkout_counters: 0,
+    machine_count: 0,
+  };
+}
+
 /**
  * Rebuilds the plan from the summary's counters: each room type keeps the template's
  * dimensions and gains or loses copies to match the count the person set. The itemized
@@ -224,14 +241,16 @@ export function spacesFromCounts(templateId: string, counts: Record<string, numb
 
   const next: SpaceInput[] = [];
   const handled = new Set<string>();
+  const defaultHeightM = base[0]?.height_m ?? 3;
 
   for (const [field, roomType] of Object.entries(COUNT_FOR_ROOM)) {
     // a counter this project type does not have must not remove the template's rooms
     if (!(field in counts)) continue;
     const wanted = Math.max(0, Math.round(counts[field] ?? 0));
-    if (!byType.has(roomType) || handled.has(roomType)) continue;
+    if (handled.has(roomType)) continue;
     handled.add(roomType);
-    const prototype = byType.get(roomType)![0];
+    const prototype = byType.get(roomType)?.[0] ?? fallbackPrototype(templateId, roomType, defaultHeightM);
+    if (!prototype) continue;
     // "Bedroom 1" + a second bedroom must read "Bedroom 2", not "Bedroom 1 2"
     const isMaster = roomType === "bedroom" && /master/i.test(prototype.space_name);
     // copies are named for the room they are, not for the template's plural row: the
