@@ -339,9 +339,9 @@ const DEFAULT_COUNTS: Record<string, Counts> = {
   "HOME-3B": { bedrooms: 3, bathrooms: 2, kitchens: 1, living: 1, porches: 1 },
   "HOME-4B": { bedrooms: 4, bathrooms: 4, kitchens: 1, living: 2, porches: 1 },
   "SHOP-KIOSK": { serving: 1, storage: 1, signage: 1, washroom: 1 },
-  "SHOP-RETAIL": { floor: 1, counter: 1, storage: 1, washroom: 1 },
-  "COMM-OFF-S": { open: 1, meeting: 1, kitchenette: 1, washroom: 1, server: 1 },
-  "IND-WORK": { workshop: 1, machines: 1, store: 1, office: 1, external: 1 },
+  "SHOP-RETAIL": { floor: 1, counter: 1, storage: 1, washroom: 2 },
+  "COMM-OFF-S": { open: 1, meeting: 1, kitchenette: 1, washroom: 2, server: 1 },
+  "IND-WORK": { workshop: 1, machines: 1, store: 1, office: 1, washroom: 2, external: 1 },
 };
 
 export function projectType(code: string): ProjectType {
@@ -349,8 +349,8 @@ export function projectType(code: string): ProjectType {
 }
 
 /**
- * Offices, shops and workshops must provide at least two washrooms: staff and customers
- * cannot share one, and a single WC fails the layouts these buildings are planned from.
+ * Offices, shops and workshops start with two washrooms by default, while still
+ * allowing every parameter to be deselected down to zero.
  */
 export const MINIMUM_WASHROOMS: Record<string, number> = {
   "COMM-OFF-S": 2,
@@ -363,8 +363,8 @@ export function minimumWashrooms(code: string): number {
 }
 
 /** The floor a stepper cannot go under, for any counter. */
-export function minimumCount(code: string, key: string): number {
-  return key === "washroom" ? minimumWashrooms(code) : 0;
+export function minimumCount(_code: string, _key: string): number {
+  return 0;
 }
 
 /** Whole numbers, 0..20, and never below the building's minimum washrooms. */
@@ -403,6 +403,7 @@ export function pointsFor(code: string, counts: Counts): Points {
 }
 
 export function computeEstimate(code: string, counts: Counts, quality: FittingQuality): number {
+  if (totalSpaces(counts) === 0) return 0;
   const type = projectType(code);
   const points = pointsFor(type.code, counts);
   const baseline = pointsFor(type.code, defaultCounts(type.code));
@@ -428,6 +429,7 @@ const LINES: { label: string; share: number }[] = [
 
 /** Splits the preliminary total into the cost groups shown on the estimate. */
 export function estimateLines(total: number, code: string, counts: Counts): EstimateLine[] {
+  const hasSpaces = totalSpaces(counts) > 0;
   const points = pointsFor(code, counts);
   const cableMetres = Math.round(
     (points.lights * 6 + points.sockets * 7 + points.acs * 10 + points.heaters * 8) / 5,
@@ -437,8 +439,8 @@ export function estimateLines(total: number, code: string, counts: Counts): Esti
     "Cables and conduit": `${cableMetres} m`,
     "Sockets and switches": `${points.sockets + points.switches}`,
     "Light fittings": `${points.lights}`,
-    "Distribution board and breakers": "1 set",
-    Earthing: "1 set",
+    "Distribution board and breakers": hasSpaces ? "1 set" : "0",
+    Earthing: hasSpaces ? "1 set" : "0",
   };
 
   const shareTotal = LINES.reduce((sum, line) => sum + line.share, 0);

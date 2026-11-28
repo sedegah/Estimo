@@ -86,6 +86,7 @@ export const templateForCode = (code: string): StructureTemplateRow | undefined 
  * quotes two totals depending on which screen is open.
  */
 export function defaultSpecialLoadsFor(templateId: string, spaces: SpaceInput[]): SpecialLoadInstance[] {
+  if (!spaces.length) return [];
   const enabled = (specialLoadRows as { load_key: string; default_enabled: boolean }[])
     .filter((row) => row.default_enabled)
     .map((row) => row.load_key);
@@ -207,6 +208,12 @@ const ROOM_ATTRIBUTES: Record<string, { roomType: string; attribute: "checkout_c
  * screen receives exactly these spaces, so the two views cannot disagree.
  */
 export function spacesFromCounts(templateId: string, counts: Record<string, number>): SpaceInput[] {
+  const entries = Object.entries(counts);
+  // When every parameter has been deselected (0), no template spaces remain either.
+  if (entries.length > 0 && entries.every(([, value]) => Math.max(0, Math.round(value ?? 0)) === 0)) {
+    return [];
+  }
+
   const base = templatePlanSpaces(templateId);
   const byType = new Map<string, SpaceInput[]>();
   for (const space of base) {
@@ -359,10 +366,11 @@ export function priceSavedEstimate(
   prices: Record<string, PriceEntry>,
 ): number | null {
   const quantities = project.quantities;
-  if (!quantities?.spaces?.length) return null;
+  if (!quantities || !Array.isArray(quantities.spaces)) return null;
   const spaces = quantities.spaces as unknown as SpaceInput[];
   const templateId = quantities.templateId;
-  const priced = quantities.specialLoadInstances?.length
+  const hasExplicitLoads = Array.isArray(quantities.specialLoadInstances);
+  const priced = hasExplicitLoads
     ? null
     : defaultPlanAdditions({
         projectType: PROJECT_TYPE_FOR_CODE[project.template ?? ""] ?? "two_bedroom",
@@ -375,10 +383,10 @@ export function priceSavedEstimate(
       specLevel: (quantities.specLevel ?? "standard") as SpecLevel,
       spaces,
       prices,
-      overrides: quantities.specialLoadInstances?.length
+      overrides: hasExplicitLoads
         ? (quantities.overrides as unknown as PointOverride[])
         : priced?.overrides,
-      specialLoadInstances: quantities.specialLoadInstances?.length
+      specialLoadInstances: hasExplicitLoads
         ? quantities.specialLoadInstances
         : priced?.instances,
     }).total;

@@ -162,9 +162,11 @@ export function estimateSpace(
   const switches = pick("switches", autoSwitches);
 
   const lightingRoute =
-    (params.lighting_route_perimeter_factor ?? 0.35) * perimeter +
-    (params.light_branch_allowance_m ?? 1) * lights +
-    switches * Math.max(0, space.height_m - (params.switch_height_m ?? 1.2));
+    lights > 0 || switches > 0
+      ? (params.lighting_route_perimeter_factor ?? 0.35) * perimeter +
+        (params.light_branch_allowance_m ?? 1) * lights +
+        switches * Math.max(0, space.height_m - (params.switch_height_m ?? 1.2))
+      : 0;
 
   const socketRoute =
     socketsFinal > 0
