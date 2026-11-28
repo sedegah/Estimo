@@ -306,7 +306,12 @@ export function QuantityView(props: Props) {
         loads?: string[];
         specialLoadInstances?: unknown[];
       };
-      if (draft.templateId === templateId && Array.isArray(draft.spaces)) {
+      if (draft.templateId && props.spacesByTemplate[draft.templateId] && Array.isArray(draft.spaces)) {
+        const restoredTemplate = props.templates.find((entry) => entry.id === draft.templateId);
+        if (restoredTemplate && draft.templateId !== templateId) {
+          setProjectType(restoredTemplate.projectType);
+          setTemplateId(draft.templateId);
+        }
         const draftSpaces = tidyNames(draft.spaces);
         setSpecLevel(draft.specLevel ?? "standard");
         setSpaces(draftSpaces);

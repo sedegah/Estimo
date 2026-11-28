@@ -33,7 +33,7 @@ import { parseSpecialLoadInstances, type SpecialLoadInstance } from "@/lib/quant
 import type { SpecLevel } from "@/lib/quantity-engine/types";
 import type { PointOverride, SpaceInput } from "@/lib/quantity-engine/types";
 import { saveEstimate } from "@/lib/storage/saved-estimates";
-import { saveDraft } from "@/lib/storage/draft";
+import { readDraft, saveDraft } from "@/lib/storage/draft";
 import { pushCreate } from "@/lib/api/estimates";
 
 /** The estimate prints cedis as "GHS" with pesewas, matching the itemized bill exactly. */
@@ -85,6 +85,7 @@ function SetupContent() {
     (searchParams.get("open") ?? "").split(",").filter(Boolean),
   );
   const [saved, setSaved] = useState(false);
+  const [draftHydrated, setDraftHydrated] = useState(false);
   const lastTemplate = useRef(type.code);
 
   useEffect(() => {
@@ -95,8 +96,9 @@ function SetupContent() {
   }, [type.code]);
 
   useEffect(() => {
+    if (!draftHydrated) return;
     saveDraft({ template: type.code, counts, quality });
-  }, [type.code, counts, quality]);
+  }, [draftHydrated, type.code, counts, quality]);
 
   const templateId = TEMPLATE_FOR_CODE[type.code] ?? "T011";
 
@@ -134,10 +136,29 @@ function SetupContent() {
           localStorage.removeItem("estimo_draft_v1");
         } catch {}
         setCarried(null);
+        setDraftHydrated(true);
         router.replace(`/quick-estimate?template=${encodeURIComponent(type.code)}`);
         return;
       }
       try {
+        const hasUrlCounts = type.fields.some((field) => searchParams.get(field.key) !== null);
+        if (!hasUrlCounts) {
+          const savedDraft = readDraft();
+          if (savedDraft && savedDraft.template === type.code) {
+            const defaults = defaultCounts(type.code);
+            const restored: Counts = { ...defaults };
+            for (const field of type.fields) {
+              const rawCount = savedDraft.counts?.[field.key];
+              if (typeof rawCount === "number" && Number.isFinite(rawCount)) {
+                restored[field.key] = clampCount(type.code, field.key, rawCount);
+              }
+            }
+            setCounts(restored);
+            if (!searchParams.get("quality") && savedDraft.quality) {
+              setSpecLevel(specLevelForQuality(savedDraft.quality));
+            }
+          }
+        }
         const raw = localStorage.getItem("estimo_estimate_draft_v1");
         if (!raw) {
           setCarried(null);
@@ -208,6 +229,8 @@ function SetupContent() {
         });
       } catch {
         setCarried(null);
+      } finally {
+        setDraftHydrated(true);
       }
     };
 
