@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { computeEstimate, defaultCounts, estimateLines, projectType, totalSpaces } from "../lib/estimate-model.ts";
+import { clampCount, computeEstimate, defaultCounts, estimateLines, minimumCount, projectType, totalSpaces } from "../lib/estimate-model.ts";
 
 test("the two-bedroom anchor matches the calibrated total", () => {
   const total = computeEstimate("HOME-2B", defaultCounts("HOME-2B"), "standard");
@@ -34,5 +34,24 @@ test("every project type produces a positive total and lines that add up", () =>
     assert.ok(Math.abs(sum - total) / total < 0.02, `${code} lines should sum to the total`);
     assert.ok(totalSpaces(counts) > 0, `${code} should count spaces`);
     assert.ok(type.label.length > 0);
+  }
+});
+
+test("deselecting all parameters brings the estimate to zero across all project types", () => {
+  for (const code of ["HOME-1R", "HOME-1B", "HOME-2B", "HOME-3B", "HOME-4B", "SHOP-KIOSK", "SHOP-RETAIL", "COMM-OFF-S", "IND-WORK"]) {
+    const type = projectType(code);
+    const zeroCounts = Object.fromEntries(
+      type.fields.map((field) => {
+        assert.equal(minimumCount(code, field.key), 0, `${code}.${field.key} minimum should be 0`);
+        return [field.key, clampCount(code, field.key, 0)];
+      }),
+    );
+    assert.equal(totalSpaces(zeroCounts), 0, `${code} totalSpaces should be 0`);
+    for (const quality of ["basic", "standard", "premium"] as const) {
+      const total = computeEstimate(code, zeroCounts, quality);
+      assert.equal(total, 0, `${code} (${quality}) should be 0 when all parameters are deselected`);
+      const lines = estimateLines(total, code, zeroCounts);
+      assert.ok(lines.every((line) => line.amount === 0), `${code} (${quality}) lines should all be 0`);
+    }
   }
 });

@@ -201,3 +201,23 @@ test("materials carry engineering and purchase quantities with pack rounding", (
   assert.equal(socket.engineering_quantity, result.totals.double_sockets + result.totals.tv_points);
   assert.equal(socket.confidence, "high");
 });
+
+test("empty spaces or zeroed points produce zero materials", () => {
+  const empty = run([]);
+  assert.equal(empty.totals.floor_area_m2, 0);
+  assert.equal(empty.totals.total_final_circuits, 0);
+  assert.equal(empty.materialQuantities.length, 0);
+
+  const space = bedroom();
+  const zeroOverrides: PointOverride[] = (
+    ["lighting", "double_sockets", "fans", "ac", "tv", "data", "switches"] as const
+  ).map((point_type) => ({
+    space_id: space.id,
+    point_type,
+    value: 0,
+    source: "user_override",
+  }));
+  const zeroed = run([space], "standard", zeroOverrides);
+  assert.equal(zeroed.totals.total_containment_m, 0);
+  assert.equal(zeroed.materialQuantities.length, 0);
+});
