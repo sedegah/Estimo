@@ -1710,6 +1710,9 @@ export function defaultAcAdditions(args: {
  * Commercial plan additions derived from the selected spaces:
  * - Kiosks with outdoor/signage space get an illuminated sign circuit
  * - Shop floors with checkout counters get POS/till power, USB, Cat6 data and trunking
+ * - Workshops with machines get a workshop_machine circuit per machine (three-phase feeder
+ *   with TP MCB, TPN isolator and SWA cable — quantities via specialLoadMaterials, not the
+ *   legacy assembly, so the phase is correct and materials appear on the itemized bill)
  */
 export function defaultCommercialAdditions(args: {
   projectType: string;
@@ -1749,6 +1752,30 @@ export function defaultCommercialAdditions(args: {
       rated_power_kw: 2.5,
       phase: "single",
       quantity: counterCount,
+      sizing_source: "ESTIMO_PROVISIONAL",
+    });
+  }
+
+  // Workshop machines: each machine_count unit gets its own three-phase feeder. A single
+  // SpecialLoadInstance covers all of them so the person can open the configurator and
+  // enter the real motor rating. ESTIMO starts at the rulebook fallback of 5 kW.
+  const machineSpaces = args.spaces.filter(
+    (space) => space.room_type === "workshop" && (space.machine_count ?? 0) > 0,
+  );
+  const machineCount = machineSpaces.reduce(
+    (sum, space) => sum + Math.max(0, Math.round(space.machine_count ?? 0)) * Math.max(1, Math.round(space.quantity ?? 1)),
+    0,
+  );
+  if (machineCount > 0) {
+    const [machineLoad] = seedSpecialLoads(["workshop_machine"], machineSpaces, args.routes, args.templateId);
+    added.push({
+      ...machineLoad,
+      // Fallback: 5 kW three-phase is the rulebook default for a general workshop machine.
+      // The person must open the configurator and enter the real motor rating before the
+      // estimate is confirmed; until then it shows as ESTIMO_PROVISIONAL.
+      rated_power_kw: 5,
+      phase: "three",
+      quantity: machineCount,
       sizing_source: "ESTIMO_PROVISIONAL",
     });
   }

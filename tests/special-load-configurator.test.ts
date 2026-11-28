@@ -641,3 +641,61 @@ test("illuminated sign and POS counter wire full kits and seed for commercial sp
   assert.deepEqual(loads.map((l) => l.load_key).sort(), ["illuminated_sign", "pos_counter"]);
   assert.deepEqual(defaultCommercialAdditions({ projectType: "container_kiosk", templateId: "T002", spaces: [], routes: [] }), []);
 });
+
+test("workshop machines seed a three-phase SpecialLoadInstance and produce TP MCB + TPN isolator materials", () => {
+  // 1. The seed function: a workshop with 3 machines must produce a workshop_machine load
+  //    with quantity=3, phase=three, and the provisional fallback power.
+  const workshopSpaces: SpaceInput[] = [
+    { id: "T013-1", space_name: "Workshop", room_type: "workshop", length_m: 12, width_m: 8, height_m: 4, machine_count: 3 },
+  ];
+  const machineLoads = defaultCommercialAdditions({
+    projectType: "workshop_small_factory",
+    templateId: "T013",
+    spaces: workshopSpaces,
+    routes: [],
+  });
+  assert.equal(machineLoads.length, 1, "one workshop_machine load is seeded");
+  const ml = machineLoads[0]!;
+  assert.equal(ml.load_key, "workshop_machine");
+  assert.equal(ml.quantity, 3, "quantity matches machine_count");
+  assert.equal(ml.phase, "three", "machines default to three-phase");
+  assert.equal(ml.rated_power_kw, 5, "fallback power is 5 kW per machine");
+
+  // 2. The materials path: a configured three-phase machine must emit a TP MCB and a
+  //    TPN isolator, NOT a single-pole breaker or a double-pole isolator (the old assembly
+  //    path emitted those; this test proves the new path is correct).
+  const rows = materialMap(
+    specialLoadMaterials(
+      { ...ml, route_length_m: 15, route_source: "USER_OVERRIDE" },
+      8,
+    ),
+  );
+  // protective device: should be three-pole, e.g. mcb_tp_25 (5 kW @ 400 V / 0.85 pf = ~8.5 A design, rounds to 10 A)
+  const mcbKey = [...rows.keys()].find((k) => k.startsWith("mcb_tp_"));
+  assert.ok(mcbKey, "workshop machine gets a triple-pole MCB (not single-pole)");
+  assert.ok(!rows.has("mcb_sp_10") && !rows.has("mcb_sp_25") && !rows.has("mcb_sp_63"), "no single-pole MCB");
+
+  // isolator: should be TPN (four-pole), e.g. isolator_tpn_32
+  const isoKey = [...rows.keys()].find((k) => k.startsWith("isolator_tpn_"));
+  assert.ok(isoKey, "workshop machine gets a TPN (four-pole) isolator (not double-pole)");
+  assert.ok(!rows.has("isolator_dp_32") && !rows.has("isolator_dp_63"), "no double-pole isolator");
+
+  // conductors: three-phase load must have 3× phase conductors, 1× neutral, 1× CPC
+  const phaseKey = [...rows.keys()].find((k) => k.startsWith("special_phase_"));
+  assert.ok(phaseKey, "phase conductor present");
+  const phaseRow = rows.get(phaseKey!);
+  const neutralKey = [...rows.keys()].find((k) => k.startsWith("special_neutral_"));
+  const neutralRow = rows.get(neutralKey!);
+  // 3 machines × 3 phases each = 9 phase runs; 3 machines × 1 neutral each = 3 neutral runs
+  assert.ok((phaseRow?.engineering_quantity ?? 0) >= (neutralRow?.engineering_quantity ?? 0) * 2.5,
+    "phase total is significantly more than neutral total (3-phase winding)");
+
+  // zero machines → no load seeded
+  const noMachines = defaultCommercialAdditions({
+    projectType: "workshop_small_factory",
+    templateId: "T013",
+    spaces: [{ id: "T013-1", space_name: "Workshop", room_type: "workshop", length_m: 12, width_m: 8, height_m: 4, machine_count: 0 }],
+    routes: [],
+  });
+  assert.equal(noMachines.length, 0, "no load when machine_count is zero");
+});
