@@ -178,7 +178,7 @@ export default function ProjectPage() {
    */
   const savedPlanLive = useMemo(() => {
     const quantities = project?.quantities;
-    if (!quantities?.spaces?.length) return null;
+    if (!quantities || !Array.isArray(quantities.spaces)) return null;
     return liveEstimate({
       templateId: quantities.templateId,
       specLevel: quantities.specLevel as SpecLevel,
@@ -402,7 +402,7 @@ export default function ProjectPage() {
         unit: line.catalogueUnit,
         priceGhs: line.unitPrice,
       })) ?? [];
-    const items = livePrices && liveItems.length ? liveItems : savedItems;
+    const items = livePrices && savedPlanLive ? liveItems : savedItems;
     const displayTotal = livePrices && savedPlanLive ? savedPlanLive.total : savedTotal;
     const loadDetail = (takeOff.specialLoadInstances ?? []).map((instance) => {
       const entry = savedPlanLive?.result.specialLoadBreakdown.find((row) => row.instanceId === instance.id);

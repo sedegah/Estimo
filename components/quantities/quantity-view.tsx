@@ -247,7 +247,7 @@ export function QuantityView(props: Props) {
   const [templateId, setTemplateId] = useState(firstTemplate.id);
   const [specLevel, setSpecLevel] = useState<SpecLevel>(props.initialSpecLevel ?? "standard");
   const openingSpaces = tidyNames(
-    props.initialSpaces?.length ? props.initialSpaces : (props.spacesByTemplate[firstTemplate.id] ?? []),
+    props.initialSpaces !== undefined ? props.initialSpaces : (props.spacesByTemplate[firstTemplate.id] ?? []),
   );
   const [spaces, setSpaces] = useState<SpaceInput[]>(openingSpaces);
   // a home opens air conditioned (see defaultPlanAdditions), and with the rulebook's loads
@@ -295,7 +295,7 @@ export function QuantityView(props: Props) {
   useEffect(() => {
     try {
       // an explicit plan from the simple screen wins over whatever was drafted
-      if (props.initialSpaces?.length) return;
+      if (props.initialSpaces !== undefined) return;
       const raw = localStorage.getItem("estimo_estimate_draft_v1");
       if (!raw) return;
       const draft = JSON.parse(raw) as {
@@ -306,7 +306,7 @@ export function QuantityView(props: Props) {
         loads?: string[];
         specialLoadInstances?: unknown[];
       };
-      if (draft.templateId === templateId && draft.spaces?.length) {
+      if (draft.templateId === templateId && Array.isArray(draft.spaces)) {
         const draftSpaces = tidyNames(draft.spaces);
         setSpecLevel(draft.specLevel ?? "standard");
         setSpaces(draftSpaces);
@@ -319,17 +319,19 @@ export function QuantityView(props: Props) {
           routes: props.spaceRoutes ?? [],
           overrides: draft.overrides ?? [],
         });
-        setOverrides(draft.overrides?.length ? draft.overrides : defaults.overrides);
-        if (stored.length) setInstances(stored);
-        else if (Array.isArray(draft.loads)) {
+        setOverrides(Array.isArray(draft.overrides) ? draft.overrides : defaults.overrides);
+        if (Array.isArray(draft.specialLoadInstances)) {
+          setInstances(stored);
+        } else if (Array.isArray(draft.loads)) {
           setInstances(seedSpecialLoads(draft.loads, draftSpaces, props.spaceRoutes ?? [], draft.templateId));
         } else {
           setInstances(defaults.instances);
         }
         if (props.initialSpecLevel) setSpecLevel(props.initialSpecLevel);
       }
-    } catch {}
-    setHydrated(true);
+    } catch {} finally {
+      setHydrated(true);
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

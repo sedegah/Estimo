@@ -50,7 +50,7 @@ export async function GET(request: Request) {
   if (link) {
     const linkedType = projectType(link.template);
 
-    if (link.items?.length) {
+    if (Array.isArray(link.items)) {
       const known = link.items.reduce((sum, line) => (line.priceGhs == null ? sum : sum + line.priceGhs * line.quantity), 0);
       const linkedPdf = await buildEstimatePdf({
         template: linkedType.code,

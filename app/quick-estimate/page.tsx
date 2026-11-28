@@ -152,7 +152,7 @@ function SetupContent() {
           specialLoadInstances?: unknown[];
           bill?: { totalGhs?: number; lines?: unknown[] };
         };
-        if (!draft.spaces?.length) {
+        if (!Array.isArray(draft.spaces)) {
           setCarried(null);
           return;
         }
@@ -183,8 +183,7 @@ function SetupContent() {
           draft.bill &&
           typeof draft.bill.totalGhs === "number" &&
           Number.isFinite(draft.bill.totalGhs) &&
-          Array.isArray(draft.bill.lines) &&
-          draft.bill.lines.length
+          Array.isArray(draft.bill.lines)
             ? {
                 totalGhs: draft.bill.totalGhs,
                 lines: (draft.bill.lines as Record<string, unknown>[])
@@ -197,6 +196,9 @@ function SetupContent() {
                   })),
               }
             : null;
+        if (draft.spaces.length === 0) {
+          setCounts(Object.fromEntries(type.fields.map((field) => [field.key, 0])));
+        }
         setCarried({
           templateId: draft.templateId ?? templateId,
           spaces: draft.spaces,
@@ -276,7 +278,7 @@ function SetupContent() {
         overrides: planOverrides,
         specialLoadInstances: instances,
       }),
-    [planTemplateId, specLevel, planSpaces, prices, carried, instances],
+    [planTemplateId, specLevel, planSpaces, prices, planOverrides, instances],
   );
 
   /**
@@ -442,7 +444,13 @@ function SetupContent() {
           <h1 className="page-title">Set up your {type.label.toLowerCase()}</h1>
           <p className="page-sub">These are starting points. Change anything that does not match your plan.</p>
 
-          <ProjectTypeSelect template={type.code} onChange={(value) => router.push(`/quick-estimate?template=${value}`)} />
+          <ProjectTypeSelect
+            template={type.code}
+            onChange={(value) => {
+              resetToCounters();
+              router.push(`/quick-estimate?template=${value}`);
+            }}
+          />
 
           <section className="setup-section">
             <h2 className="section-title">Spaces</h2>

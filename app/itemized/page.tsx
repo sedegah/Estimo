@@ -72,10 +72,14 @@ export default async function QuickEstimatePage({
 
   // A plan from the simple screen travels in the URL; anything malformed is ignored.
   let planSpaces: unknown[] = [];
+  let hasExplicitPlan = false;
   if (plan) {
     try {
       const decoded = JSON.parse(Buffer.from(decodeURIComponent(plan), "base64").toString("utf8"));
-      if (Array.isArray(decoded)) planSpaces = decoded;
+      if (Array.isArray(decoded)) {
+        planSpaces = decoded;
+        hasExplicitPlan = true;
+      }
     } catch {
       planSpaces = [];
     }
@@ -83,7 +87,7 @@ export default async function QuickEstimatePage({
 
   // A saved project stores room counts rather than a full plan; the itemized bill for it
   // is the same template with those counts applied.
-  if (!planSpaces.length && countsParam) {
+  if (!hasExplicitPlan && countsParam) {
     try {
       const parsed = JSON.parse(countsParam) as Record<string, number>;
       const clean = Object.fromEntries(
@@ -92,6 +96,7 @@ export default async function QuickEstimatePage({
           .map(([key, value]) => [key, Math.max(0, Math.min(99, Math.round(value)))]),
       );
       planSpaces = spacesFromCounts(templateId, clean);
+      hasExplicitPlan = true;
     } catch {
       planSpaces = [];
     }
@@ -134,7 +139,7 @@ export default async function QuickEstimatePage({
         <QuantityView
           signedIn={signedIn}
           initialSpecLevel={quality ? specLevelFromQuality : undefined}
-          initialSpaces={planSpaces as never}
+          initialSpaces={hasExplicitPlan ? (planSpaces as never) : undefined}
           templateCode={code}
           initialTemplateId={templateId}
           estimateHref={`/estimate?template=${encodeURIComponent(code)}`}

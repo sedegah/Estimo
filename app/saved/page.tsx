@@ -110,7 +110,7 @@ export default function SavedEstimatesPage() {
     const templateId = quantities?.templateId ?? TEMPLATE_FOR_CODE[code] ?? "T011";
     const specLevel = (quantities?.specLevel ??
       specLevelForQuality(project.quality ?? "standard")) as SpecLevel;
-    const spaces = (quantities?.spaces?.length
+    const spaces = (Array.isArray(quantities?.spaces)
       ? quantities.spaces
       : spacesFromCounts(templateId, (project.counts ?? {}) as Record<string, number>)) as SpaceInput[];
     const defaults = defaultPlanAdditions({
@@ -118,6 +118,7 @@ export default function SavedEstimatesPage() {
       templateId,
       spaces,
     });
+    const hasExplicitLoads = Array.isArray(quantities?.specialLoadInstances);
     try {
       localStorage.setItem(
         "estimo_estimate_draft_v1",
@@ -127,12 +128,11 @@ export default function SavedEstimatesPage() {
           templateId,
           specLevel,
           spaces,
-          overrides:
-            quantities?.specialLoadInstances?.length
-              ? ((quantities.overrides ?? []) as PointOverride[])
-              : defaults.overrides,
-          specialLoadInstances: quantities?.specialLoadInstances?.length
-            ? quantities.specialLoadInstances
+          overrides: hasExplicitLoads
+            ? ((quantities?.overrides ?? []) as PointOverride[])
+            : defaults.overrides,
+          specialLoadInstances: hasExplicitLoads
+            ? quantities?.specialLoadInstances
             : defaults.instances,
         }),
       );

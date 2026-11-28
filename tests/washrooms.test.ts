@@ -45,12 +45,12 @@ test("every office, shop and workshop template has two washrooms or more", () =>
   }
 });
 
-test("the counters start at two washrooms and cannot go below", () => {
+test("the counters start at two washrooms and can be deselected to zero", () => {
   for (const code of Object.values(REQUIRED)) {
-    assert.equal(minimumCount(code, "washroom"), 2, `${code} minimum`);
+    assert.equal(minimumCount(code, "washroom"), 0, `${code} minimum`);
     assert.ok((defaultCounts(code).washroom ?? 0) >= 2, `${code} default`);
-    assert.equal(clampCount(code, "washroom", 0), 2, `${code} floor at zero`);
-    assert.equal(clampCount(code, "washroom", 1), 2, `${code} floor at one`);
+    assert.equal(clampCount(code, "washroom", 0), 0, `${code} allows zero`);
+    assert.equal(clampCount(code, "washroom", -1), 0, `${code} clamps negative to zero`);
     assert.equal(clampCount(code, "washroom", 5), 5, `${code} keeps a larger count`);
   }
 });

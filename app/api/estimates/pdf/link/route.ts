@@ -67,7 +67,7 @@ export async function POST(request: Request) {
     name,
     counts,
     loads,
-    items: items.length ? items : undefined,
+    items: Array.isArray(body.items) ? items : undefined,
     total: typeof body.total === "number" && Number.isFinite(body.total) ? body.total : undefined,
     subtitle: typeof body.subtitle === "string" ? body.subtitle.slice(0, 120) : undefined,
     currency: typeof body.currency === "string" && ["GHS", "USD", "GBP", "EUR"].includes(body.currency) ? body.currency : undefined,
