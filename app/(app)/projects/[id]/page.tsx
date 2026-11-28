@@ -68,6 +68,8 @@ const LOAD_NAMES: Record<string, string> = {
   ev_charger: "EV charger",
   workshop_machine: "Workshop machine",
   refrigeration_equipment: "Refrigeration equipment",
+  illuminated_sign: "Illuminated sign",
+  pos_counter: "Counter & tills (POS)",
 };
 
 const loadName = (key: string) =>

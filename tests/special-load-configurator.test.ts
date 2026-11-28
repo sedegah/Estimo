@@ -18,6 +18,7 @@ import {
   dbKeyForSpace,
   configurationStatus,
   defaultAcAdditions,
+  defaultCommercialAdditions,
   missingRequirements,
   newSpecialLoadInstance,
   parseSpecialLoadInstances,
@@ -613,4 +614,30 @@ test("a copied space keeps its own route, not the route of the copy number", () 
   assert.equal(autoRouteForSpace(routes, "T020", "T020-8-1"), 21, "a copy still belongs to space 8");
   assert.equal(autoRouteForSpace(routes, "T020", "T020-1-2"), 4);
   assert.equal(dbKeyForSpace(routes, "T020", "T020-8-1"), "DB1");
+});
+
+test("illuminated sign and POS counter wire full kits and seed for commercial spaces", () => {
+  const signRows = materialMap(
+    specialLoadMaterials({ ...newSpecialLoadInstance("illuminated_sign", "sign-1"), route_length_m: 10, route_source: "USER_OVERRIDE" }, 8),
+  );
+  assert.ok(signRows.get("fcu_13a"), "sign includes FCU control");
+  assert.ok(signRows.get("flexible_conduit_20"), "sign includes 20mm flexible conduit");
+  assert.ok(signRows.get("junction_box_100"), "sign includes outdoor junction box");
+
+  const posRows = materialMap(
+    specialLoadMaterials({ ...newSpecialLoadInstance("pos_counter", "pos-1"), route_length_m: 12, route_source: "USER_OVERRIDE" }, 8),
+  );
+  assert.equal(posRows.get("socket_13a_double")?.engineering_quantity, 3);
+  assert.equal(posRows.get("socket_13a_double_usb")?.engineering_quantity, 1);
+  assert.equal(posRows.get("data_rj45_outlet")?.engineering_quantity, 3);
+  assert.equal(posRows.get("data_cable")?.engineering_quantity, 36);
+  assert.equal(posRows.get("trunking_38x25")?.engineering_quantity, 15);
+
+  const kioskSpaces: SpaceInput[] = [
+    { id: "T002-1", space_name: "Main Shop", room_type: "shop_floor", length_m: 6, width_m: 2.4, height_m: 2.6, checkout_counters: 1 },
+    { id: "T002-porch", space_name: "Porch", room_type: "porch_veranda", length_m: 3, width_m: 1, height_m: 2.6 },
+  ];
+  const loads = defaultCommercialAdditions({ projectType: "container_kiosk", templateId: "T002", spaces: kioskSpaces, routes: [] });
+  assert.deepEqual(loads.map((l) => l.load_key).sort(), ["illuminated_sign", "pos_counter"]);
+  assert.deepEqual(defaultCommercialAdditions({ projectType: "container_kiosk", templateId: "T002", spaces: [], routes: [] }), []);
 });
