@@ -500,9 +500,7 @@ function aggregateMaterials(args: {
   }
 
   // Server room dedicated power & rack provision allowance (GHS 300 per server room).
-  const serverRoomCount = args.calculated
-    .filter((space) => space.room_type === "server_room")
-    .reduce((sum, space) => sum + Math.max(1, Math.round(space.quantity || 1)), 0);
+  const serverRoomCount = args.calculated.filter((space) => space.room_type === "server_room").length;
   if (serverRoomCount > 0) {
     rows.set("server_room_provision", {
       material_key: "server_room_provision",
